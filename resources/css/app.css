@@ -1,0 +1,154 @@
+@import 'tailwindcss';
+@import '../../vendor/livewire/flux/dist/flux.css';
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
+@source '../../vendor/livewire/flux/stubs/**/*.blade.php';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Re-assign Flux's gray of choice... */
+/* @theme {
+    --color-zinc-50: var(--color-gray-50);
+    --color-zinc-100: var(--color-gray-100);
+    --color-zinc-200: var(--color-gray-200);
+    --color-zinc-300: var(--color-gray-300);
+    --color-zinc-400: var(--color-gray-400);
+    --color-zinc-500: var(--color-gray-500);
+    --color-zinc-600: var(--color-gray-600);
+    --color-zinc-700: var(--color-gray-700);
+    --color-zinc-800: var(--color-gray-800);
+    --color-zinc-900: var(--color-gray-900);
+    --color-zinc-950: var(--color-gray-950);
+} */
+
+@theme {
+    --color-accent: var(--color-emerald-600);
+    --color-accent-content: var(--color-emerald-600);
+    --color-accent-foreground: var(--color-white);
+    --color-table-sticky-dark: color-mix(in srgb, var(--color-zinc-800), white 5%);
+
+    /* Override global rounded radii to match rounded-xl */
+    --radius-md: 0.75rem;
+    --radius-lg: 0.75rem;
+}
+
+@layer theme {
+    .dark {
+        --color-accent: var(--color-emerald-600);
+        --color-accent-content: var(--color-emerald-400);
+        --color-accent-foreground: var(--color-white);
+    }
+}
+
+@layer base {
+    body {
+        -webkit-tap-highlight-color: transparent;
+        overscroll-behavior-y: none;
+    }
+
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+    }
+
+    dialog::backdrop {
+        backdrop-filter: blur(4px);
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+[data-flux-field]:not(ui-radio, ui-checkbox) {
+    @apply grid gap-2;
+}
+
+[data-flux-label] {
+    @apply !mb-0 !leading-tight;
+}
+
+input:focus[data-flux-control],
+textarea:focus[data-flux-control],
+select:focus[data-flux-control] {
+    @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
+}
+
+/* \[:where(&)\]:size-4 {
+    @apply size-4;
+} */
+
+#nprogress .bar {
+    background: var(--color-accent) !important;
+}
+
+#nprogress .peg {
+    box-shadow:
+        0 0 10px var(--color-accent),
+        0 0 5px var(--color-accent) !important;
+}
+
+#nprogress .spinner-icon {
+    border-top-color: var(--color-accent) !important;
+    border-left-color: var(--color-accent) !important;
+}
+
+[data-flux-sidebar] {
+    transition-property: transform, translate, width !important;
+    transition-duration: 0.6s !important;
+    white-space: nowrap;
+    overflow-x: hidden;
+    transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    z-index: 400 !important;
+}
+
+button,
+[data-flux-switch],
+[data-flux-button],
+[data-flux-sidebar-group] {
+    cursor: pointer !important;
+}
+
+/* Modern Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-accent);
+    border-radius: none;
+}
+
+/* Remove Autofill Background Color */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+    transition: background-color 5000s ease-in-out 0s;
+    -webkit-text-fill-color: inherit !important;
+}
+
+@media (max-width: 1024px) {
+    ::-webkit-scrollbar {
+        display: none;
+    }
+
+    body {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* Beri jarak bawah untuk mobile bottom nav agar konten tidak tertutup */
+    [data-flux-main] {
+        padding-bottom: 6rem !important;
+    }
+}
