@@ -1,0 +1,1 @@
+[`pointerdown`].forEach(e=>{document.addEventListener(e,e=>{e.pointerType===`touch`&&e.target.closest(`button, a, [role="button"], [data-flux-button], [data-flux-link], label, .cursor-pointer`)&&typeof navigator.vibrate==`function`&&navigator.vibrate(25)},{passive:!0})});
