@@ -32,6 +32,7 @@
                     </flux:table.column>
                     <flux:table.column>Daftar Barang (Item)</flux:table.column>
                     <flux:table.column>Tonase (Berat)</flux:table.column>
+                    <flux:table.column>Estimasi Harga</flux:table.column>
                     <flux:table.column>Aksi</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
@@ -55,6 +56,14 @@
                             </flux:table.cell>
                             <flux:table.cell>
                                 {{ formatWeight($order->total_calculated_weight) }}
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                @php
+                                    $estimatedPrice = $order->orderItems->sum(function($orderItem) {
+                                        return data_get($orderItem->item, 'prices.umum', 0) * $orderItem->quantity;
+                                    });
+                                @endphp
+                                Rp {{ number_format($estimatedPrice, 0, ',', '.') }}
                             </flux:table.cell>
                             <flux:table.cell>
                                 <flux:dropdown>
@@ -109,6 +118,11 @@
                             <flux:table.cell>
                                 <span
                                     class="font-semibold text-zinc-900 dark:text-white">{{ formatWeight($this->summary['totalWeight']) }}</span>
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                <span class="font-semibold text-zinc-900 dark:text-white">
+                                    Rp {{ number_format($this->summary['totalEstimatedPrice'] ?? 0, 0, ',', '.') }}
+                                </span>
                             </flux:table.cell>
                             <flux:table.cell></flux:table.cell>
                         </flux:table.row>

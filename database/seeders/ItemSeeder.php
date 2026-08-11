@@ -29,9 +29,9 @@ class ItemSeeder extends Seeder
                     'code' => $code,
                     'weight' => $itemData['weight'] * 1000,
                     'prices' => [
-                        'normal' => $itemData['umum'] ?? 0,
-                        'diskon' => $itemData['promo'] ?? 0,
-                        'grosir' => $itemData['khusus'] ?? 0,
+                        'umum' => $itemData['umum'] ?? 0,
+                        'promo' => $itemData['promo'] ?? 0,
+                        'khusus' => $itemData['khusus'] ?? 0,
                     ],
                 ]
             );

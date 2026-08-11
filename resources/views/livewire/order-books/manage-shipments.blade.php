@@ -1,4 +1,4 @@
-<div x-data="shipmentManager(@js($this->ordersWithItems->flatMap->orderItems->mapWithKeys(fn($i) => [$i->id => $i->item->weight])), @entangle('assignments'), @entangle('totalBatches'))">
+<div x-data="shipmentManager(@js($this->ordersWithItems->flatMap->orderItems->mapWithKeys(fn($i) => [$i->id => $i->item->weight])), @js($this->ordersWithItems->flatMap->orderItems->mapWithKeys(fn($i) => [$i->id => $i->order_id])), @entangle('assignments'), @entangle('totalBatches'))">
     <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
         <div>
             <flux:heading size="xl">Atur Pembagian Muatan</flux:heading>
@@ -28,10 +28,13 @@
             <div class="flex items-center justify-between relative z-10">
                 <span class="text-sm font-semibold ">Total Keseluruhan</span>
             </div>
-            <span class="text-xl font-bold relative z-10"
-                x-text="formatWeight(Object.values(batchTotals).reduce((a, b) => a + b, 0))">
-                0 gr
-            </span>
+            <div class="flex items-baseline gap-2 relative z-10">
+                <span class="text-xl font-bold text-white"
+                    x-text="formatWeight(Object.values(batchTotals).reduce((a, b) => a + b, 0))">
+                    0 gr
+                </span>
+                <span class="text-xs text-white/90 font-medium bg-white/20 px-1.5 py-0.5 rounded-md">{{ $this->ordersWithItems->count() }} Pelanggan</span>
+            </div>
             <div class="mt-auto relative z-10 pt-2">
                 <span class="text-xs text-white/70">Semua muatan digabung</span>
             </div>
@@ -48,10 +51,13 @@
                             icon="trash" class="text-red-500!" />
                     @endif
                 </div>
-                <span class="text-xl font-bold text-zinc-900 dark:text-white"
-                    x-text="formatWeight(batchTotals[{{ $b }}] || 0)">
-                    0 gr
-                </span>
+                <div class="flex items-baseline gap-2">
+                    <span class="text-xl font-bold text-zinc-900 dark:text-white"
+                        x-text="formatWeight(batchTotals[{{ $b }}] || 0)">
+                        0 gr
+                    </span>
+                    <span class="text-xs text-zinc-500 font-medium bg-zinc-200/50 dark:bg-white/10 px-1.5 py-0.5 rounded-md" x-text="(batchCustomerCounts[{{ $b }}] || 0) + ' Pel.'"></span>
+                </div>
                 <div class="w-full h-1.5 rounded-full bg-zinc-200 dark:bg-white/10 mt-1">
                     <div class="h-1.5 rounded-full transition-all duration-300"
                         x-bind:class="{
@@ -83,8 +89,20 @@
                         <th class="text-center px-4 py-3 font-semibold text-zinc-700 dark:text-zinc-300 min-w-[80px]">
                             Berat/Unit</th>
                         @for ($b = 1; $b <= $totalBatches; $b++)
+                            @php
+                                $colorIdx = ($b - 1) % 6;
+                                $textColors = [
+                                    'text-emerald-600 dark:text-emerald-400',
+                                    'text-red-600 dark:text-red-400',
+                                    'text-purple-600 dark:text-purple-400',
+                                    'text-rose-600 dark:text-rose-400',
+                                    'text-amber-600 dark:text-amber-400',
+                                    'text-cyan-600 dark:text-cyan-400',
+                                ];
+                                $thClass = $textColors[$colorIdx];
+                            @endphp
                             <th
-                                class="text-center px-4 py-3 font-semibold min-w-[120px] {{ $b === 1 ? 'text-emerald-600 dark:text-emerald-400' : 'text-blue-600 dark:text-blue-400' }}">
+                                class="text-center px-4 py-3 font-semibold min-w-[120px] {{ $thClass }}">
                                 Muatan {{ $b }}
                             </th>
                         @endfor
@@ -100,7 +118,8 @@
                                 $remaining = $orderItem->quantity - $totalAssigned;
                             @endphp
                             <tr wire:key="row-{{ $orderItem->id }}"
-                                class="border-b border-zinc-100 dark:border-white/5 hover:bg-white dark:hover:bg-white/[0.03] transition-colors">
+                                class="border-b border-zinc-100 dark:border-white/5 transition-colors"
+                                x-bind:class="getRowColorClass({{ $orderItem->id }})">
                                 {{-- Customer (only show on first item of each order) --}}
                                 @if ($orderItemIndex === 0)
                                     <td class="px-4 py-2.5 " rowspan="{{ $order->orderItems->count() }}">
@@ -218,7 +237,7 @@
         </p>
         
         <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-            {{-- <flux:button wire:click="save('nota')" variant="outline" icon="document-text" class="w-full sm:w-auto">Simpan & Cetak Nota</flux:button> --}}
+            <flux:button wire:click="save('nota')" variant="outline" icon="document-text" class="w-full sm:w-auto">Simpan & Cetak Nota</flux:button>
             <flux:button wire:click="save('delivery')" variant="outline" icon="clipboard-document-list" class="w-full sm:w-auto">Simpan & Cetak Pengiriman</flux:button>
             <flux:button wire:click="save('summary')" variant="primary" icon="truck" class="w-full sm:w-auto">Simpan & Cetak Daftar</flux:button>
         </div>
@@ -227,10 +246,34 @@
 
 @script
     <script>
-        Alpine.data('shipmentManager', (itemsWeight, assignments, totalBatches) => ({
+        Alpine.data('shipmentManager', (itemsWeight, itemToOrder, assignments, totalBatches) => ({
             itemsWeight,
+            itemToOrder,
             assignments,
             totalBatches,
+
+            get batchCustomerCounts() {
+                let counts = {};
+                for (let b = 1; b <= this.totalBatches; b++) counts[b] = new Set();
+
+                for (let itemId in this.assignments) {
+                    let batches = this.assignments[itemId];
+                    let orderId = this.itemToOrder[itemId];
+                    if (!orderId) continue;
+                    
+                    for (let b = 1; b <= this.totalBatches; b++) {
+                        if (parseInt(batches[b]) > 0) {
+                            counts[b].add(orderId);
+                        }
+                    }
+                }
+                
+                let result = {};
+                for (let b = 1; b <= this.totalBatches; b++) {
+                    result[b] = counts[b].size;
+                }
+                return result;
+            },
 
             get batchTotals() {
                 let totals = {};
@@ -293,6 +336,29 @@
                     sum += parseInt(this.assignments[itemId]?.[b] || 0);
                 }
                 return maxQty - sum;
+            },
+
+            getRowColorClass(itemId) {
+                let assignedBatch = null;
+                for (let b = 1; b <= this.totalBatches; b++) {
+                    if (parseInt(this.assignments[itemId]?.[b] || 0) > 0) {
+                        assignedBatch = b;
+                        break;
+                    }
+                }
+                
+                if (assignedBatch === null) return 'hover:bg-white dark:hover:bg-white/[0.03]';
+
+                const bgColors = [
+                    'bg-emerald-50/50 dark:bg-emerald-500/10 hover:bg-emerald-50 dark:hover:bg-emerald-500/20',
+                    'bg-red-50/50 dark:bg-red-500/10 hover:bg-red-50 dark:hover:bg-red-500/20',
+                    'bg-purple-50/50 dark:bg-purple-500/10 hover:bg-purple-50 dark:hover:bg-purple-500/20',
+                    'bg-rose-50/50 dark:bg-rose-500/10 hover:bg-rose-50 dark:hover:bg-rose-500/20',
+                    'bg-amber-50/50 dark:bg-amber-500/10 hover:bg-amber-50 dark:hover:bg-amber-500/20',
+                    'bg-cyan-50/50 dark:bg-cyan-500/10 hover:bg-cyan-50 dark:hover:bg-cyan-500/20',
+                ];
+                
+                return bgColors[(assignedBatch - 1) % 6];
             }
         }));
     </script>

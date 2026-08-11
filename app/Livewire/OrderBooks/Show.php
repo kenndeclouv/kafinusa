@@ -77,9 +77,11 @@ class Show extends Component
         
         $itemSummary = [];
         $totalItemsCount = 0;
+        $totalEstimatedPrice = 0;
         
         foreach ($orders as $order) {
             foreach ($order->orderItems as $orderItem) {
+                $totalEstimatedPrice += data_get($orderItem->item, 'prices.umum', 0) * $orderItem->quantity;
                 $itemId = $orderItem->item_id;
                 if (!isset($itemSummary[$itemId])) {
                     $itemSummary[$itemId] = [
@@ -100,6 +102,7 @@ class Show extends Component
             'totalWeight' => $totalWeight,
             'items' => $itemSummary,
             'totalItemsCount' => $totalItemsCount,
+            'totalEstimatedPrice' => $totalEstimatedPrice,
         ];
     }
 

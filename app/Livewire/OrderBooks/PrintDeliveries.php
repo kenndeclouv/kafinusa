@@ -24,62 +24,93 @@ class PrintDeliveries extends Component
     #[Computed]
     public function reportData()
     {
-        $orders = Order::where('order_book_id', $this->orderBook->id)
-            ->with(['customer', 'orderItems.item.category'])
-            ->whereHas('orderItems', function ($query) {
-                $query->where('quantity', '>', 0);
-            })
-            ->get();
+        $plan = $this->orderBook->shipmentPlan()->with([
+            'items.orderItem.item.category',
+            'items.orderItem.order.customer'
+        ])->first();
 
-        if ($orders->isEmpty()) {
-            return [
-                'customers' => collect(),
-                'categories' => collect(),
-                'quantities' => [],
-            ];
+        $batches = [];
+
+        if (!$plan) {
+            // Fallback if no plan is created yet
+            $orders = Order::where('order_book_id', $this->orderBook->id)
+                ->with(['customer', 'orderItems.item.category'])
+                ->whereHas('orderItems', function ($query) {
+                    $query->where('quantity', '>', 0);
+                })
+                ->get();
+
+            if ($orders->isEmpty()) {
+                return collect();
+            }
+
+            $batches[1] = $this->processItemsToBatchData($orders->flatMap->orderItems);
+            return collect($batches);
         }
 
+        // We have a plan, group by batch
+        for ($b = 1; $b <= $plan->total_batches; $b++) {
+            $planItemsInBatch = $plan->items->where('batch_number', $b)->where('quantity', '>', 0);
+            if ($planItemsInBatch->isNotEmpty()) {
+                // Map ShipmentPlanItem back to a structure similar to OrderItem for processing
+                $simulatedOrderItems = $planItemsInBatch->map(function ($planItem) {
+                    $oi = $planItem->orderItem;
+                    // override the quantity to the batch's quantity
+                    $oi->setAttribute('batch_quantity', $planItem->quantity); 
+                    return $oi;
+                });
+
+                $batches[$b] = $this->processItemsToBatchData($simulatedOrderItems, true);
+            }
+        }
+
+        return collect($batches);
+    }
+
+    protected function processItemsToBatchData($orderItems, $useBatchQuantity = false)
+    {
         $customers = [];
         $categories = []; // [categoryId => ['name' => ..., 'items' => [itemId => itemData]]]
         $quantities = []; // [customerId][itemId] = qty
         $customerWeights = []; // [customerId] => total weight in grams
         $itemTotals = []; // [itemId] => total qty
 
-        foreach ($orders as $order) {
-            $hasValidItems = false;
-            $orderWeight = 0;
-            foreach ($order->orderItems as $orderItem) {
-                if ($orderItem->quantity > 0) {
-                    $hasValidItems = true;
-                    $item = $orderItem->item;
-                    $categoryId = $item->item_category_id ?? 0;
-                    $categoryName = $item->category->name ?? 'Lain-lain';
+        foreach ($orderItems as $orderItem) {
+            $qty = $useBatchQuantity ? $orderItem->batch_quantity : $orderItem->quantity;
+            if ($qty <= 0) continue;
 
-                    if (!isset($categories[$categoryId])) {
-                        $categories[$categoryId] = [
-                            'name' => $categoryName,
-                            'items' => [],
-                        ];
-                    }
+            $item = $orderItem->item;
+            $order = $orderItem->order;
+            $categoryId = $item->item_category_id ?? 0;
+            $categoryName = $item->category->name ?? 'Lain-lain';
 
-                    if (!isset($categories[$categoryId]['items'][$item->id])) {
-                        $categories[$categoryId]['items'][$item->id] = $item;
-                    }
-
-                    $quantities[$order->customer_id][$item->id] = $orderItem->quantity;
-                    $orderWeight += $orderItem->quantity * ($item->weight ?? 0);
-                    
-                    if (!isset($itemTotals[$item->id])) {
-                        $itemTotals[$item->id] = 0;
-                    }
-                    $itemTotals[$item->id] += $orderItem->quantity;
-                }
+            if (!isset($categories[$categoryId])) {
+                $categories[$categoryId] = [
+                    'name' => $categoryName,
+                    'items' => [],
+                ];
             }
 
-            if ($hasValidItems) {
-                $customers[$order->customer_id] = $order->customer;
-                $customerWeights[$order->customer_id] = $orderWeight;
+            if (!isset($categories[$categoryId]['items'][$item->id])) {
+                $categories[$categoryId]['items'][$item->id] = $item;
             }
+
+            if (!isset($quantities[$order->customer_id][$item->id])) {
+                $quantities[$order->customer_id][$item->id] = 0;
+            }
+            $quantities[$order->customer_id][$item->id] += $qty;
+            
+            if (!isset($customerWeights[$order->customer_id])) {
+                $customerWeights[$order->customer_id] = 0;
+            }
+            $customerWeights[$order->customer_id] += $qty * ($item->weight ?? 0);
+            
+            if (!isset($itemTotals[$item->id])) {
+                $itemTotals[$item->id] = 0;
+            }
+            $itemTotals[$item->id] += $qty;
+
+            $customers[$order->customer_id] = $order->customer;
         }
 
         // Sort categories by name

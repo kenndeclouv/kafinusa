@@ -28,7 +28,17 @@
                             </tr>
                             <tr>
                                 <td class="pr-2 align-top">Kepada</td>
-                                <td>: {{ $order->customer->name }} ({{ str_pad($order->customer->id, 5, '0', STR_PAD_LEFT) }})<br>
+                                <td>: <span class="font-bold">{{ $order->customer->name }}</span> ({{ str_pad($order->customer->id, 5, '0', STR_PAD_LEFT) }})
+                                    @php
+                                        $batches = $orderBatches[$order->id] ?? [];
+                                        sort($batches);
+                                    @endphp
+                                    @if (count($batches) > 0 && max($batches) > 1)
+                                        <span class="text-red-600 font-bold ml-1 text-xs uppercase" style="border: 1px solid red; padding: 0 4px; border-radius: 4px; display: inline-block;">
+                                            {{ count($batches) > 1 ? 'MUATAN ' . implode(' & ', $batches) : 'MUATAN ' . max($batches) }}
+                                        </span>
+                                    @endif
+                                    <br>
                                   &nbsp;&nbsp;{{ $order->customer->market->name ?? $orderBook->market->name }}
                                 </td>
                             </tr>

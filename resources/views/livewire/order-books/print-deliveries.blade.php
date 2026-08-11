@@ -23,104 +23,115 @@
         <div class="min-w-[950px] pt-4 print:pt-0 text-black">
 
     @php
-        $data = $this->reportData;
-        $customers = $data['customers'];
-        $categories = $data['categories'];
-        $quantities = $data['quantities'];
-        $customerWeights = $data['customerWeights'];
-        $itemTotals = $data['itemTotals'];
+        $batchesData = $this->reportData;
     @endphp
 
-    {{-- Document Header --}}
-    <div
-        class="flex items-center justify-between mb-4 border-b-2 border-black pb-2 bg-white text-black print:mb-2 print:pb-1">
-        <div>
-            <div class="text-sm font-semibold tracking-widest uppercase">PASAR : {{ $orderBook->market->name }}</div>
-        </div>
-        <h1 class="text-xl font-bold uppercase tracking-widest italic text-center flex-1">Daftar Pengiriman Barang
-            Pasar</h1>
-        <div class="text-sm font-semibold">
-            Hari / Tgl : {{ $orderBook->book_date->translatedFormat('l / d-m-Y') }}
-        </div>
-    </div>
-
-    @if ($customers->isEmpty())
+    @if ($batchesData->isEmpty())
         <div class="text-center py-12 text-zinc-500 no-print">
             Belum ada pesanan untuk buku order ini.
         </div>
     @else
-        <div class="w-full text-black bg-white mt-4">
-            <table class="w-full border-collapse text-[10px]" style="border: 2px solid #000;">
-                <thead>
-                    {{-- Category Header Row --}}
-                    <tr style="background: #e5e7eb;">
-                        <th rowspan="2" style="border: 1px solid #000; padding: 4px; text-align: left; vertical-align: bottom; font-weight: bold; width: 180px;">
-                            NAMA PELANGGAN
-                        </th>
-                        @foreach ($categories as $category)
-                            <th colspan="{{ count($category['items']) }}" style="border: 1px solid #000; padding: 2px; text-align: center; font-weight: bold;">
-                                {{ $category['name'] }}
-                            </th>
-                        @endforeach
-                        <th rowspan="2" style="border: 1px solid #000; padding: 2px; text-align: center; vertical-align: bottom; font-weight: bold; width: 60px;">
-                            TOTAL<br>(KG)
-                        </th>
-                    </tr>
-                    {{-- Item Header Row --}}
-                    <tr style="background: #e5e7eb;">
-                        @foreach ($categories as $category)
-                            @foreach ($category['items'] as $item)
-                                <th style="border: 1px solid #000; padding: 2px; text-align: center; font-weight: bold; font-size: 9px; width: 35px;">
-                                    {{ $item->name }}
+        @foreach ($batchesData as $batchNumber => $data)
+            @php
+                $customers = $data['customers'];
+                $categories = $data['categories'];
+                $quantities = $data['quantities'];
+                $customerWeights = $data['customerWeights'];
+                $itemTotals = $data['itemTotals'];
+            @endphp
+
+            <div class="@if(!$loop->first) print:break-before-page mt-12 print:mt-0 @endif w-full text-black bg-white">
+                {{-- Document Header --}}
+                <div class="flex items-center justify-between mb-4 border-b-2 border-black pb-2 bg-white text-black print:mb-2 print:pb-1">
+                    <div>
+                        <div class="text-sm font-semibold tracking-widest uppercase">PASAR : {{ $orderBook->market->name }}</div>
+                    </div>
+                    <h1 class="text-xl font-bold uppercase tracking-widest italic text-center flex-1">
+                        Daftar Pengiriman Barang Pasar {{ $batchesData->count() > 1 ? "(Muatan $batchNumber)" : '' }}
+                    </h1>
+                    <div class="text-sm font-semibold">
+                        Hari / Tgl : {{ $orderBook->book_date->translatedFormat('l / d-m-Y') }}
+                    </div>
+                </div>
+
+                @if ($customers->isEmpty())
+                    <div class="text-center py-12 text-zinc-500">
+                        Tidak ada pengiriman untuk muatan ini.
+                    </div>
+                @else
+                    <table class="w-full border-collapse text-[10px]" style="border: 2px solid #000;">
+                        <thead>
+                            {{-- Category Header Row --}}
+                            <tr style="background: #e5e7eb;">
+                                <th rowspan="2" style="border: 1px solid #000; padding: 4px; text-align: left; vertical-align: bottom; font-weight: bold; width: 180px;">
+                                    NAMA PELANGGAN
                                 </th>
-                            @endforeach
-                        @endforeach
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($customers as $customer)
-                        <tr>
-                            <td style="border: 1px solid #000; padding: 4px; font-weight: 500; text-transform: uppercase;">
-                                {{ $customer->name }}
-                            </td>
-                            @foreach ($categories as $category)
-                                @foreach ($category['items'] as $item)
-                                    @php
-                                        $qty = $quantities[$customer->id][$item->id] ?? 0;
-                                    @endphp
-                                    <td style="border: 1px solid #000; padding: 3px; text-align: center; font-weight: bold; font-size: 11px;">
-                                        {{ $qty > 0 ? $qty : '' }}
-                                    </td>
+                                @foreach ($categories as $category)
+                                    <th colspan="{{ count($category['items']) }}" style="border: 1px solid #000; padding: 2px; text-align: center; font-weight: bold;">
+                                        {{ $category['name'] }}
+                                    </th>
                                 @endforeach
+                                <th rowspan="2" style="border: 1px solid #000; padding: 2px; text-align: center; vertical-align: bottom; font-weight: bold; width: 60px;">
+                                    TOTAL<br>(KG)
+                                </th>
+                            </tr>
+                            {{-- Item Header Row --}}
+                            <tr style="background: #e5e7eb;">
+                                @foreach ($categories as $category)
+                                    @foreach ($category['items'] as $item)
+                                        <th style="border: 1px solid #000; padding: 2px; text-align: center; font-weight: bold; font-size: 9px; width: 35px;">
+                                            {{ $item->name }}
+                                        </th>
+                                    @endforeach
+                                @endforeach
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($customers as $customer)
+                                <tr>
+                                    <td style="border: 1px solid #000; padding: 4px; font-weight: 500; text-transform: uppercase;">
+                                        {{ $customer->name }}
+                                    </td>
+                                    @foreach ($categories as $category)
+                                        @foreach ($category['items'] as $item)
+                                            @php
+                                                $qty = $quantities[$customer->id][$item->id] ?? 0;
+                                            @endphp
+                                            <td style="border: 1px solid #000; padding: 3px; text-align: center; font-weight: bold; font-size: 11px;">
+                                                {{ $qty > 0 ? $qty : '' }}
+                                            </td>
+                                        @endforeach
+                                    @endforeach
+                                    <td style="border: 1px solid #000; padding: 3px; text-align: center; font-weight: bold;">
+                                        {{ number_format(($customerWeights[$customer->id] ?? 0) / 1000, 1, ',', '.') }}
+                                    </td>
+                                </tr>
                             @endforeach
-                            <td style="border: 1px solid #000; padding: 3px; text-align: center; font-weight: bold;">
-                                {{ number_format(($customerWeights[$customer->id] ?? 0) / 1000, 1, ',', '.') }}
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-                <tfoot>
-                    <tr style="background: #e5e7eb;">
-                        <td style="border: 1px solid #000; padding: 4px; font-weight: bold; text-align: right; text-transform: uppercase;">
-                            TOTAL
-                        </td>
-                        @foreach ($categories as $category)
-                            @foreach ($category['items'] as $item)
-                                @php
-                                    $totalQty = $itemTotals[$item->id] ?? 0;
-                                @endphp
-                                <td style="border: 1px solid #000; padding: 3px; text-align: center; font-weight: bold; font-size: 11px;">
-                                    {{ $totalQty > 0 ? $totalQty : '' }}
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: #e5e7eb;">
+                                <td style="border: 1px solid #000; padding: 4px; font-weight: bold; text-align: right; text-transform: uppercase;">
+                                    TOTAL
                                 </td>
-                            @endforeach
-                        @endforeach
-                        <td style="border: 1px solid #000; padding: 3px; text-align: center; font-weight: bold;">
-                            {{ number_format(array_sum($customerWeights) / 1000, 1, ',', '.') }}
-                        </td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
+                                @foreach ($categories as $category)
+                                    @foreach ($category['items'] as $item)
+                                        @php
+                                            $totalQty = $itemTotals[$item->id] ?? 0;
+                                        @endphp
+                                        <td style="border: 1px solid #000; padding: 3px; text-align: center; font-weight: bold; font-size: 11px;">
+                                            {{ $totalQty > 0 ? $totalQty : '' }}
+                                        </td>
+                                    @endforeach
+                                @endforeach
+                                <td style="border: 1px solid #000; padding: 3px; text-align: center; font-weight: bold;">
+                                    {{ number_format(array_sum($customerWeights) / 1000, 1, ',', '.') }}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                @endif
+            </div>
+        @endforeach
     @endif
 
             {{-- Print Footer --}}

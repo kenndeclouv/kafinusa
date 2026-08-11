@@ -34,8 +34,26 @@ class PrintNotas extends Component
             ->with(['customer.category', 'orderItems.item'])
             ->get();
 
+        $plan = $this->orderBook->shipmentPlan()->with('items.orderItem')->first();
+        $orderBatches = [];
+
+        if ($plan) {
+            foreach ($plan->items as $planItem) {
+                if ($planItem->quantity > 0 && $planItem->orderItem) {
+                    $orderId = $planItem->orderItem->order_id;
+                    if (!isset($orderBatches[$orderId])) {
+                        $orderBatches[$orderId] = [];
+                    }
+                    if (!in_array($planItem->batch_number, $orderBatches[$orderId])) {
+                        $orderBatches[$orderId][] = $planItem->batch_number;
+                    }
+                }
+            }
+        }
+
         return view('livewire.order-books.print-notas', [
-            'orders' => $orders
+            'orders' => $orders,
+            'orderBatches' => $orderBatches
         ])->title("Nota Penjualan — {$this->orderBook->market->name}");
     }
 }
