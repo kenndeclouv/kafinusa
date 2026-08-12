@@ -26,6 +26,7 @@ class Index extends Component
     public $name = '';
     public $phone = '';
     public $status = true;
+    public $has_debt = false;
 
     protected function rules()
     {
@@ -37,6 +38,7 @@ class Index extends Component
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:255',
             'status' => 'boolean',
+            'has_debt' => 'boolean',
         ];
     }
 
@@ -59,6 +61,7 @@ class Index extends Component
     {
         $this->reset(['editingCustomerId', 'user_id', 'market_id', 'customer_category_id', 'code', 'name', 'phone']);
         $this->status = true;
+        $this->has_debt = false;
         $this->resetValidation();
         $this->modal('create-customer-modal')->show();
     }
@@ -76,6 +79,7 @@ class Index extends Component
         $this->name = $customer->name;
         $this->phone = $customer->phone;
         $this->status = $customer->status;
+        $this->has_debt = (bool) $customer->has_debt;
         
         $this->modal('create-customer-modal')->show();
     }
@@ -92,6 +96,7 @@ class Index extends Component
             'name' => $this->name,
             'phone' => $this->phone,
             'status' => $this->status,
+            'has_debt' => $this->has_debt,
         ];
 
         if ($this->editingCustomerId) {

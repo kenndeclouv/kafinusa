@@ -21,6 +21,7 @@ class Show extends Component
 
     public $editingOrderId = null;
     public $customer_id;
+    public $price_type = 'umum';
     
     // Array to hold the dynamic order items: [['item_id' => '', 'quantity' => 1]]
     public $orderItems = [];
@@ -49,6 +50,23 @@ class Show extends Component
             ->where('status', true)
             ->whereNotIn('id', $existingCustomerIds)
             ->get();
+    }
+
+    #[Computed]
+    public function customerOptions()
+    {
+        return $this->customers->mapWithKeys(function ($c) {
+            return [$c->id => $c->name . ($c->has_debt ? ' (ADA HUTANG)' : '')];
+        })->toArray();
+    }
+
+    #[Computed]
+    public function editingCustomerOptions()
+    {
+        if (!$this->editingOrderId || !$this->customer_id) return [];
+        $c = Customer::find($this->customer_id);
+        if (!$c) return [];
+        return [$c->id => $c->name . ($c->has_debt ? ' (ADA HUTANG)' : '')];
     }
 
     #[Computed]
@@ -81,7 +99,16 @@ class Show extends Component
         
         foreach ($orders as $order) {
             foreach ($order->orderItems as $orderItem) {
-                $totalEstimatedPrice += data_get($orderItem->item, 'prices.umum', 0) * $orderItem->quantity;
+                $itemPrice = $orderItem->price;
+                if ($itemPrice == 0) {
+                    $priceTypeKey = $orderItem->order->price_type ?? 'umum';
+                    $itemPrice = data_get($orderItem->item, "prices.{$priceTypeKey}", 0);
+                    if ($itemPrice == 0) {
+                        $itemPrice = data_get($orderItem->item, 'prices.umum', 0);
+                    }
+                }
+                
+                $totalEstimatedPrice += $itemPrice * $orderItem->quantity;
                 $itemId = $orderItem->item_id;
                 if (!isset($itemSummary[$itemId])) {
                     $itemSummary[$itemId] = [
@@ -111,6 +138,7 @@ class Show extends Component
         $this->resetValidation();
         $this->editingOrderId = null;
         $this->customer_id = null;
+        $this->price_type = 'umum';
         $this->orderItems = [
             ['item_id' => '', 'quantity' => 1]
         ];
@@ -124,6 +152,7 @@ class Show extends Component
         
         $this->editingOrderId = $order->id;
         $this->customer_id = $order->customer_id;
+        $this->price_type = $order->price_type ?? 'umum';
         
         $this->orderItems = $order->orderItems->map(function ($orderItem) {
             return [
@@ -150,6 +179,7 @@ class Show extends Component
     {
         return [
             'customer_id' => 'required|exists:customers,id',
+            'price_type' => 'required|in:umum,promo,khusus',
             'orderItems' => 'required|array|min:1',
             'orderItems.*.item_id' => 'required|exists:items,id',
             'orderItems.*.quantity' => 'required|integer|min:1',
@@ -159,6 +189,8 @@ class Show extends Component
     public function messages()
     {
         return [
+            'price_type.required' => 'Tipe harga harus dipilih.',
+            'price_type.in' => 'Tipe harga tidak valid.',
             'orderItems.*.item_id.required' => 'Barang harus dipilih.',
             'orderItems.*.quantity.required' => 'Jumlah harus diisi.',
             'orderItems.*.quantity.min' => 'Jumlah minimal 1.',
@@ -186,6 +218,7 @@ class Show extends Component
                 $order = Order::findOrFail($this->editingOrderId);
                 $order->update([
                     'customer_id' => $this->customer_id,
+                    'price_type' => $this->price_type,
                     'total_calculated_weight' => $totalWeight,
                 ]);
                 
@@ -195,15 +228,28 @@ class Show extends Component
                 $order = Order::create([
                     'order_book_id' => $this->orderBook->id,
                     'customer_id' => $this->customer_id,
+                    'price_type' => $this->price_type,
                     'total_calculated_weight' => $totalWeight,
                 ]);
             }
 
             foreach ($this->orderItems as $itemData) {
+                $dbItem = $itemsFromDb->get($itemData['item_id']);
+                $price = 0;
+                
+                if ($dbItem && $dbItem->prices) {
+                    $priceTypeKey = $this->price_type;
+                    $price = $dbItem->prices[$priceTypeKey] ?? 0;
+                    if ($price == 0) {
+                        $price = $dbItem->prices['umum'] ?? 0;
+                    }
+                }
+                
                 OrderItem::create([
                     'order_id' => $order->id,
                     'item_id' => $itemData['item_id'],
                     'quantity' => $itemData['quantity'],
+                    'price' => $price,
                 ]);
             }
         });

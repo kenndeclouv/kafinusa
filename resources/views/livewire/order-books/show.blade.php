@@ -40,10 +40,24 @@
                         <flux:table.row :key="$order->id">
                             <flux:table.cell>{{ $this->orders->firstItem() + $index }}</flux:table.cell>
                             <flux:table.cell class="!sticky !left-0 z-10 bg-zinc-50 dark:bg-zinc-800">
-                                <span
-                                    class="font-medium text-zinc-900 dark:text-white">{{ $order->customer->name }}</span>
-                                <div class="text-xs text-zinc-500">{{ $order->customer->customerCategory->name ?? '' }}
-                                </div>
+                                <span @class([
+                                    'font-medium',
+                                    'text-green-600 dark:text-green-400 font-bold' =>
+                                        $order->price_type === 'promo',
+                                    'text-red-600 dark:text-red-400 font-bold' =>
+                                        $order->price_type === 'khusus' || $order->customer->has_debt,
+                                    'text-zinc-900 dark:text-white' =>
+                                        $order->price_type !== 'promo' &&
+                                        $order->price_type !== 'khusus' &&
+                                        !$order->customer->has_debt,
+                                ])>
+                                    {{ $order->customer->name }}
+                                </span>
+                                @if ($order->customer->customerCategory)
+                                    <div class="text-xs text-zinc-500 mt-0.5 flex items-center gap-1.5">
+                                        <span>{{ $order->customer->customerCategory->name }}</span>
+                                    </div>
+                                @endif
                             </flux:table.cell>
                             <flux:table.cell>
                                 <ul class="list-disc list-inside text-sm text-zinc-700 dark:text-zinc-300">
@@ -59,8 +73,16 @@
                             </flux:table.cell>
                             <flux:table.cell>
                                 @php
-                                    $estimatedPrice = $order->orderItems->sum(function($orderItem) {
-                                        return data_get($orderItem->item, 'prices.umum', 0) * $orderItem->quantity;
+                                    $estimatedPrice = $order->orderItems->sum(function ($orderItem) {
+                                        $price = $orderItem->price;
+                                        if ($price == 0) {
+                                            $priceTypeKey = $orderItem->order->price_type ?? 'umum';
+                                            $price = data_get($orderItem->item, "prices.{$priceTypeKey}", 0);
+                                            if ($price == 0) {
+                                                $price = data_get($orderItem->item, 'prices.umum', 0);
+                                            }
+                                        }
+                                        return $price * $orderItem->quantity;
                                     });
                                 @endphp
                                 Rp {{ number_format($estimatedPrice, 0, ',', '.') }}
@@ -138,8 +160,7 @@
     </div>
 
     @if ($this->orders->total() > 0)
-        <div
-            class="py-4 flex flex-col sm:flex-row items-center justify-end gap-3">
+        <div class="py-4 flex flex-col sm:flex-row items-center justify-end gap-3">
             <flux:button href="{{ route('order-books.unordered-customers', $orderBook) }}" wire:navigate
                 variant="outline" icon="users" class="w-full sm:w-auto">
                 Pelanggan Tidak Beli
@@ -161,10 +182,11 @@
             </flux:description>
 
             <div class="mt-6 space-y-6">
-                <!-- Customer Selection -->
+                <!-- Customer and Price Type Selection -->
                 <div>
                     <div
                         class="bg-white dark:bg-white/5 rounded-3xl border border-zinc-200 dark:border-white/10 shadow-xs flex flex-col relative overflow-hidden">
+                        <!-- Customer Selection -->
                         <label
                             class="flex flex-row items-center px-4 py-1.5 relative group transition-colors focus-within:bg-zinc-50 dark:focus-within:bg-white/[0.07] {{ $editingOrderId ? 'cursor-not-allowed opacity-75' : 'cursor-text' }}">
                             <span
@@ -173,18 +195,30 @@
                             </span>
                             <div class="flex-1">
                                 @if ($editingOrderId)
-                                    <x-searchable-select wire:model="customer_id" :options="App\Models\Customer::where('id', $customer_id)
-                                        ->pluck('name', 'id')
-                                        ->toArray()" :disabled="true"
+                                    <x-searchable-select wire:model="customer_id" :options="$this->editingCustomerOptions" :disabled="true"
                                         variant="ios" />
                                 @else
-                                    <x-searchable-select wire:model="customer_id" :options="$this->customers->mapWithKeys(fn($c) => [$c->id => $c->name])->toArray()" :searchable="true"
+                                    <x-searchable-select wire:model="customer_id" :options="$this->customerOptions" :searchable="true"
                                         variant="ios" placeholder="Pilih pelanggan..." />
                                 @endif
                             </div>
+                            <div class="absolute bottom-0 right-4 left-4 h-px bg-zinc-200 dark:bg-white/10"></div>
                         </label>
-                        <x-error-ios name="customer_id" />
+
+                        <!-- Price Type Selection -->
+                        <label
+                            class="flex flex-row items-center px-4 py-1.5 relative group transition-colors focus-within:bg-zinc-50 dark:focus-within:bg-white/[0.07] cursor-pointer">
+                            <span
+                                class="text-[15px] font-medium text-zinc-900 dark:text-white w-1/3 shrink-0 py-2 select-none">
+                                Tipe Harga
+                            </span>
+                            <div class="flex-1">
+                                <x-searchable-select wire:model="price_type" :options="['umum' => 'Umum', 'promo' => 'Promo', 'khusus' => 'Lain-lain']" variant="ios" />
+                            </div>
+                        </label>
                     </div>
+                    <x-error-ios name="customer_id" />
+                    <x-error-ios name="price_type" />
                 </div>
 
                 <!-- Dynamic Order Items -->

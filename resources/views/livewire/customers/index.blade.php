@@ -35,7 +35,12 @@
                             <flux:table.cell>
                                 <div class="flex items-center gap-3">
                                     <flux:avatar size="sm" :name="$customer->name" />
-                                    <span>{{ $customer->name }}</span>
+                                    <span class="{{ $customer->has_debt ? 'text-red-600 dark:text-red-400 font-bold' : '' }}">
+                                        {{ $customer->name }}
+                                        @if($customer->has_debt)
+                                            <span class="text-xs font-normal ml-1 text-red-500/80">(Ada Hutang)</span>
+                                        @endif
+                                    </span>
                                     @if ($customer->user_id)
                                         <flux:icon name="user" class="w-4 h-4 text-zinc-400" />
                                     @endif
@@ -175,6 +180,20 @@
                             <div class="absolute bottom-0 right-4 left-4 h-px bg-zinc-200 dark:bg-white/10"></div>
                         </label>
                         <x-error-ios name="status" />
+
+                        <!-- Has Debt -->
+                        <label
+                            class="flex flex-row items-center justify-between px-4 py-1.5 relative group transition-colors focus-within:bg-zinc-50 dark:focus-within:bg-white/[0.07] cursor-pointer">
+                            <span
+                                class="text-[15px] font-medium text-red-600 dark:text-red-400 shrink-0 py-2 select-none">
+                                Memiliki Hutang
+                            </span>
+                            <div class="flex items-center">
+                                <x-switch wire:model="has_debt" />
+                            </div>
+                            <div class="absolute bottom-0 right-4 left-4 h-px bg-zinc-200 dark:bg-white/10"></div>
+                        </label>
+                        <x-error-ios name="has_debt" />
 
                         <!-- Kategori -->
                         <label

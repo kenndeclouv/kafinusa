@@ -9,6 +9,8 @@ class Order extends Model
     protected $fillable = [
         'order_book_id',
         'customer_id',
+        'status',
+        'price_type',
         'total_calculated_weight',
     ];
 

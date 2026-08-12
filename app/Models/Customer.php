@@ -16,6 +16,7 @@ class Customer extends Model
         'market_id',
         'customer_category_id',
         'name',
+        'has_debt',
         'status',
     ];
 
