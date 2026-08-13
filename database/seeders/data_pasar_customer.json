@@ -42,7 +42,7 @@
         },
         {
             "id": 11,
-            "name": "UKM"
+            "name": "UKM BATU"
         },
         {
             "id": 12,
@@ -1083,7 +1083,7 @@
         {
             "market_id": 3,
             "category": "Eceran",
-            "name": "Hj Yuni\/ C - 9"
+            "name": "Hj Yuni/ C - 9"
         },
         {
             "market_id": 3,
@@ -9644,6 +9644,96 @@
             "market_id": 37,
             "category": "Eceran",
             "name": "Armita"
+        },
+        {
+            "market_id": 11,
+            "category": "UKM",
+            "name": "Pak Ir"
+        },
+        {
+            "market_id": 11,
+            "category": "UKM",
+            "name": "Riyanto"
+        },
+        {
+            "market_id": 11,
+            "category": "UKM",
+            "name": "Ms Kris"
+        },
+        {
+            "market_id": 11,
+            "category": "UKM",
+            "name": "Mas Sis"
+        },
+        {
+            "market_id": 11,
+            "category": "UKM",
+            "name": "Yulianto"
+        },
+        {
+            "market_id": 11,
+            "category": "UKM",
+            "name": "Heru"
+        },
+        {
+            "market_id": 11,
+            "category": "UKM",
+            "name": "Bekti"
+        },
+        {
+            "market_id": 11,
+            "category": "UKM",
+            "name": "Pak Solikin"
+        },
+        {
+            "market_id": 11,
+            "category": "UKM",
+            "name": "Bu Titin"
+        },
+        {
+            "market_id": 11,
+            "category": "UKM",
+            "name": "Ainul"
+        },
+        {
+            "market_id": 11,
+            "category": "UKM",
+            "name": "Pak Khasnu"
+        },
+        {
+            "market_id": 11,
+            "category": "UKM",
+            "name": "Suliyat"
+        },
+        {
+            "market_id": 11,
+            "category": "UKM",
+            "name": "Ani"
+        },
+        {
+            "market_id": 11,
+            "category": "UKM",
+            "name": "Hartoyo"
+        },
+        {
+            "market_id": 11,
+            "category": "UKM",
+            "name": "Pak Modin"
+        },
+        {
+            "market_id": 11,
+            "category": "UKM",
+            "name": "Adi"
+        },
+        {
+            "market_id": 11,
+            "category": "UKM",
+            "name": "Pak Romi"
+        },
+        {
+            "market_id": 11,
+            "category": "UKM",
+            "name": "A Sugimin"
         }
     ]
 }
