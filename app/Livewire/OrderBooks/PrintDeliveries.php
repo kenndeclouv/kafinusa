@@ -96,9 +96,12 @@ class PrintDeliveries extends Component
             }
 
             if (!isset($quantities[$order->customer_id][$item->id])) {
-                $quantities[$order->customer_id][$item->id] = 0;
+                $quantities[$order->customer_id][$item->id] = [
+                    'qty' => 0,
+                    'price_type' => $orderItem->price_type ?? 'umum',
+                ];
             }
-            $quantities[$order->customer_id][$item->id] += $qty;
+            $quantities[$order->customer_id][$item->id]['qty'] += $qty;
             
             if (!isset($customerWeights[$order->customer_id])) {
                 $customerWeights[$order->customer_id] = 0;

@@ -10,6 +10,8 @@ class OrderItem extends Model
         'order_id',
         'item_id',
         'quantity',
+        'price',
+        'price_type',
         'truck_batch_label',
     ];
 

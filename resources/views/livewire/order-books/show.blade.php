@@ -41,14 +41,10 @@
                             <flux:table.cell>{{ $this->orders->firstItem() + $index }}</flux:table.cell>
                             <flux:table.cell class="!sticky !left-0 z-10 bg-zinc-50 dark:bg-zinc-800">
                                 <span @class([
-                                    'font-medium',
-                                    'text-green-600 dark:text-green-400 font-bold' =>
-                                        $order->price_type === 'promo',
-                                    'text-red-600 dark:text-red-400 font-bold' =>
-                                        $order->price_type === 'khusus' || $order->customer->has_debt,
+                                    'font-medium px-1.5 py-0.5 rounded-sm',
+                                    'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' =>
+                                        $order->customer->has_debt,
                                     'text-zinc-900 dark:text-white' =>
-                                        $order->price_type !== 'promo' &&
-                                        $order->price_type !== 'khusus' &&
                                         !$order->customer->has_debt,
                                 ])>
                                     {{ $order->customer->name }}
@@ -62,8 +58,10 @@
                             <flux:table.cell>
                                 <ul class="list-disc list-inside text-sm text-zinc-700 dark:text-zinc-300">
                                     @foreach ($order->orderItems as $orderItem)
-                                        <li class="mb-0.5">{{ $orderItem->item->name }} <flux:badge color="sky"
-                                                size="sm">{{ $orderItem->quantity }} item</flux:badge>
+                                        <li class="mb-0.5">
+                                            <span>{{ $orderItem->item->name }}</span>
+                                            
+                                            <flux:badge :color="match($orderItem->price_type) { 'promo' => 'green', 'khusus' => 'red', default => 'zinc' }" size="sm">{{ $orderItem->quantity }} item</flux:badge>
                                         </li>
                                     @endforeach
                                 </ul>
@@ -76,7 +74,7 @@
                                     $estimatedPrice = $order->orderItems->sum(function ($orderItem) {
                                         $price = $orderItem->price;
                                         if ($price == 0) {
-                                            $priceTypeKey = $orderItem->order->price_type ?? 'umum';
+                                            $priceTypeKey = $orderItem->price_type ?? 'umum';
                                             $price = data_get($orderItem->item, "prices.{$priceTypeKey}", 0);
                                             if ($price == 0) {
                                                 $price = data_get($orderItem->item, 'prices.umum', 0);
@@ -202,23 +200,9 @@
                                         variant="ios" placeholder="Pilih pelanggan..." />
                                 @endif
                             </div>
-                            <div class="absolute bottom-0 right-4 left-4 h-px bg-zinc-200 dark:bg-white/10"></div>
-                        </label>
-
-                        <!-- Price Type Selection -->
-                        <label
-                            class="flex flex-row items-center px-4 py-1.5 relative group transition-colors focus-within:bg-zinc-50 dark:focus-within:bg-white/[0.07] cursor-pointer">
-                            <span
-                                class="text-[15px] font-medium text-zinc-900 dark:text-white w-1/3 shrink-0 py-2 select-none">
-                                Tipe Harga
-                            </span>
-                            <div class="flex-1">
-                                <x-searchable-select wire:model="price_type" :options="['umum' => 'Umum', 'promo' => 'Promo', 'khusus' => 'Lain-lain']" variant="ios" />
-                            </div>
                         </label>
                     </div>
                     <x-error-ios name="customer_id" />
-                    <x-error-ios name="price_type" />
                 </div>
 
                 <!-- Dynamic Order Items -->
@@ -236,7 +220,12 @@
                                         class="[&>button]:!ms-0 [&>button]:!w-full" />
                                 </div>
 
-                                <div class="w-24 ml-4 shrink-0">
+                                <div class="w-28 ml-2 shrink-0">
+                                    <x-searchable-select wire:model="orderItems.{{ $index }}.price_type"
+                                        :options="['umum' => 'Umum', 'promo' => 'Promo', 'khusus' => 'Lain-lain']" variant="ios" class="[&>button]:!ms-0 [&>button]:!w-full [&>button]:!text-xs" />
+                                </div>
+                                
+                                <div class="w-24 ml-2 shrink-0">
                                     <x-stepper wire:model="orderItems.{{ $index }}.quantity" variant="ios"
                                         min="1" step="1" />
                                 </div>
@@ -254,6 +243,10 @@
                                 @endif
                             </div>
                             @error('orderItems.' . $index . '.item_id')
+                                <div class="px-4 py-1.5 text-xs text-red-500 bg-red-50 dark:bg-red-500/10">
+                                    {{ $message }}</div>
+                            @enderror
+                            @error('orderItems.' . $index . '.price_type')
                                 <div class="px-4 py-1.5 text-xs text-red-500 bg-red-50 dark:bg-red-500/10">
                                     {{ $message }}</div>
                             @enderror

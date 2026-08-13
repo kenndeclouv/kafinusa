@@ -89,15 +89,23 @@
                         <tbody>
                             @foreach ($customers as $customer)
                                 <tr>
-                                    <td style="border: 1px solid #000; padding: 4px; font-weight: 500; text-transform: uppercase;">
+                                    <td style="border: 1px solid #000; padding: 4px; font-weight: 500; text-transform: uppercase; {{ $customer->has_debt ? 'background-color: #000 !important; color: #fff !important;' : '' }}">
                                         {{ $customer->name }}
                                     </td>
                                     @foreach ($categories as $category)
                                         @foreach ($category['items'] as $item)
                                             @php
-                                                $qty = $quantities[$customer->id][$item->id] ?? 0;
+                                                $qtyData = $quantities[$customer->id][$item->id] ?? null;
+                                                $qty = $qtyData['qty'] ?? 0;
+                                                $priceType = $qtyData['price_type'] ?? 'umum';
+                                                
+                                                $colorStyle = match($priceType) {
+                                                    'promo' => 'background-color: #dcfce7 !important; color: #166534;', // green-100 & green-800
+                                                    'khusus' => 'background-color: #fee2e2 !important; color: #991b1b;', // red-100 & red-800
+                                                    default => '',
+                                                };
                                             @endphp
-                                            <td style="border: 1px solid #000; padding: 3px; text-align: center; font-weight: bold; font-size: 11px;">
+                                            <td style="border: 1px solid #000; padding: 3px; text-align: center; font-weight: bold; font-size: 11px; {{ $colorStyle }}">
                                                 {{ $qty > 0 ? $qty : '' }}
                                             </td>
                                         @endforeach
@@ -150,6 +158,8 @@
 
         body {
             font-size: 11px;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
 
         @page {
