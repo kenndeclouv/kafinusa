@@ -34,7 +34,7 @@ class CustomerSeeder extends Seeder
         DB::beginTransaction();
         try {
             // Seed Markets first
-            $marketIdMap = [];
+            $marketDataMap = [];
             foreach ($data['markets'] as $market) {
                 // Remove weird numbering if any
                 $name = trim($market['name']);
@@ -45,11 +45,15 @@ class CustomerSeeder extends Seeder
                     ['name' => $name, 'address' => '-']
                 );
                 
-                $marketIdMap[$market['id']] = $m->id;
+                $marketDataMap[$market['id']] = [
+                    'id' => $m->id,
+                    'code' => strtoupper($code)
+                ];
             }
 
             // Seed Customers
             $customersCount = 0;
+            $marketCounters = [];
             foreach ($data['customers'] as $customer) {
                 $name = trim($customer['name']);
                 // Abaikan nama yang terlalu pendek (1 huruf/simbol) atau tidak mengandung huruf/angka
@@ -57,21 +61,33 @@ class CustomerSeeder extends Seeder
                     continue;
                 }
 
-                $marketDbId = $marketIdMap[$customer['market_id']] ?? null;
+                $marketData = $marketDataMap[$customer['market_id']] ?? null;
                 $catDbId = $categoriesMap[$customer['category']] ?? null;
                 
-                if ($marketDbId && $catDbId) {
-                    Customer::firstOrCreate([
+                if ($marketData && $catDbId) {
+                    $marketDbId = $marketData['id'];
+                    
+                    if (!isset($marketCounters[$marketDbId])) {
+                        $marketCounters[$marketDbId] = 1;
+                    }
+                    
+                    $customerCode = $marketData['code'] . '-' . str_pad($marketCounters[$marketDbId], 3, '0', STR_PAD_LEFT);
+                    
+                    Customer::updateOrCreate([
                         'market_id' => $marketDbId,
                         'customer_category_id' => $catDbId,
                         'name' => $name
+                    ], [
+                        'code' => $customerCode
                     ]);
+                    
+                    $marketCounters[$marketDbId]++;
                     $customersCount++;
                 }
             }
             
             DB::commit();
-            $this->command->info("Berhasil melakukan seeding: " . count($marketIdMap) . " Pasar & $customersCount Customer dari Excel.");
+            $this->command->info("Berhasil melakukan seeding: " . count($marketDataMap) . " Pasar & $customersCount Customer dari Excel.");
         } catch (\Exception $e) {
             DB::rollBack();
             $this->command->error("Terjadi kesalahan: " . $e->getMessage());
