@@ -46,6 +46,7 @@ class PrintShipments extends Component
 
         foreach ($this->plan->items as $planItem) {
             if ($planItem->quantity <= 0) continue;
+            if (!$planItem->orderItem || !$planItem->orderItem->item) continue;
 
             $item = $planItem->orderItem->item;
             $itemId = $item->id;
@@ -78,7 +79,7 @@ class PrintShipments extends Component
 
         $total = 0;
         foreach ($this->plan->items as $planItem) {
-            if ($planItem->quantity > 0) {
+            if ($planItem->quantity > 0 && $planItem->orderItem && $planItem->orderItem->item) {
                 $total += $planItem->quantity * $planItem->orderItem->item->weight;
             }
         }

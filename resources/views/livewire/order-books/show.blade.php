@@ -43,15 +43,15 @@
                                 <span @class([
                                     'font-medium px-1.5 py-0.5 rounded-sm',
                                     'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' =>
-                                        $order->customer->has_debt,
+                                        $order->customer?->has_debt,
                                     'text-zinc-900 dark:text-white' =>
-                                        !$order->customer->has_debt,
+                                        !$order->customer?->has_debt,
                                 ])>
-                                    {{ $order->customer->name }}
+                                    {{ $order->customer?->name ?? 'Customer Terhapus' }}
                                 </span>
-                                @if ($order->customer->customerCategory)
+                                @if ($order->customer?->customerCategory)
                                     <div class="text-xs text-zinc-500 mt-0.5 flex items-center gap-1.5">
-                                        <span>{{ $order->customer->customerCategory->name }}</span>
+                                        <span>{{ $order->customer?->customerCategory?->name }}</span>
                                     </div>
                                 @endif
                             </flux:table.cell>
@@ -59,7 +59,7 @@
                                 <ul class="list-disc list-inside text-sm text-zinc-700 dark:text-zinc-300">
                                     @foreach ($order->orderItems as $orderItem)
                                         <li class="mb-0.5">
-                                            <span>{{ $orderItem->item->name }}</span>
+                                            <span>{{ $orderItem->item?->name ?? 'Produk Terhapus' }}</span>
                                             
                                             <flux:badge :color="match($orderItem->price_type) { 'promo' => 'green', 'khusus' => 'red', default => 'zinc' }" size="sm">{{ $orderItem->quantity }} item</flux:badge>
                                         </li>
@@ -75,9 +75,9 @@
                                         $price = $orderItem->price;
                                         if ($price == 0) {
                                             $priceTypeKey = $orderItem->price_type ?? 'umum';
-                                            $price = data_get($orderItem->item, "prices.{$priceTypeKey}", 0);
+                                            $price = data_get($orderItem->item ?? [], "prices.{$priceTypeKey}", 0);
                                             if ($price == 0) {
-                                                $price = data_get($orderItem->item, 'prices.umum', 0);
+                                                $price = data_get($orderItem->item ?? [], 'prices.umum', 0);
                                             }
                                         }
                                         return $price * $orderItem->quantity;

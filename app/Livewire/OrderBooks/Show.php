@@ -98,6 +98,7 @@ class Show extends Component
         
         foreach ($orders as $order) {
             foreach ($order->orderItems as $orderItem) {
+                if (!$orderItem->item) continue;
                 $itemPrice = $orderItem->price;
                 if ($itemPrice == 0) {
                     $priceTypeKey = $orderItem->price_type ?? 'umum';

@@ -79,6 +79,7 @@ class PrintDeliveries extends Component
         foreach ($orderItems as $orderItem) {
             $qty = $useBatchQuantity ? $orderItem->batch_quantity : $orderItem->quantity;
             if ($qty <= 0) continue;
+            if (!$orderItem->item || !$orderItem->order) continue;
 
             $item = $orderItem->item;
             $order = $orderItem->order;

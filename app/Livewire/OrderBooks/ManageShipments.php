@@ -118,7 +118,7 @@ class ManageShipments extends Component
 
         foreach ($orders as $order) {
             foreach ($order->orderItems as $orderItem) {
-                $weight = $orderItem->item->weight ?? 0;
+                $weight = $orderItem->item?->weight ?? 0;
                 for ($b = 1; $b <= $this->totalBatches; $b++) {
                     $qty = $this->assignments[$orderItem->id][$b] ?? 0;
                     $totals[$b] += $qty * $weight;
@@ -234,9 +234,11 @@ class ManageShipments extends Component
             foreach ($order->orderItems as $orderItem) {
                 $totalAssigned = collect($this->assignments[$orderItem->id] ?? [])->sum();
                 if ($totalAssigned != $orderItem->quantity) {
+                    $itemName = $orderItem->item?->name ?? 'Produk Terhapus';
+                    $customerName = $order->customer?->name ?? 'Customer Terhapus';
                     Flux::toast(
                         heading: 'Validasi Gagal',
-                        text: "Total muatan untuk item {$orderItem->item->name} (customer: {$order->customer->name}) tidak sama dengan jumlah pesanan ({$orderItem->quantity}). Total saat ini: {$totalAssigned}.",
+                        text: "Total muatan untuk item {$itemName} (customer: {$customerName}) tidak sama dengan jumlah pesanan ({$orderItem->quantity}). Total saat ini: {$totalAssigned}.",
                         variant: 'danger'
                     );
                     return;

@@ -34,7 +34,7 @@
                     $batchTonase = 0;
                     foreach ($this->plan->items as $planItem) {
                         if ($planItem->batch_number == $currentBatch && $planItem->quantity > 0) {
-                            $batchTonase += $planItem->quantity * $planItem->orderItem->item->weight;
+                            $batchTonase += $planItem->quantity * $planItem->orderItem?->item?->weight ?? 0;
                         }
                     }
                 @endphp

@@ -28,7 +28,7 @@
                             </tr>
                             <tr>
                                 <td class="pr-2 align-top">Kepada</td>
-                                <td>: <span class="font-bold">{{ $order->customer->name }}</span> ({{ str_pad($order->customer->id, 5, '0', STR_PAD_LEFT) }})
+                                <td>: <span class="font-bold">{{ $order->customer?->name ?? 'Customer Terhapus' }}</span> ({{ str_pad($order->customer?->id ?? 0, 5, '0', STR_PAD_LEFT) }})
                                     @php
                                         $batches = $orderBatches[$order->id] ?? [];
                                         sort($batches);
@@ -39,7 +39,7 @@
                                         </span>
                                     @endif
                                     <br>
-                                  &nbsp;&nbsp;{{ $order->customer->market->name ?? $orderBook->market->name }}
+                                  &nbsp;&nbsp;{{ $order->customer?->market?->name ?? $orderBook->market->name }}
                                 </td>
                             </tr>
                             <tr>
@@ -66,15 +66,15 @@
                         @foreach ($order->orderItems as $index => $item)
                             @php
                                 // Attempt to get correct price based on customer category
-                                $catName = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', trim($order->customer->category->name ?? 'normal')));
-                                $prices = is_array($item->item->prices) ? $item->item->prices : [];
+                                $catName = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', trim($order->customer?->category?->name ?? 'normal')));
+                                $prices = is_array($item->item?->prices) ? $item->item?->prices : [];
                                 $harga = $item->price > 0 ? $item->price : ($prices[$catName] ?? $prices['normal'] ?? 0);
                                 $nilai = $item->quantity * $harga;
                                 $grandTotal += $nilai;
                             @endphp
                             <tr style="height: 24px;">
                                 <td class="py-1 px-2 text-center border-r" style="border-color: #1e40af;">{{ $index + 1 }}</td>
-                                <td class="py-1 px-2 border-r" style="border-color: #1e40af;">{{ $item->item->name }}</td>
+                                <td class="py-1 px-2 border-r" style="border-color: #1e40af;">{{ $item->item?->name ?? 'Produk Terhapus' }}</td>
                                 <td class="py-1 px-2 text-center border-r" style="border-color: #1e40af;">{{ $item->quantity }}</td>
                                 <td class="py-1 px-2 text-right border-r" style="border-color: #1e40af;">{{ number_format($harga, 0, ',', '.') }}</td>
                                 <td class="py-1 px-2 text-right" style="border-color: #1e40af;">{{ number_format($nilai, 0, ',', '.') }}</td>

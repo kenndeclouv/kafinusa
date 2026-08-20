@@ -1,4 +1,4 @@
-<div x-data="shipmentManager(@js($this->ordersWithItems->flatMap->orderItems->mapWithKeys(fn($i) => [$i->id => $i->item->weight])), @js($this->ordersWithItems->flatMap->orderItems->mapWithKeys(fn($i) => [$i->id => $i->order_id])), @entangle('assignments'), @entangle('totalBatches'))">
+<div x-data="shipmentManager(@js($this->ordersWithItems->flatMap->orderItems->mapWithKeys(fn($i) => [$i->id => $i->item?->weight ?? 0])), @js($this->ordersWithItems->flatMap->orderItems->mapWithKeys(fn($i) => [$i->id => $i->order_id])), @entangle('assignments'), @entangle('totalBatches'))">
     <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
         <div>
             <flux:heading size="xl">Atur Pembagian Muatan</flux:heading>
@@ -137,16 +137,16 @@
                                             </flux:dropdown>
                                             <div>
                                                 <span
-                                                    class="font-medium text-zinc-900 dark:text-white">{{ $order->customer->name }}</span>
+                                                    class="font-medium text-zinc-900 dark:text-white">{{ $order->customer?->name ?? 'Customer Terhapus' }}</span>
                                                 <div class="text-xs text-zinc-500 mt-0.5">
-                                                    {{ $order->customer->category->name ?? '' }}</div>
+                                                    {{ $order->customer?->category?->name ?? '' }}</div>
                                             </div>
                                         </div>
                                     </td>
                                 @endif
 
                                 {{-- Item --}}
-                                <td class="px-4 py-2.5 text-zinc-700 dark:text-zinc-300">{{ $orderItem->item->name }}
+                                <td class="px-4 py-2.5 text-zinc-700 dark:text-zinc-300">{{ $orderItem->item?->name ?? 'Produk Terhapus' }}
                                 </td>
 
                                 {{-- Total Qty --}}
@@ -155,7 +155,7 @@
 
                                 {{-- Weight per unit --}}
                                 <td class="px-4 py-2.5 text-center text-zinc-500 dark:text-zinc-400 text-xs">
-                                    {{ formatWeight($orderItem->item->weight) }}
+                                    {{ formatWeight($orderItem->item?->weight ?? 0) }}
                                 </td>
 
                                 {{-- Batch input columns --}}
