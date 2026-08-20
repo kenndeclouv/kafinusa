@@ -36,10 +36,10 @@
                     {{ __('Buku Order') }}
                 </flux:sidebar.item>
                 @can('sales_schedules:read')
-                <flux:sidebar.item icon="calendar-days" :href="route('sales-schedules.index')"
-                    :current="request()->routeIs('sales-schedules.*')" wire:navigate.hover>
-                    {{ __('Jadwal Mingguan') }}
-                </flux:sidebar.item>
+                    <flux:sidebar.item icon="calendar-days" :href="route('sales-schedules.index')"
+                        :current="request()->routeIs('sales-schedules.*')" wire:navigate.hover>
+                        {{ __('Jadwal Mingguan') }}
+                    </flux:sidebar.item>
                 @endcan
             @endcanany
 
@@ -93,7 +93,8 @@
             @endcanany
 
             @canany(['users:read', 'roles:read', 'permissions:read', 'notifications:send'])
-                <flux:sidebar.group expandable :expanded="request()->routeIs('users.*', 'roles.*', 'permissions.*', 'notifications.*')"
+                <flux:sidebar.group expandable
+                    :expanded="request()->routeIs('users.*', 'roles.*', 'permissions.*', 'notifications.*')"
                     icon="shield-check" :heading="__('Hak Akses')">
                     @can('users:read')
                         <flux:sidebar.item icon="users" :href="route('users.index')"
@@ -107,18 +108,21 @@
                             {{ __('Peran') }}
                         </flux:sidebar.item>
                     @endcan
-                    @can('notifications:send')
-                        <flux:sidebar.item icon="paper-airplane" :href="route('notifications.index')"
-                            :current="request()->routeIs('notifications.index')" wire:navigate>
-                            {{ __('Kirim Notifikasi') }}
-                        </flux:sidebar.item>
-                    @endcan
+                    @if (env('ONESIGNAL_APP_ID'))
+                        @can('notifications:send')
+                            <flux:sidebar.item icon="paper-airplane" :href="route('notifications.index')"
+                                :current="request()->routeIs('notifications.index')" wire:navigate>
+                                {{ __('Kirim Notifikasi') }}
+                            </flux:sidebar.item>
+                        @endcan
+                    @endif
                 </flux:sidebar.group>
             @endcanany
 
             @canany(['logs.view', 'system_monitor.view'])
-                <flux:sidebar.group expandable :expanded="request()->routeIs('logs.*') || request()->routeIs('system-monitor.*')"
-                    icon="cpu-chip" :heading="__('Sistem / Developer')">
+                <flux:sidebar.group expandable
+                    :expanded="request()->routeIs('logs.*') || request()->routeIs('system-monitor.*')" icon="cpu-chip"
+                    :heading="__('Sistem / Developer')">
                     @can('logs.view')
                         <flux:sidebar.item icon="document-text" :href="route('logs.index')"
                             :current="request()->routeIs('logs.*')" wire:navigate.hover>
