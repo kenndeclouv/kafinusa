@@ -55,10 +55,11 @@ class PrintDeliveries extends Component
                 // Map ShipmentPlanItem back to a structure similar to OrderItem for processing
                 $simulatedOrderItems = $planItemsInBatch->map(function ($planItem) {
                     $oi = $planItem->orderItem;
+                    if (!$oi) return null;
                     // override the quantity to the batch's quantity
                     $oi->setAttribute('batch_quantity', $planItem->quantity); 
                     return $oi;
-                });
+                })->filter();
 
                 $batches[$b] = $this->processItemsToBatchData($simulatedOrderItems, true);
             }

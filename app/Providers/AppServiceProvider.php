@@ -33,6 +33,8 @@ class AppServiceProvider extends ServiceProvider
             return $user->hasRole('superadmin') ? true : null;
         });
 
+        // Pulse removed
+
         Schema::defaultStringLength(191);
     }
 

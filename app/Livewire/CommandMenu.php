@@ -113,6 +113,20 @@ class CommandMenu extends Component
                 'permission' => null,
                 'group' => 'Sistem',
             ],
+            [
+                'label' => 'Logs Viewer',
+                'icon' => 'document-text',
+                'route' => 'logs.index',
+                'permission' => 'logs.view',
+                'group' => 'Sistem / Developer',
+            ],
+            [
+                'label' => 'System Monitor',
+                'icon' => 'cpu-chip',
+                'route' => 'system-monitor.index',
+                'permission' => null,
+                'group' => 'Sistem / Developer',
+            ],
         ];
 
         $searchTerm = strtolower($this->search);

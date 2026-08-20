@@ -78,6 +78,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->middleware('can:notifications:send')
             ->name('notifications.index');
     });
+
+    // Logs & System Monitor
+    Route::prefix('logs')->name('logs.')->group(function () {
+        Route::get('/', \App\Livewire\Logs\Index::class)->name('index');
+        Route::get('{log}', \App\Livewire\Logs\Show::class)->name('show');
+    });
+
+    Route::get('system-monitor', \App\Livewire\SystemMonitor\Index::class)->name('system-monitor.index');
 });
 
 require __DIR__.'/settings.php';

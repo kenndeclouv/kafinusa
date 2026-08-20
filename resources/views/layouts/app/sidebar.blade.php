@@ -115,6 +115,24 @@
                     @endcan
                 </flux:sidebar.group>
             @endcanany
+
+            @canany(['logs.view', 'system_monitor.view'])
+                <flux:sidebar.group expandable :expanded="request()->routeIs('logs.*') || request()->routeIs('system-monitor.*')"
+                    icon="cpu-chip" :heading="__('Sistem / Developer')">
+                    @can('logs.view')
+                        <flux:sidebar.item icon="document-text" :href="route('logs.index')"
+                            :current="request()->routeIs('logs.*')" wire:navigate.hover>
+                            {{ __('Logs Viewer') }}
+                        </flux:sidebar.item>
+                    @endcan
+                    @can('system_monitor.view')
+                        <flux:sidebar.item icon="cpu-chip" :href="route('system-monitor.index')"
+                            :current="request()->routeIs('system-monitor.*')" wire:navigate.hover>
+                            {{ __('System Monitor') }}
+                        </flux:sidebar.item>
+                    @endcan
+                </flux:sidebar.group>
+            @endcanany
         </flux:sidebar.nav>
 
         <flux:sidebar.spacer />
