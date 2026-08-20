@@ -31,7 +31,7 @@ class Index extends Component
     public function mount()
     {
         abort_unless(auth()->user() && auth()->user()->hasAnyPermission(['order_books:read', 'order_books:read-self']), 403, 'Unauthorized.');
-        $this->filterMonth = 'all';
+        $this->filterMonth = now()->format('Y-m');
     }
 
     public function updatedFilterMonth()

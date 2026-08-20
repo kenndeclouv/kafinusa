@@ -10,7 +10,8 @@
             <x-searchable-select wire:model.live="filterMonth" class="w-full sm:w-48" :options="['all' => 'Semua Bulan'] + $this->availableMonths"
                 :searchable="false" />
             @can('order_books:create')
-                <flux:button wire:click="openGenerateModal" variant="outline" icon="calendar-days" class="ms-auto w-full sm:w-auto">
+                <flux:button wire:click="openGenerateModal" variant="outline" icon="calendar-days"
+                    class="ms-auto w-full sm:w-auto">
                     Generate dari Jadwal
                 </flux:button>
                 <flux:button wire:click="openCreateModal" variant="primary" icon="plus" class="w-full sm:w-auto">
@@ -27,8 +28,8 @@
                 <flux:table.columns>
                     <flux:table.column sortable :sorted="$sortBy === 'book_date'" :direction="$sortDirection"
                         wire:click="sort('book_date')">Tanggal</flux:table.column>
-                    <flux:table.column class="!sticky !left-0 z-10 bg-zinc-50 dark:bg-zinc-800" sortable :sorted="$sortBy === 'market_id'" :direction="$sortDirection"
-                        wire:click="sort('market_id')">
+                    <flux:table.column class="!sticky !left-0 z-10 bg-zinc-50 dark:bg-zinc-800" sortable
+                        :sorted="$sortBy === 'market_id'" :direction="$sortDirection" wire:click="sort('market_id')">
                         Pasar</flux:table.column>
                     <flux:table.column sortable :sorted="$sortBy === 'employee_id'" :direction="$sortDirection"
                         wire:click="sort('employee_id')">Sales</flux:table.column>
@@ -45,7 +46,8 @@
                             class="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
                             x-on:click="Livewire.navigate('{{ route('order-books.show', $book->id) }}')">
                             <flux:table.cell>{{ $book->book_date->format('d M Y') }}</flux:table.cell>
-                            <flux:table.cell class="!sticky !left-0 z-10 bg-zinc-50 dark:bg-zinc-800 group-hover:bg-zinc-50 dark:group-hover:bg-zinc-800/50">
+                            <flux:table.cell
+                                class="!sticky !left-0 z-10 bg-zinc-50 dark:bg-zinc-800 group-hover:bg-zinc-50 dark:group-hover:bg-zinc-800/50">
                                 <span class="font-medium text-zinc-900 dark:text-white">{{ $book->market->name }}</span>
                                 <span class="text-xs text-zinc-500 ml-1">({{ $book->market->code }})</span>
                             </flux:table.cell>
@@ -224,25 +226,32 @@
         <form wire:submit="generateFromSchedule">
             <flux:heading>Generate Buku Order (Dari Jadwal)</flux:heading>
             <flux:description>
-                Sistem akan membuat buku order secara otomatis berdasarkan Template Jadwal Kunjungan untuk rentang tanggal yang dipilih. Hari Jumat akan dilewati.
+                Sistem akan membuat buku order secara otomatis berdasarkan Template Jadwal Kunjungan untuk rentang
+                tanggal yang dipilih. Hari Jumat akan dilewati.
             </flux:description>
 
             <div class="mt-6 space-y-6">
-                <div class="bg-white dark:bg-white/5 rounded-3xl border border-zinc-200 dark:border-white/10 shadow-xs flex flex-col relative overflow-hidden">
-                    
-                    <label class="flex flex-row items-center px-4 py-1.5 relative group transition-colors focus-within:bg-zinc-50 dark:focus-within:bg-white/[0.07] cursor-text">
-                        <span class="text-[15px] font-medium text-zinc-900 dark:text-white w-1/3 shrink-0 py-2 select-none">
+                <div
+                    class="bg-white dark:bg-white/5 rounded-3xl border border-zinc-200 dark:border-white/10 shadow-xs flex flex-col relative overflow-hidden">
+
+                    <label
+                        class="flex flex-row items-center px-4 py-1.5 relative group transition-colors focus-within:bg-zinc-50 dark:focus-within:bg-white/[0.07] cursor-text">
+                        <span
+                            class="text-[15px] font-medium text-zinc-900 dark:text-white w-1/3 shrink-0 py-2 select-none">
                             Dari Tanggal
                         </span>
                         <div class="flex-1">
-                            <x-date-picker variant="ios" wire:model="generateStartDate" placeholder="Pilih Tanggal" />
+                            <x-date-picker variant="ios" wire:model="generateStartDate"
+                                placeholder="Pilih Tanggal" />
                         </div>
                         <div class="absolute bottom-0 right-4 left-4 h-px bg-zinc-200 dark:bg-white/10"></div>
                     </label>
                     <x-error-ios name="generateStartDate" />
 
-                    <label class="flex flex-row items-center px-4 py-1.5 relative group transition-colors focus-within:bg-zinc-50 dark:focus-within:bg-white/[0.07] cursor-text">
-                        <span class="text-[15px] font-medium text-zinc-900 dark:text-white w-1/3 shrink-0 py-2 select-none">
+                    <label
+                        class="flex flex-row items-center px-4 py-1.5 relative group transition-colors focus-within:bg-zinc-50 dark:focus-within:bg-white/[0.07] cursor-text">
+                        <span
+                            class="text-[15px] font-medium text-zinc-900 dark:text-white w-1/3 shrink-0 py-2 select-none">
                             Sampai Tanggal
                         </span>
                         <div class="flex-1">
@@ -256,7 +265,8 @@
 
             <div class="mt-8 flex flex-col gap-2">
                 <flux:button type="submit" variant="primary" class="!rounded-full">Generate Sekarang</flux:button>
-                <flux:button x-on:click="$flux.modal('generate-books-modal').close()" variant="outline" class="!rounded-full">
+                <flux:button x-on:click="$flux.modal('generate-books-modal').close()" variant="outline"
+                    class="!rounded-full">
                     Batal
                 </flux:button>
             </div>

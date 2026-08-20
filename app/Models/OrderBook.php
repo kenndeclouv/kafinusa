@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderBook extends Model
 {
+    use \App\Traits\BustsDashboardCache;
     protected $fillable = [
         'market_id',
         'employee_id',

@@ -86,51 +86,55 @@ class Show extends Component
     #[Computed]
     public function summary()
     {
-        $orders = Order::where('order_book_id', $this->orderBook->id)
-            ->with('orderItems.item')
-            ->get();
-            
-        $totalWeight = $orders->sum('total_calculated_weight');
-        
-        $itemSummary = [];
-        $totalItemsCount = 0;
-        $totalEstimatedPrice = 0;
-        
-        foreach ($orders as $order) {
-            foreach ($order->orderItems as $orderItem) {
-                if (!$orderItem->item) continue;
-                $itemPrice = $orderItem->price;
-                if ($itemPrice == 0) {
-                    $priceTypeKey = $orderItem->price_type ?? 'umum';
-                    $itemPrice = data_get($orderItem->item, "prices.{$priceTypeKey}", 0);
-                    if ($itemPrice == 0) {
-                        $itemPrice = data_get($orderItem->item, 'prices.umum', 0);
-                    }
-                }
-                
-                $totalEstimatedPrice += $itemPrice * $orderItem->quantity;
-                $itemId = $orderItem->item_id;
-                if (!isset($itemSummary[$itemId])) {
-                    $itemSummary[$itemId] = [
-                        'name' => $orderItem->item->name,
-                        'quantity' => 0,
-                    ];
-                }
-                $itemSummary[$itemId]['quantity'] += $orderItem->quantity;
-                $totalItemsCount += $orderItem->quantity;
-            }
-        }
-        
-        usort($itemSummary, function($a, $b) {
-            return strcmp($a['name'], $b['name']);
-        });
+        $cacheKey = 'order_book_summary_' . $this->orderBook->id . '_' . $this->orderBook->updated_at->timestamp;
 
-        return [
-            'totalWeight' => $totalWeight,
-            'items' => $itemSummary,
-            'totalItemsCount' => $totalItemsCount,
-            'totalEstimatedPrice' => $totalEstimatedPrice,
-        ];
+        return \Illuminate\Support\Facades\Cache::rememberForever($cacheKey, function () {
+            $orders = Order::where('order_book_id', $this->orderBook->id)
+                ->with('orderItems.item')
+                ->get();
+                
+            $totalWeight = $orders->sum('total_calculated_weight');
+            
+            $itemSummary = [];
+            $totalItemsCount = 0;
+            $totalEstimatedPrice = 0;
+            
+            foreach ($orders as $order) {
+                foreach ($order->orderItems as $orderItem) {
+                    if (!$orderItem->item) continue;
+                    $itemPrice = $orderItem->price;
+                    if ($itemPrice == 0) {
+                        $priceTypeKey = $orderItem->price_type ?? 'umum';
+                        $itemPrice = data_get($orderItem->item, "prices.{$priceTypeKey}", 0);
+                        if ($itemPrice == 0) {
+                            $itemPrice = data_get($orderItem->item, 'prices.umum', 0);
+                        }
+                    }
+                    
+                    $totalEstimatedPrice += $itemPrice * $orderItem->quantity;
+                    $itemId = $orderItem->item_id;
+                    if (!isset($itemSummary[$itemId])) {
+                        $itemSummary[$itemId] = [
+                            'name' => $orderItem->item->name,
+                            'quantity' => 0,
+                        ];
+                    }
+                    $itemSummary[$itemId]['quantity'] += $orderItem->quantity;
+                    $totalItemsCount += $orderItem->quantity;
+                }
+            }
+            
+            usort($itemSummary, function($a, $b) {
+                return strcmp($a['name'], $b['name']);
+            });
+
+            return [
+                'totalWeight' => $totalWeight,
+                'items' => $itemSummary,
+                'totalItemsCount' => $totalItemsCount,
+                'totalEstimatedPrice' => $totalEstimatedPrice,
+            ];
+        });
     }
 
     public function openCreateModal()

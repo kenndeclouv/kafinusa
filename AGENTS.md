@@ -83,3 +83,20 @@ Dokumen ini berisi standar dan aturan yang **wajib** diikuti oleh setiap AI Agen
       additionalData: ['url' => '/orders/1024']
   );
   ```
+
+## 10. Strategi Caching (Real-time Cache Busting)
+- Proyek ini mengutamakan performa tinggi untuk *Dashboard* dan *query* agregat yang berat (seperti *summary* atau laporan).
+- **Larangan:** Jangan menggunakan `Cache::remember()` dengan waktu statis (misal batas 300 detik / 5 menit) karena akan menyebabkan *delay* keakuratan data di *production*.
+- **Best Practice (Wajib): Gunakan Pendekatan Cache Busting**
+  1. Semua model utama (`Order`, `OrderBook`, `Customer`, `Market`, `OrderItem`) harus memiliki *Trait* `\App\Traits\BustsDashboardCache`. *Trait* ini akan otomatis memperbarui nilai `dashboard_cache_version` setiap kali ada proses Simpan / Hapus data.
+  2. Pada metode komponen Livewire (terutama `#[Computed]`) yang me-*load* agregat berat, pastikan kamu memanggil versi *cache* terbaru: 
+     `$v = Cache::get('dashboard_cache_version', 1);`
+  3. Sisipkan variabel versi `$v` tersebut ke dalam nama kunci cache, lalu gunakan metode **`Cache::rememberForever()`**.
+  4. **Contoh Implementasi:**
+     ```php
+     $v = \Illuminate\Support\Facades\Cache::get('dashboard_cache_version', 1);
+     return \Illuminate\Support\Facades\Cache::rememberForever("dash_top_items_v{$v}", function () {
+         return \App\Models\OrderItem::query()->selectRaw('...')->get();
+     });
+     ```
+  5. **Parent Touching:** Jika membuat *Model* turunan (seperti `OrderItem`), selalu pasang properti `protected $touches = ['order'];` agar setiap perubahan data anak akan merambat ke waktu *update* induknya dan berhasil memicu *cache busting*.

@@ -29,14 +29,16 @@ class Index extends Component
             'weight_today' => null,
         ];
         
+        $v = \Illuminate\Support\Facades\Cache::get('dashboard_cache_version', 1);
+        
         if ($user->can('markets:read')) {
-            $stats['total_markets'] = \Illuminate\Support\Facades\Cache::remember('stats_total_markets', 300, function () {
+            $stats['total_markets'] = \Illuminate\Support\Facades\Cache::rememberForever("stats_total_markets_v{$v}", function () {
                 return Market::count();
             });
         }
         
         if ($user->can('customers:read')) {
-            $stats['total_customers'] = \Illuminate\Support\Facades\Cache::remember('stats_total_customers', 300, function () {
+            $stats['total_customers'] = \Illuminate\Support\Facades\Cache::rememberForever("stats_total_customers_v{$v}", function () {
                 return Customer::where('status', true)->count();
             });
         }
@@ -44,11 +46,11 @@ class Index extends Component
         if ($user->can('order_books:read')) {
             $today = now()->format('Y-m-d');
             
-            $stats['orders_today'] = \Illuminate\Support\Facades\Cache::remember('stats_orders_today_' . $today, 300, function () use ($today) {
+            $stats['orders_today'] = \Illuminate\Support\Facades\Cache::rememberForever("stats_orders_today_{$today}_v{$v}", function () use ($today) {
                 return OrderBook::whereDate('book_date', $today)->withCount('orders')->get()->sum('orders_count');
             });
             
-            $stats['weight_today'] = \Illuminate\Support\Facades\Cache::remember('stats_weight_today_' . $today, 300, function () use ($today) {
+            $stats['weight_today'] = \Illuminate\Support\Facades\Cache::rememberForever("stats_weight_today_{$today}_v{$v}", function () use ($today) {
                 return Order::whereHas('orderBook', function ($q) use ($today) {
                     $q->whereDate('book_date', $today);
                 })->sum('total_calculated_weight');
@@ -67,7 +69,8 @@ class Index extends Component
             return [];
         }
 
-        return \Illuminate\Support\Facades\Cache::remember('dash_trend_' . $this->timeRange, 300, function () {
+        $v = \Illuminate\Support\Facades\Cache::get('dashboard_cache_version', 1);
+        return \Illuminate\Support\Facades\Cache::rememberForever('dash_trend_' . $this->timeRange . "_v{$v}", function () {
             $days = $this->timeRange === 'all' ? 30 : (int)$this->timeRange;
             if ($days == 1) $days = 7; // Minimal 7 hari untuk melihat tren garis
 
@@ -127,7 +130,8 @@ class Index extends Component
             return [];
         }
 
-        return \Illuminate\Support\Facades\Cache::remember('dash_top_markets_' . $this->timeRange, 300, function () {
+        $v = \Illuminate\Support\Facades\Cache::get('dashboard_cache_version', 1);
+        return \Illuminate\Support\Facades\Cache::rememberForever('dash_top_markets_' . $this->timeRange . "_v{$v}", function () {
             $query = OrderBook::query()->with('market');
             $query = $this->getBookDateRangeQuery($query);
             
@@ -161,7 +165,8 @@ class Index extends Component
             return [];
         }
 
-        return \Illuminate\Support\Facades\Cache::remember('dash_top_sales_' . $this->timeRange, 300, function () {
+        $v = \Illuminate\Support\Facades\Cache::get('dashboard_cache_version', 1);
+        return \Illuminate\Support\Facades\Cache::rememberForever('dash_top_sales_' . $this->timeRange . "_v{$v}", function () {
             $query = OrderBook::query()->with('employee');
             $query = $this->getBookDateRangeQuery($query);
             
@@ -195,7 +200,8 @@ class Index extends Component
             return [];
         }
 
-        return \Illuminate\Support\Facades\Cache::remember('dash_top_items_' . $this->timeRange, 300, function () {
+        $v = \Illuminate\Support\Facades\Cache::get('dashboard_cache_version', 1);
+        return \Illuminate\Support\Facades\Cache::rememberForever('dash_top_items_' . $this->timeRange . "_v{$v}", function () {
             $query = \App\Models\OrderItem::query()->with('item');
             $query = $this->getDateRangeQuery($query);
             

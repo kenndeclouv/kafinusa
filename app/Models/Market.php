@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Market extends Model
 {
     /** @use HasFactory<\Database\Factories\MarketFactory> */
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, \App\Traits\BustsDashboardCache;
 
     protected $fillable = [
         'code',

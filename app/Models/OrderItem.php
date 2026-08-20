@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderItem extends Model
 {
+    use \App\Traits\BustsDashboardCache;
+
+    protected $touches = ['order'];
     protected $fillable = [
         'order_id',
         'item_id',
