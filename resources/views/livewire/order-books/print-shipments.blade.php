@@ -3,14 +3,61 @@
     <div
         class="no-print flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 p-4 bg-zinc-50 dark:bg-white/5 rounded-2xl border border-zinc-200 dark:border-white/10">
 
-        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto" x-data="{
+            isDownloading: false,
+            downloadImage() {
+                this.isDownloading = true;
+                if (typeof html2canvas === 'undefined') {
+                    let script = document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/html2canvas-pro@2.3.9/dist/html2canvas-pro.min.js';
+                    script.onload = () => this.capture();
+                    document.head.appendChild(script);
+                } else {
+                    this.capture();
+                }
+            },
+            capture() {
+                const el = document.getElementById('print-container');
+                const originalOverflow = el.style.overflow;
+                el.style.overflow = 'visible';
+        
+                html2canvas(el, {
+                    scale: 3,
+                    backgroundColor: '#ffffff',
+                    useCORS: true
+                }).then(canvas => {
+                    el.style.overflow = originalOverflow;
+                    let linkDl = document.createElement('a');
+                    linkDl.download = 'pengambilan-barang-{{ Str::slug($orderBook->market->name) }}-{{ $orderBook->book_date->format("dmY") }}.png';
+                    linkDl.href = canvas.toDataURL('image/png');
+                    linkDl.click();
+                    this.isDownloading = false;
+                }).catch(err => {
+                    console.error('Error generating image', err);
+                    this.isDownloading = false;
+                });
+            }
+        }">
+
             <flux:button href="{{ route('order-books.shipments', $orderBook) }}" wire:navigate variant="outline"
                 icon="arrow-left" class="w-full sm:w-auto">
                 Kembali & Edit
             </flux:button>
-            <flux:button onclick="window.print()" variant="primary" icon="printer" class="w-full sm:w-auto">
+            <flux:button onclick="window.print()" variant="primary" icon="printer"
+                class="w-full sm:w-auto hidden sm:flex">
                 Cetak
             </flux:button>
+
+            <flux:dropdown>
+                <flux:button variant="outline" icon="ellipsis-vertical" class="w-full sm:w-auto px-4" />
+                <flux:menu>
+                    <flux:menu.item icon="photo" x-on:click="downloadImage()">
+                        <span x-show="!isDownloading">Download Image (High-Res)</span>
+                        <span x-show="isDownloading">Memproses...</span>
+                    </flux:menu.item>
+                    <flux:menu.item icon="document-arrow-down" onclick="window.print()">Download PDF</flux:menu.item>
+                </flux:menu>
+            </flux:dropdown>
         </div>
 
         <span class="text-sm text-center sm:text-right text-zinc-500 dark:text-zinc-400 w-full sm:w-auto">
@@ -20,7 +67,8 @@
     </div>
 
     {{-- The "Paper" Container for printing & mobile scrolling --}}
-    <div class="w-full overflow-x-auto bg-white print:overflow-visible flex flex-col gap-8 print:block print:gap-0">
+    <div id="print-container"
+        class="w-full overflow-x-auto bg-white print:overflow-visible flex flex-col gap-8 print:block print:gap-0">
         @if ($plan)
             @php
                 $items = $this->itemRows;
