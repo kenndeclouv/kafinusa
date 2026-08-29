@@ -118,8 +118,34 @@ class PrintDeliveries extends Component
             $customers[$order->customer_id] = $order->customer;
         }
 
-        // Sort categories by name
-        usort($categories, fn($a, $b) => strcmp($a['name'], $b['name']));
+        // Define the desired category order
+        $categoryOrder = [
+            'GARAM',
+            'TNE',
+            'TNE POLOS',
+            'LOS',
+            'PETIS',
+            'SOHUN',
+            'AREN',
+            'TRASI'
+        ];
+
+        // Sort categories based on the custom order
+        usort($categories, function ($a, $b) use ($categoryOrder) {
+            $indexA = array_search(strtoupper($a['name']), $categoryOrder);
+            $indexB = array_search(strtoupper($b['name']), $categoryOrder);
+
+            // If not found in the custom order array, assign a very high index to put them at the end
+            $indexA = $indexA === false ? 999 : $indexA;
+            $indexB = $indexB === false ? 999 : $indexB;
+
+            if ($indexA === $indexB) {
+                // If both have the same index (e.g., both are 999), sort alphabetically
+                return strcmp($a['name'], $b['name']);
+            }
+
+            return $indexA <=> $indexB;
+        });
 
         // Sort items within categories by name
         foreach ($categories as &$category) {
