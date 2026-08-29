@@ -147,9 +147,39 @@ class PrintDeliveries extends Component
             return $indexA <=> $indexB;
         });
 
-        // Sort items within categories by name
+        // Define custom item order per category
+        $itemOrder = [
+            'GARAM' => ['B-32', 'K-20', 'G-20', 'KPL 1/4', 'KPL 1/2'],
+            'TNE' => ['2 Kg', '3 Kg', 'KK 10', 'KK 20', '4K/10', '4K/20', '1/4 4,5', '1/2 4,5', '1/4 5', '1/2 5', '8 Kg', '9K/10', '9K/20', '10K/10', '10K/20'],
+            'TNE POLOS' => ['PLS 1/2', 'PLS 1'],
+            'LOS' => ['AGR 50', 'AGR 25', 'DS 50', 'DS 25', 'JGKR', 'JAWA', 'JMR', 'KRKTU', 'DLL'],
+            'PETIS' => ['KI', 'Rf'],
+            'SOHUN' => ['125', '75', '150', '300'],
+            'AREN' => ['1/4 KCL', '1/2 KCL', '1/4 BSR', '1/2 BSR', 'LOS'],
+            'TRASI' => ['A J', 'A W', 'LYR']
+        ];
+
+        // Sort items within categories based on custom order
         foreach ($categories as &$category) {
-            usort($category['items'], fn($a, $b) => strcmp($a->name, $b->name));
+            $catName = strtoupper($category['name']);
+            if (isset($itemOrder[$catName])) {
+                $orderMap = array_map('strtoupper', $itemOrder[$catName]);
+                usort($category['items'], function ($a, $b) use ($orderMap) {
+                    $indexA = array_search(strtoupper($a->name), $orderMap);
+                    $indexB = array_search(strtoupper($b->name), $orderMap);
+
+                    $indexA = $indexA === false ? 999 : $indexA;
+                    $indexB = $indexB === false ? 999 : $indexB;
+
+                    if ($indexA === $indexB) {
+                        return strcmp($a->name, $b->name);
+                    }
+
+                    return $indexA <=> $indexB;
+                });
+            } else {
+                usort($category['items'], fn($a, $b) => strcmp($a->name, $b->name));
+            }
         }
 
         // Sort customers by name
