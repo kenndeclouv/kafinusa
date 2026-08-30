@@ -150,6 +150,7 @@
                                     @php
                                         $customerCount = 0;
                                         $globalCustomerCount = 0;
+                                        $prevRowWasBlack = false;
                                     @endphp
                                     @foreach ($customers as $index => $customer)
                                         @php
@@ -158,6 +159,24 @@
                                             $globalCustomerCount++;
                                             $isFifth = ($customerCount % 5 === 0);
                                             $bottomBorder = $isFifth ? '2px solid #000' : '1px solid #000';
+
+                                            $isLastInCategory = false;
+                                            $nextCustomer = null;
+                                            if ($loop->last) {
+                                                $isLastInCategory = true;
+                                            } else {
+                                                $nextCustomer = $customers->get($index + 1);
+                                                $nextCatName = $nextCustomer ? ($nextCustomer->category ? $nextCustomer->category->name : 'TANPA KATEGORI') : null;
+                                                if ($nextCatName !== $catName) {
+                                                    $isLastInCategory = true;
+                                                }
+                                            }
+
+                                            $isCurrentBlack = $customer->has_debt;
+                                            $isNextBlack = $isLastInCategory ? true : ($nextCustomer && $nextCustomer->has_debt);
+
+                                            $nameTopBorderColor = ($isCurrentBlack && $prevRowWasBlack) ? '#ffffff !important' : '#000000';
+                                            $nameBottomBorderColor = ($isCurrentBlack && $isNextBlack) ? '#ffffff !important' : '#000000';
                                         @endphp
 
                                         <tr>
@@ -165,7 +184,7 @@
                                                 {{ $globalCustomerCount }}
                                             </td>
                                             <td
-                                                style="border: 1px solid #000; border-bottom: {{ $bottomBorder }}; padding: 4px; font-weight: 500; text-transform: uppercase; {{ $customer->has_debt ? 'background-color: #000 !important; color: #fff !important;' : '' }}">
+                                                style="border: 1px solid #000; border-bottom: {{ $bottomBorder }}; border-top-color: {{ $nameTopBorderColor }}; border-bottom-color: {{ $nameBottomBorderColor }}; padding: 4px; font-weight: 500; text-transform: uppercase; {{ $customer->has_debt ? 'background-color: #000 !important; color: #fff !important;' : '' }}">
                                                 {{ $customer->name }}
                                             </td>
                                             @foreach ($categories as $category)
@@ -195,22 +214,15 @@
                                             </td>
                                         </tr>
 
-                                        @php
-                                            $isLastInCategory = false;
-                                            if ($loop->last) {
-                                                $isLastInCategory = true;
-                                            } else {
-                                                $nextCustomer = $customers->get($index + 1);
-                                                $nextCatName = $nextCustomer ? ($nextCustomer->category ? $nextCustomer->category->name : 'TANPA KATEGORI') : null;
-                                                if ($nextCatName !== $catName) {
-                                                    $isLastInCategory = true;
-                                                }
-                                            }
-                                        @endphp
-
                                         @if ($isLastInCategory)
+                                            @php
+                                                $sepTopBorderColor = $isCurrentBlack ? '#ffffff !important' : '#000000';
+                                                $isNextCatFirstCustomerBlack = $nextCustomer && $nextCustomer->has_debt;
+                                                $sepBottomBorderColor = $isNextCatFirstCustomerBlack ? '#ffffff !important' : '#000000';
+                                            @endphp
                                             <tr>
-                                                <td colspan="2" style="border: 2px solid #000; background-color: #000 !important; color: #fff !important; padding: 4px 8px; text-align: center; font-weight: bold; text-transform: uppercase; font-size: 11px; letter-spacing: 2px;">
+                                                <td style="border: 2px solid #000; background-color: #000 !important;"></td>
+                                                <td style="border: 2px solid #000; border-top-color: {{ $sepTopBorderColor }}; border-bottom-color: {{ $sepBottomBorderColor }}; background-color: #000 !important; color: #fff !important; padding: 4px 8px; text-align: center; font-weight: bold; text-transform: uppercase; font-size: 11px; letter-spacing: 2px;">
                                                     {{ $catName }}
                                                 </td>
                                                 @foreach ($categories as $category)
@@ -222,6 +234,11 @@
                                             </tr>
                                             @php
                                                 $customerCount = 0; // Reset per kategori
+                                                $prevRowWasBlack = true; // Since separator is black
+                                            @endphp
+                                        @else
+                                            @php
+                                                $prevRowWasBlack = $isCurrentBlack;
                                             @endphp
                                         @endif
                                     @endforeach
