@@ -26,7 +26,7 @@ class PrintDeliveries extends Component
     {
         $plan = $this->orderBook->shipmentPlan()->with([
             'items.orderItem.item.category',
-            'items.orderItem.order.customer'
+            'items.orderItem.order.customer.category'
         ])->first();
 
         $batches = [];
@@ -34,7 +34,7 @@ class PrintDeliveries extends Component
         if (!$plan) {
             // Fallback if no plan is created yet
             $orders = Order::where('order_book_id', $this->orderBook->id)
-                ->with(['customer', 'orderItems.item.category'])
+                ->with(['customer.category', 'orderItems.item.category'])
                 ->whereHas('orderItems', function ($query) {
                     $query->where('quantity', '>', 0);
                 })
@@ -182,8 +182,30 @@ class PrintDeliveries extends Component
             }
         }
 
-        // Sort customers by name
-        usort($customers, fn($a, $b) => strcmp($a->name, $b->name));
+        // Define customer category order
+        $customerCategoryOrder = [
+            'ECER', // Eceran
+            'GROS', // Grosir
+            'UKM',  // Usaha Kecil Menengah
+        ];
+
+        // Sort customers by category order, then by name
+        usort($customers, function ($a, $b) use ($customerCategoryOrder) {
+            $catCodeA = $a->category ? $a->category->code : '';
+            $catCodeB = $b->category ? $b->category->code : '';
+
+            $indexA = array_search($catCodeA, $customerCategoryOrder);
+            $indexB = array_search($catCodeB, $customerCategoryOrder);
+
+            $indexA = $indexA === false ? 999 : $indexA;
+            $indexB = $indexB === false ? 999 : $indexB;
+
+            if ($indexA === $indexB) {
+                return strcmp($a->name, $b->name);
+            }
+
+            return $indexA <=> $indexB;
+        });
 
         return [
             'customers' => collect($customers),
