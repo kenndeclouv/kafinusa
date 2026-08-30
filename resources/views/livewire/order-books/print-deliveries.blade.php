@@ -116,6 +116,10 @@
                                     {{-- Category Header Row --}}
                                     <tr style="background: #e5e7eb;">
                                         <th rowspan="2"
+                                            style="border: 1px solid #000; padding: 4px; text-align: center; vertical-align: bottom; font-weight: bold; width: 30px;">
+                                            NO
+                                        </th>
+                                        <th rowspan="2"
                                             style="border: 1px solid #000; padding: 4px; text-align: left; vertical-align: bottom; font-weight: bold; width: 180px;">
                                             NAMA PELANGGAN
                                         </th>
@@ -143,10 +147,25 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($customers as $customer)
+                                    @php
+                                        $customerCount = 0;
+                                        $globalCustomerCount = 0;
+                                    @endphp
+                                    @foreach ($customers as $index => $customer)
+                                        @php
+                                            $catName = $customer->category ? $customer->category->name : 'TANPA KATEGORI';
+                                            $customerCount++;
+                                            $globalCustomerCount++;
+                                            $isFifth = ($customerCount % 5 === 0);
+                                            $bottomBorder = $isFifth ? '2px solid #000' : '1px solid #000';
+                                        @endphp
+
                                         <tr>
+                                            <td style="border: 1px solid #000; border-bottom: {{ $bottomBorder }}; padding: 4px; text-align: center; font-weight: 500;">
+                                                {{ $globalCustomerCount }}
+                                            </td>
                                             <td
-                                                style="border: 1px solid #000; padding: 4px; font-weight: 500; text-transform: uppercase; {{ $customer->has_debt ? 'background-color: #000 !important; color: #fff !important;' : '' }}">
+                                                style="border: 1px solid #000; border-bottom: {{ $bottomBorder }}; padding: 4px; font-weight: 500; text-transform: uppercase; {{ $customer->has_debt ? 'background-color: #000 !important; color: #fff !important;' : '' }}">
                                                 {{ $customer->name }}
                                             </td>
                                             @foreach ($categories as $category)
@@ -165,21 +184,51 @@
                                                         };
                                                     @endphp
                                                     <td
-                                                        style="border: 1px solid #000; padding: 3px; text-align: center; font-weight: bold; font-size: 11px; {{ $colorStyle }}">
+                                                        style="border: 1px solid #000; border-bottom: {{ $bottomBorder }}; padding: 3px; text-align: center; font-weight: bold; font-size: 11px; {{ $colorStyle }}">
                                                         {{ $qty > 0 ? $qty : '' }}
                                                     </td>
                                                 @endforeach
                                             @endforeach
                                             <td
-                                                style="border: 1px solid #000; padding: 3px; text-align: center; font-weight: bold;">
+                                                style="border: 1px solid #000; border-bottom: {{ $bottomBorder }}; padding: 3px; text-align: center; font-weight: bold;">
                                                 {{ number_format(($customerWeights[$customer->id] ?? 0) / 1000, 1, ',', '.') }}
                                             </td>
                                         </tr>
+
+                                        @php
+                                            $isLastInCategory = false;
+                                            if ($loop->last) {
+                                                $isLastInCategory = true;
+                                            } else {
+                                                $nextCustomer = $customers->get($index + 1);
+                                                $nextCatName = $nextCustomer ? ($nextCustomer->category ? $nextCustomer->category->name : 'TANPA KATEGORI') : null;
+                                                if ($nextCatName !== $catName) {
+                                                    $isLastInCategory = true;
+                                                }
+                                            }
+                                        @endphp
+
+                                        @if ($isLastInCategory)
+                                            <tr>
+                                                <td colspan="2" style="border: 2px solid #000; background-color: #000 !important; color: #fff !important; padding: 4px 8px; text-align: center; font-weight: bold; text-transform: uppercase; font-size: 11px; letter-spacing: 2px;">
+                                                    {{ $catName }}
+                                                </td>
+                                                @foreach ($categories as $category)
+                                                    @foreach ($category['items'] as $item)
+                                                        <td style="border: 1px solid #000; border-top: 2px solid #000; border-bottom: 2px solid #000;"></td>
+                                                    @endforeach
+                                                @endforeach
+                                                <td style="border: 1px solid #000; border-top: 2px solid #000; border-bottom: 2px solid #000;"></td>
+                                            </tr>
+                                            @php
+                                                $customerCount = 0; // Reset per kategori
+                                            @endphp
+                                        @endif
                                     @endforeach
                                 </tbody>
                                 <tfoot>
                                     <tr style="background: #e5e7eb;">
-                                        <td
+                                        <td colspan="2"
                                             style="border: 1px solid #000; padding: 4px; font-weight: bold; text-align: right; text-transform: uppercase;">
                                             TOTAL
                                         </td>
