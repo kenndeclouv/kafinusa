@@ -71,7 +71,7 @@ class Show extends Component
     #[Computed]
     public function items()
     {
-        return Item::all();
+        return Item::with('category')->get();
     }
 
     #[Computed]

@@ -216,7 +216,7 @@
                                 wire:key="item-{{ $index }}">
                                 <div class="flex-1 w-full">
                                     <x-searchable-select wire:model="orderItems.{{ $index }}.item_id"
-                                        :options="$this->items->mapWithKeys(fn($i) => [$i->id => $i->name])->toArray()" variant="ios" placeholder="Pilih Barang..."
+                                        :options="$this->items->mapWithKeys(fn($i) => [$i->id => ($i->category->name ?? 'Lain-lain') . ' ' . $i->name])->toArray()" variant="ios" placeholder="Pilih Barang..."
                                         class="[&>button]:!ms-0 [&>button]:!w-full" />
                                 </div>
 

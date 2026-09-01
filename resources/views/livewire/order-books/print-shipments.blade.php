@@ -148,7 +148,7 @@
                                             <td style="border: 1px solid #000; padding: 2px; text-align: center;"><input
                                                     type="checkbox" class="print:appearance-auto w-3 h-3"></td>
                                             <td style="border: 1px solid #000; padding: 3px; font-weight: 500;">
-                                                {{ $item['name'] }}</td>
+                                                {{ $item['category_name'] }} {{ $item['name'] }}</td>
                                             <td
                                                 style="border: 1px solid #000; padding: 3px; text-align: center; font-weight: bold; font-size: 11px;">
                                                 {{ !empty($item['batches'][$currentBatch]) ? $item['batches'][$currentBatch] : '' }}
@@ -203,7 +203,7 @@
                                             <td style="border: 1px solid #000; padding: 2px; text-align: center;"><input
                                                     type="checkbox" class="print:appearance-auto w-3 h-3"></td>
                                             <td style="border: 1px solid #000; padding: 3px; font-weight: 500;">
-                                                {{ $item['name'] }}</td>
+                                                {{ $item['category_name'] }} {{ $item['name'] }}</td>
                                             <td
                                                 style="border: 1px solid #000; padding: 3px; text-align: center; font-weight: bold; font-size: 11px;">
                                                 {{ !empty($item['batches'][$currentBatch]) ? $item['batches'][$currentBatch] : '' }}
