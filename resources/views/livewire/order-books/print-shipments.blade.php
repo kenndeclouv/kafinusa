@@ -123,7 +123,7 @@
                                             style="border: 1px solid #000; padding: 2px; text-align: center; font-weight: bold; width: 60px;">
                                             RETUR</th>
                                         <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 2px; width: 30px; text-align: center; font-weight: bold;">
+                                            style="border: 1px solid #000; padding: 2px; width: 75px; text-align: center; font-weight: bold;">
                                             G.T</th>
                                     </tr>
                                     <tr style="background: #e5e7eb;">
@@ -178,7 +178,7 @@
                                             style="border: 1px solid #000; padding: 2px; text-align: center; font-weight: bold; width: 60px;">
                                             RETUR</th>
                                         <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 2px; width: 30px; text-align: center; font-weight: bold;">
+                                            style="border: 1px solid #000; padding: 2px; width: 75px; text-align: center; font-weight: bold;">
                                             G.T</th>
                                     </tr>
                                     <tr style="background: #e5e7eb;">
