@@ -23,10 +23,11 @@ class ItemSeeder extends Seeder
             // Generate a simple code, e.g., GARAM-B32, KEMASAN-2KG
             $code = strtoupper(substr($itemData['category'], 0, 3)) . '-' . str_pad($index + 1, 3, '0', STR_PAD_LEFT);
 
-            Item::firstOrCreate(
-                ['name' => $itemData['name'], 'item_category_id' => $categoryId],
+            Item::updateOrCreate(
+                ['code' => $code],
                 [
-                    'code' => $code,
+                    'name' => $itemData['name'],
+                    'item_category_id' => $categoryId,
                     'weight' => $itemData['weight'] * 1000,
                     'prices' => [
                         'umum' => $itemData['umum'] ?? 0,
