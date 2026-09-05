@@ -18,6 +18,17 @@
                     Buka Buku Baru
                 </flux:button>
             @endcan
+            @can('order_books:delete')
+                @if (count($selected) > 0)
+                    <x-delete-modal id="bulk-delete" action="deleteSelected" requireSlide="true" 
+                        title="Hapus {{ count($selected) }} Buku Order?" 
+                        description="Menghapus buku ini akan menghapus semua pesanan pelanggan di dalamnya. Tindakan ini tidak dapat dibatalkan.">
+                        <flux:button variant="danger" icon="trash" class="w-full sm:w-auto">
+                            Hapus ({{ count($selected) }})
+                        </flux:button>
+                    </x-delete-modal>
+                @endif
+            @endcan
         </div>
     </div>
 
@@ -26,6 +37,9 @@
             <flux:table
                 class="[&_th:first-child]:!ps-6 [&_td:first-child]:!ps-6 [&_th:last-child]:!pe-6 [&_td:last-child]:!pe-6">
                 <flux:table.columns>
+                    <flux:table.column class="w-10">
+                        <x-checkbox wire:model.live="selectAll" id="checkbox-all" />
+                    </flux:table.column>
                     <flux:table.column sortable :sorted="$sortBy === 'book_date'" :direction="$sortDirection"
                         wire:click="sort('book_date')">Tanggal</flux:table.column>
                     <flux:table.column class="!sticky !left-0 z-10 bg-zinc-50 dark:bg-zinc-800" sortable
@@ -43,8 +57,13 @@
                 <flux:table.rows>
                     @forelse ($this->orderBooks as $book)
                         <flux:table.row :key="$book->id"
-                            class="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                            class="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors {{ in_array($book->id, $selected) ? 'bg-zinc-50 dark:bg-zinc-800/50' : '' }}"
                             x-on:click="Livewire.navigate('{{ route('order-books.show', $book->id) }}')">
+                            
+                            <flux:table.cell x-on:click.stop>
+                                <x-checkbox wire:model.live="selected" value="{{ $book->id }}" id="checkbox-{{ $book->id }}" />
+                            </flux:table.cell>
+
                             <flux:table.cell>{{ $book->book_date->format('d M Y') }}</flux:table.cell>
                             <flux:table.cell
                                 class="!sticky !left-0 z-10 bg-zinc-50 dark:bg-zinc-800 group-hover:bg-zinc-50 dark:group-hover:bg-zinc-800/50">

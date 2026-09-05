@@ -12,6 +12,9 @@ class Index extends Component
 {
     use WithPagination;
 
+    public array $selected = [];
+    public bool $selectAll = false;
+
     public $sortBy = 'book_date';
     public $sortDirection = 'desc';
 
@@ -208,6 +211,38 @@ class Index extends Component
         $orderBook->delete();
 
         Flux::toast(heading: 'Success', text: 'Buku Order berhasil dihapus.', variant: 'success');
+    }
+
+    public function deleteSelected()
+    {
+        if (empty($this->selected)) {
+            return;
+        }
+
+        OrderBook::whereIn('id', $this->selected)->delete();
+        
+        $count = count($this->selected);
+        $this->selected = [];
+        $this->selectAll = false;
+
+        Flux::toast(heading: 'Success', text: "$count Buku Order berhasil dihapus.", variant: 'success');
+    }
+
+    public function updatedSelectAll($value)
+    {
+        if ($value) {
+            $this->selected = $this->orderBooks->pluck('id')->toArray();
+        } else {
+            $this->selected = [];
+        }
+    }
+
+    public function updatedSelected()
+    {
+        // If all items on current page are selected, set selectAll to true
+        // Otherwise false
+        $currentPageIds = $this->orderBooks->pluck('id')->toArray();
+        $this->selectAll = count(array_intersect($currentPageIds, $this->selected)) === count($currentPageIds);
     }
 
     #[Computed]
