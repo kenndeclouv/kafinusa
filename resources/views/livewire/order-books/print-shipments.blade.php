@@ -1,3 +1,4 @@
+
 <div class="p-2 sm:p-4 print:p-0 max-w-[1400px] mx-auto">
     {{-- Print Action Bar (hidden on print) --}}
     <div
@@ -87,7 +88,8 @@
                     }
                 @endphp
                 <div
-                    class="min-w-[950px] pt-4 print:pt-0 text-black @if ($currentBatch > 1) print:break-before-page @endif">
+                    class="w-full pt-4 print:pt-0 text-black @if ($currentBatch > 1) mt-8 print:mt-12 @endif"
+                    style="page-break-inside: avoid;">
                     {{-- Document Header --}}
                     <div
                         class="flex items-center justify-between mb-4 border-b-2 border-black pb-2 bg-white text-black print:mb-2 print:pb-1">
@@ -112,18 +114,18 @@
                                 <thead>
                                     <tr style="background: #e5e7eb;">
                                         <th colspan="3"
-                                            style="border: 1px solid #000; padding: 2px; font-weight: bold;">CEK</th>
+                                            style="border: 1px solid #000; padding: 1px 2px; font-weight: bold;">CEK</th>
                                         <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 4px; font-weight: bold; font-style: italic;">
+                                            style="border: 1px solid #000; padding: 1px 4px; font-weight: bold; font-style: italic;">
                                             NAMA ITEM</th>
                                         <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 2px; text-align: center; font-weight: bold; width: 60px;">
+                                            style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; width: 60px;">
                                             MUATAN</th>
                                         <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 2px; text-align: center; font-weight: bold; width: 60px;">
+                                            style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; width: 60px;">
                                             RETUR</th>
                                         <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 2px; width: 75px; text-align: center; font-weight: bold;">
+                                            style="border: 1px solid #000; padding: 1px 2px; width: 75px; text-align: center; font-weight: bold;">
                                             G.T</th>
                                     </tr>
                                     <tr style="background: #e5e7eb;">
@@ -141,20 +143,20 @@
                                 <tbody>
                                     @foreach ($leftItems as $item)
                                         <tr>
-                                            <td style="border: 1px solid #000; padding: 2px; text-align: center;"><input
+                                            <td style="border: 1px solid #000; padding: 1px 2px; text-align: center;"><input
                                                     type="checkbox" class="print:appearance-auto w-3 h-3"></td>
-                                            <td style="border: 1px solid #000; padding: 2px; text-align: center;"><input
+                                            <td style="border: 1px solid #000; padding: 1px 2px; text-align: center;"><input
                                                     type="checkbox" class="print:appearance-auto w-3 h-3"></td>
-                                            <td style="border: 1px solid #000; padding: 2px; text-align: center;"><input
+                                            <td style="border: 1px solid #000; padding: 1px 2px; text-align: center;"><input
                                                     type="checkbox" class="print:appearance-auto w-3 h-3"></td>
-                                            <td style="border: 1px solid #000; padding: 3px; font-weight: 500;">
+                                            <td style="border: 1px solid #000; padding: 1px 2px; font-weight: 500;">
                                                 {{ $item['category_name'] }} {{ $item['name'] }}</td>
                                             <td
-                                                style="border: 1px solid #000; padding: 3px; text-align: center; font-weight: bold; font-size: 11px;">
+                                                style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 11px;">
                                                 {{ !empty($item['batches'][$currentBatch]) ? $item['batches'][$currentBatch] : '' }}
                                             </td>
-                                            <td style="border: 1px solid #000; padding: 3px;"></td>
-                                            <td style="border: 1px solid #000; padding: 3px;"></td>
+                                            <td style="border: 1px solid #000; padding: 1px 2px;"></td>
+                                            <td style="border: 1px solid #000; padding: 1px 2px;"></td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -167,18 +169,18 @@
                                 <thead>
                                     <tr style="background: #e5e7eb;">
                                         <th colspan="3"
-                                            style="border: 1px solid #000; padding: 2px; font-weight: bold;">CEK</th>
+                                            style="border: 1px solid #000; padding: 1px 2px; font-weight: bold;">CEK</th>
                                         <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 4px; font-weight: bold; font-style: italic;">
+                                            style="border: 1px solid #000; padding: 1px 4px; font-weight: bold; font-style: italic;">
                                             NAMA ITEM</th>
                                         <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 2px; text-align: center; font-weight: bold; width: 60px;">
+                                            style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; width: 60px;">
                                             MUATAN</th>
                                         <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 2px; text-align: center; font-weight: bold; width: 60px;">
+                                            style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; width: 60px;">
                                             RETUR</th>
                                         <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 2px; width: 75px; text-align: center; font-weight: bold;">
+                                            style="border: 1px solid #000; padding: 1px 2px; width: 75px; text-align: center; font-weight: bold;">
                                             G.T</th>
                                     </tr>
                                     <tr style="background: #e5e7eb;">
@@ -196,20 +198,20 @@
                                 <tbody>
                                     @foreach ($rightItems as $item)
                                         <tr>
-                                            <td style="border: 1px solid #000; padding: 2px; text-align: center;"><input
+                                            <td style="border: 1px solid #000; padding: 1px 2px; text-align: center;"><input
                                                     type="checkbox" class="print:appearance-auto w-3 h-3"></td>
-                                            <td style="border: 1px solid #000; padding: 2px; text-align: center;"><input
+                                            <td style="border: 1px solid #000; padding: 1px 2px; text-align: center;"><input
                                                     type="checkbox" class="print:appearance-auto w-3 h-3"></td>
-                                            <td style="border: 1px solid #000; padding: 2px; text-align: center;"><input
+                                            <td style="border: 1px solid #000; padding: 1px 2px; text-align: center;"><input
                                                     type="checkbox" class="print:appearance-auto w-3 h-3"></td>
-                                            <td style="border: 1px solid #000; padding: 3px; font-weight: 500;">
+                                            <td style="border: 1px solid #000; padding: 1px 2px; font-weight: 500;">
                                                 {{ $item['category_name'] }} {{ $item['name'] }}</td>
                                             <td
-                                                style="border: 1px solid #000; padding: 3px; text-align: center; font-weight: bold; font-size: 11px;">
+                                                style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 11px;">
                                                 {{ !empty($item['batches'][$currentBatch]) ? $item['batches'][$currentBatch] : '' }}
                                             </td>
-                                            <td style="border: 1px solid #000; padding: 3px;"></td>
-                                            <td style="border: 1px solid #000; padding: 3px;"></td>
+                                            <td style="border: 1px solid #000; padding: 1px 2px;"></td>
+                                            <td style="border: 1px solid #000; padding: 1px 2px;"></td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -261,9 +263,9 @@
                     </div>
 
                     {{-- Print Footer --}}
-                    <div class="mt-4 pt-2" style="border-top: 1px solid #d1d5db; font-size: 11px; color: #9ca3af;">
+                    {{-- <div class="mt-4 pt-2" style="border-top: 1px solid #d1d5db; font-size: 11px; color: #9ca3af;">
                         Dicetak pada: {{ now()->translatedFormat('d F Y, H:i') }}
-                    </div>
+                    </div> --}}
                 </div>
             @endfor
         @else
@@ -286,7 +288,7 @@
         }
 
         @page {
-            size: landscape;
+            size: portrait;
             margin: 8mm;
         }
 

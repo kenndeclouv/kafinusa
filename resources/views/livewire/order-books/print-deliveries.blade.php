@@ -116,21 +116,21 @@
                                     {{-- Category Header Row --}}
                                     <tr style="background: #e5e7eb;">
                                         <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 4px; text-align: center; vertical-align: bottom; font-weight: bold; width: 30px;">
+                                            style="border: 1px solid #000; padding: 1px 4px; text-align: center; vertical-align: bottom; font-weight: bold; width: 30px;">
                                             NO
                                         </th>
                                         <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 4px; text-align: left; vertical-align: bottom; font-weight: bold; width: 180px;">
+                                            style="border: 1px solid #000; padding: 1px 4px; text-align: left; vertical-align: bottom; font-weight: bold; width: 180px;">
                                             NAMA PELANGGAN
                                         </th>
                                         @foreach ($categories as $category)
                                             <th colspan="{{ count($category['items']) }}"
-                                                style="border: 1px solid #000; padding: 2px; text-align: center; font-weight: bold;">
+                                                style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold;">
                                                 {{ $category['name'] }}
                                             </th>
                                         @endforeach
                                         <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 2px; text-align: center; vertical-align: bottom; font-weight: bold; width: 60px;">
+                                            style="border: 1px solid #000; padding: 1px 2px; text-align: center; vertical-align: bottom; font-weight: bold; width: 60px;">
                                             TOTAL<br>(KG)
                                         </th>
                                     </tr>
@@ -139,7 +139,7 @@
                                         @foreach ($categories as $category)
                                             @foreach ($category['items'] as $item)
                                                 <th
-                                                    style="border: 1px solid #000; padding: 2px; text-align: center; font-weight: bold; font-size: 9px; width: 35px;">
+                                                    style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 9px; width: 35px;">
                                                     {{ $item->name }}
                                                 </th>
                                             @endforeach
@@ -180,11 +180,11 @@
                                         @endphp
 
                                         <tr>
-                                            <td style="border: 1px solid #000; border-bottom: {{ $bottomBorder }}; padding: 4px; text-align: center; font-weight: 500;">
+                                            <td style="border: 1px solid #000; border-bottom: {{ $bottomBorder }}; padding: 1px 4px; text-align: center; font-weight: 500;">
                                                 {{ $globalCustomerCount }}
                                             </td>
                                             <td
-                                                style="border: 1px solid #000; border-bottom: {{ $bottomBorder }}; border-top-color: {{ $nameTopBorderColor }}; border-bottom-color: {{ $nameBottomBorderColor }}; padding: 4px; font-weight: 500; text-transform: uppercase; {{ $customer->has_debt ? 'background-color: #000 !important; color: #fff !important;' : '' }}">
+                                                style="border: 1px solid #000; border-bottom: {{ $bottomBorder }}; border-top-color: {{ $nameTopBorderColor }}; border-bottom-color: {{ $nameBottomBorderColor }}; padding: 1px 4px; font-weight: 500; text-transform: uppercase; {{ $customer->has_debt ? 'background-color: #000 !important; color: #fff !important;' : '' }}">
                                                 {{ $customer->name }}
                                             </td>
                                             @foreach ($categories as $category)
@@ -203,13 +203,13 @@
                                                         };
                                                     @endphp
                                                     <td
-                                                        style="border: 1px solid #000; border-bottom: {{ $bottomBorder }}; padding: 3px; text-align: center; font-weight: bold; font-size: 11px; {{ $colorStyle }}">
+                                                        style="border: 1px solid #000; border-bottom: {{ $bottomBorder }}; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 11px; {{ $colorStyle }}">
                                                         {{ $qty > 0 ? $qty : '' }}
                                                     </td>
                                                 @endforeach
                                             @endforeach
                                             <td
-                                                style="border: 1px solid #000; border-bottom: {{ $bottomBorder }}; padding: 3px; text-align: center; font-weight: bold;">
+                                                style="border: 1px solid #000; border-bottom: {{ $bottomBorder }}; padding: 1px 2px; text-align: center; font-weight: bold;">
                                                 {{ number_format(($customerWeights[$customer->id] ?? 0) / 1000, 1, ',', '.') }}
                                             </td>
                                         </tr>
@@ -222,7 +222,7 @@
                                             @endphp
                                             <tr>
                                                 <td style="border: 2px solid #000; background-color: #000 !important;"></td>
-                                                <td style="border: 2px solid #000; border-top-color: {{ $sepTopBorderColor }}; border-bottom-color: {{ $sepBottomBorderColor }}; background-color: #000 !important; color: #fff !important; padding: 4px 8px; text-align: center; font-weight: bold; text-transform: uppercase; font-size: 11px; letter-spacing: 2px;">
+                                                <td style="border: 2px solid #000; border-top-color: {{ $sepTopBorderColor }}; border-bottom-color: {{ $sepBottomBorderColor }}; background-color: #000 !important; color: #fff !important; padding: 1px 8px; text-align: center; font-weight: bold; text-transform: uppercase; font-size: 11px; letter-spacing: 2px;">
                                                     {{ $catName }}
                                                 </td>
                                                 @foreach ($categories as $category)
@@ -246,7 +246,7 @@
                                 <tfoot>
                                     <tr style="background: #e5e7eb;">
                                         <td colspan="2"
-                                            style="border: 1px solid #000; padding: 4px; font-weight: bold; text-align: right; text-transform: uppercase;">
+                                            style="border: 1px solid #000; padding: 1px 4px; font-weight: bold; text-align: right; text-transform: uppercase;">
                                             TOTAL
                                         </td>
                                         @foreach ($categories as $category)
@@ -255,13 +255,13 @@
                                                     $totalQty = $itemTotals[$item->id] ?? 0;
                                                 @endphp
                                                 <td
-                                                    style="border: 1px solid #000; padding: 3px; text-align: center; font-weight: bold; font-size: 11px;">
+                                                    style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 11px;">
                                                     {{ $totalQty > 0 ? $totalQty : '' }}
                                                 </td>
                                             @endforeach
                                         @endforeach
                                         <td
-                                            style="border: 1px solid #000; padding: 3px; text-align: center; font-weight: bold;">
+                                            style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold;">
                                             {{ number_format(array_sum($customerWeights) / 1000, 1, ',', '.') }}
                                         </td>
                                     </tr>
