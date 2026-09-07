@@ -62,6 +62,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('{orderBook}/unordered-customers', \App\Livewire\OrderBooks\UnorderedCustomers::class)->name('unordered-customers');
     });
 
+    // Backups
+    Route::prefix('backups')->name('backups.')->group(function () {
+        Route::get('/', \App\Livewire\Backups\Index::class)->name('index');
+        Route::get('/{month}', \App\Livewire\Backups\Show::class)->name('show');
+    });
+
     // Access Control
     Route::prefix('access')->group(function () {
         Route::prefix('users')->name('users.')->group(function () {

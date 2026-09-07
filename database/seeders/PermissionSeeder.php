@@ -36,13 +36,16 @@ class PermissionSeeder extends Seeder
             }
         }
 
-        // Custom permissions
         $customPermissions = [
             'notifications:send',
             'logs.view',
             'logs.delete',
             'logs.export',
             'system_monitor.view',
+            'backups:read',
+            'backups:create',
+            'backups:delete',
+            'order_books:bypass-lock',
         ];
 
         foreach ($customPermissions as $permission) {

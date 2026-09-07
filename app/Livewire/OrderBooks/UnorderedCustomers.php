@@ -16,7 +16,7 @@ class UnorderedCustomers extends Component
     {
         abort_unless(auth()->user() && auth()->user()->hasAnyPermission(['order_books:read', 'order_books:read-self']), 403, 'Unauthorized.');
         
-        if (auth()->user()->hasPermissionTo('order_books:read-self') && !auth()->user()->hasPermissionTo('order_books:read')) {
+        if (auth()->user()->can('order_books:read-self') && !auth()->user()->can('order_books:read')) {
             abort_if($orderBook->employee_id !== (auth()->user()->employee->id ?? 0), 403, 'Anda tidak memiliki akses ke buku order ini.');
         }
 

@@ -17,7 +17,7 @@ class PrintNotas extends Component
             403
         );
 
-        if (auth()->user()->hasPermissionTo('order_books:read-self') && !auth()->user()->hasPermissionTo('order_books:read')) {
+        if (auth()->user()->can('order_books:read-self') && !auth()->user()->can('order_books:read')) {
             abort_if(
                 $orderBook->employee_id !== (auth()->user()->employee->id ?? 0),
                 403,

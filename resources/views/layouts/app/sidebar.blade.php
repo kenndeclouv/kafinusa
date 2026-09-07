@@ -119,10 +119,16 @@
                 </flux:sidebar.group>
             @endcanany
 
-            @canany(['logs.view', 'system_monitor.view'])
+            @canany(['logs.view', 'system_monitor.view', 'backups:read'])
                 <flux:sidebar.group expandable
-                    :expanded="request()->routeIs('logs.*') || request()->routeIs('system-monitor.*')" icon="cpu-chip"
+                    :expanded="request()->routeIs('logs.*') || request()->routeIs('system-monitor.*') || request()->routeIs('backups.*')" icon="cpu-chip"
                     :heading="__('Sistem / Developer')">
+                    @can('backups:read')
+                        <flux:sidebar.item icon="archive-box" :href="route('backups.index')"
+                            :current="request()->routeIs('backups.*')" wire:navigate.hover>
+                            {{ __('Backup & Tutup Buku') }}
+                        </flux:sidebar.item>
+                    @endcan
                     @can('logs.view')
                         <flux:sidebar.item icon="document-text" :href="route('logs.index')"
                             :current="request()->routeIs('logs.*')" wire:navigate.hover>

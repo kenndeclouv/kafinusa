@@ -92,12 +92,15 @@ class Index extends Component
         $this->resetValidation();
         $book = OrderBook::findOrFail($id);
         
+        if (!auth()->user()->can('order_books:bypass-lock') && \App\Models\MonthlyBackup::isLocked($book->book_date)) {
+            Flux::toast(heading: 'Error', text: 'Buku Order bulan ini sudah ditutup (terkunci).', variant: 'danger');
+            return;
+        }
+
         $this->editingBookId = $book->id;
         $this->market_id = $book->market_id;
         $this->employee_id = $book->employee_id;
         $this->book_date = $book->book_date->format('Y-m-d');
-        $this->status = $book->status;
-        
         $this->status = $book->status;
         
         $this->modal('create-book-modal')->show();
@@ -106,6 +109,11 @@ class Index extends Component
     public function save()
     {
         $this->validate();
+        
+        if (!auth()->user()->can('order_books:bypass-lock') && \App\Models\MonthlyBackup::isLocked($this->book_date)) {
+            Flux::toast(heading: 'Error', text: 'Tidak dapat menyimpan. Buku Order untuk bulan ini sudah ditutup (terkunci).', variant: 'danger');
+            return;
+        }
 
         if ($this->editingBookId) {
             $book = OrderBook::findOrFail($this->editingBookId);
@@ -208,6 +216,12 @@ class Index extends Component
     public function delete($id)
     {
         $orderBook = OrderBook::findOrFail($id);
+        
+        if (!auth()->user()->can('order_books:bypass-lock') && \App\Models\MonthlyBackup::isLocked($orderBook->book_date)) {
+            Flux::toast(heading: 'Error', text: 'Buku Order bulan ini sudah ditutup (terkunci).', variant: 'danger');
+            return;
+        }
+
         $orderBook->delete();
 
         Flux::toast(heading: 'Success', text: 'Buku Order berhasil dihapus.', variant: 'success');
@@ -217,6 +231,16 @@ class Index extends Component
     {
         if (empty($this->selected)) {
             return;
+        }
+
+        if (!auth()->user()->can('order_books:bypass-lock')) {
+            $books = OrderBook::whereIn('id', $this->selected)->get();
+            foreach ($books as $book) {
+                if (\App\Models\MonthlyBackup::isLocked($book->book_date)) {
+                    Flux::toast(heading: 'Error', text: 'Beberapa Buku Order sudah ditutup dan tidak dapat dihapus.', variant: 'danger');
+                    return;
+                }
+            }
         }
 
         OrderBook::whereIn('id', $this->selected)->delete();
@@ -252,7 +276,7 @@ class Index extends Component
             ->withCount('orders')
             ->orderBy($this->sortBy, $this->sortDirection);
 
-        if (auth()->user() && auth()->user()->hasPermissionTo('order_books:read-self') && !auth()->user()->hasPermissionTo('order_books:read')) {
+        if (auth()->user() && auth()->user()->can('order_books:read-self') && !auth()->user()->can('order_books:read')) {
             $query->where('employee_id', auth()->user()->employee->id ?? 0);
         }
 
@@ -275,6 +299,23 @@ class Index extends Component
             }
         }
 
+        // Always hide locked months from order books index
+        $lockedMonths = \Illuminate\Support\Facades\Cache::remember('all_locked_months', now()->addMinutes(10), function() {
+            return \App\Models\MonthlyBackup::whereNotNull('locked_at')->pluck('month')->toArray();
+        });
+
+        if (!empty($lockedMonths)) {
+            $query->where(function($q) use ($lockedMonths) {
+                foreach ($lockedMonths as $lm) {
+                    $parts = explode('-', $lm);
+                    $q->whereNot(function($subQ) use ($parts) {
+                        $subQ->whereYear('book_date', $parts[0])
+                             ->whereMonth('book_date', $parts[1]);
+                    });
+                }
+            });
+        }
+
         return $query->paginate(10);
     }
 
@@ -290,10 +331,17 @@ class Index extends Component
         if (now()->startOfMonth()->lt($start)) $start = now()->startOfMonth();
         if (now()->startOfMonth()->gt($end)) $end = now()->startOfMonth();
         
+        $lockedMonths = \Illuminate\Support\Facades\Cache::remember('all_locked_months', now()->addMinutes(10), function() {
+            return \App\Models\MonthlyBackup::whereNotNull('locked_at')->pluck('month')->toArray();
+        });
+
         $months = [];
         $current = $end->copy();
         while ($current->gte($start)) {
-            $months[$current->format('Y-m')] = $current->translatedFormat('F Y');
+            $monthKey = $current->format('Y-m');
+            if (!in_array($monthKey, $lockedMonths)) {
+                $months[$monthKey] = $current->translatedFormat('F Y');
+            }
             $current = $current->subMonth();
         }
         

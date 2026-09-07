@@ -17,7 +17,7 @@ class Index extends Component
 
     public function mount()
     {
-        abort_unless(auth()->user() && auth()->user()->hasPermissionTo('sales_schedules:read'), 403, 'Unauthorized.');
+        abort_unless(auth()->user() && auth()->user()->can('sales_schedules:read'), 403, 'Unauthorized.');
     }
 
     // Day of week mapping

@@ -29,7 +29,7 @@ class Show extends Component
     {
         abort_unless(auth()->user() && auth()->user()->hasAnyPermission(['order_books:read', 'order_books:read-self']), 403, 'Unauthorized.');
         
-        if (auth()->user()->hasPermissionTo('order_books:read-self') && !auth()->user()->hasPermissionTo('order_books:read')) {
+        if (auth()->user()->can('order_books:read-self') && !auth()->user()->can('order_books:read')) {
             abort_if($orderBook->employee_id !== (auth()->user()->employee->id ?? 0), 403, 'Anda tidak memiliki akses ke buku order ini.');
         }
 
@@ -139,6 +139,11 @@ class Show extends Component
 
     public function openCreateModal()
     {
+        if (!auth()->user()->can('order_books:bypass-lock') && \App\Models\MonthlyBackup::isLocked($this->orderBook->book_date)) {
+            Flux::toast(heading: 'Error', text: 'Buku Order bulan ini sudah ditutup.', variant: 'danger');
+            return;
+        }
+
         $this->resetValidation();
         $this->editingOrderId = null;
         $this->customer_id = null;
@@ -150,6 +155,11 @@ class Show extends Component
 
     public function editOrder($id)
     {
+        if (!auth()->user()->can('order_books:bypass-lock') && \App\Models\MonthlyBackup::isLocked($this->orderBook->book_date)) {
+            Flux::toast(heading: 'Error', text: 'Buku Order bulan ini sudah ditutup.', variant: 'danger');
+            return;
+        }
+
         $this->resetValidation();
         $order = Order::with('orderItems')->findOrFail($id);
         
@@ -202,6 +212,11 @@ class Show extends Component
 
     public function save()
     {
+        if (!auth()->user()->can('order_books:bypass-lock') && \App\Models\MonthlyBackup::isLocked($this->orderBook->book_date)) {
+            Flux::toast(heading: 'Error', text: 'Buku Order bulan ini sudah ditutup.', variant: 'danger');
+            return;
+        }
+
         $this->validate();
 
         DB::transaction(function () {
@@ -262,6 +277,11 @@ class Show extends Component
 
     public function deleteOrder($id)
     {
+        if (!auth()->user()->can('order_books:bypass-lock') && \App\Models\MonthlyBackup::isLocked($this->orderBook->book_date)) {
+            Flux::toast(heading: 'Error', text: 'Buku Order bulan ini sudah ditutup.', variant: 'danger');
+            return;
+        }
+
         $order = Order::findOrFail($id);
         $order->delete();
         

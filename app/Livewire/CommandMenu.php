@@ -121,10 +121,17 @@ class CommandMenu extends Component
                 'group' => 'Sistem / Developer',
             ],
             [
+                'label' => 'Backup & Tutup Buku',
+                'icon' => 'archive-box',
+                'route' => 'backups.index',
+                'permission' => 'backups:read',
+                'group' => 'Sistem / Developer',
+            ],
+            [
                 'label' => 'System Monitor',
                 'icon' => 'cpu-chip',
                 'route' => 'system-monitor.index',
-                'permission' => null,
+                'permission' => 'system_monitor.view',
                 'group' => 'Sistem / Developer',
             ],
         ];

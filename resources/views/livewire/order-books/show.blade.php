@@ -1,4 +1,14 @@
 <div>
+    @if (\App\Models\MonthlyBackup::isLocked($orderBook->book_date))
+        <div class="mb-6 p-4 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 flex gap-3 items-start">
+            <flux:icon.lock-closed class="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+            <div>
+                <h3 class="text-sm font-semibold text-amber-800 dark:text-amber-400">Buku Order Telah Ditutup</h3>
+                <p class="text-sm text-amber-700 dark:text-amber-500 mt-1">Data pada bulan ini telah dikunci (di-backup). Anda dapat melihat dan mengubahnya karena memiliki hak akses khusus (Super Admin). Pengguna biasa tidak dapat melihat atau mengubah data ini.</p>
+            </div>
+        </div>
+    @endif
+
     <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
         <div>
             <flux:heading size="xl">Isi Buku Order: {{ $orderBook->market->name }}</flux:heading>
@@ -220,21 +230,27 @@
                                         class="[&>button]:!ms-0 [&>button]:!w-full" />
                                 </div>
 
-                                <div class="w-28 ml-2 shrink-0">
-                                    <x-searchable-select wire:model="orderItems.{{ $index }}.price_type"
-                                        :options="['umum' => 'Umum', 'promo' => 'Promo', 'khusus' => 'Lain-lain']" variant="ios" class="[&>button]:!ms-0 [&>button]:!w-full [&>button]:!text-xs" />
-                                </div>
-                                
                                 <div class="w-24 ml-2 shrink-0">
                                     <x-stepper wire:model="orderItems.{{ $index }}.quantity" variant="ios"
                                         min="1" step="1" />
                                 </div>
 
                                 <div class="ml-3 shrink-0">
-                                    <flux:button type="button" size="sm"
-                                        wire:click="removeOrderItem({{ $index }})" variant="danger"
-                                        icon="trash" :disabled="count($orderItems) <= 1"
-                                        class="{{ count($orderItems) <= 1 ? 'opacity-50' : '' }}" />
+                                    <flux:dropdown align="end">
+                                        <flux:button variant="subtle" size="sm" icon="ellipsis-vertical" class="text-zinc-500" />
+                                        <flux:menu class="min-w-48">
+                                            <div class="px-3 py-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">Tipe Harga</div>
+                                            <flux:menu.radio.group wire:model="orderItems.{{ $index }}.price_type">
+                                                <flux:menu.radio value="umum">Umum</flux:menu.radio>
+                                                <flux:menu.radio value="promo">Promo</flux:menu.radio>
+                                                <flux:menu.radio value="khusus">Lain-lain</flux:menu.radio>
+                                            </flux:menu.radio.group>
+                                            
+                                            <flux:menu.separator />
+                                            
+                                            <flux:menu.item variant="danger" icon="trash" wire:click="removeOrderItem({{ $index }})" :disabled="count($orderItems) <= 1">Hapus Barang</flux:menu.item>
+                                        </flux:menu>
+                                    </flux:dropdown>
                                 </div>
 
                                 @if (!$loop->last)
