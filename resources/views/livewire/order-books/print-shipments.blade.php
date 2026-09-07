@@ -1,4 +1,3 @@
-
 <div class="p-2 sm:p-4 print:p-0 max-w-[1400px] mx-auto">
     {{-- Print Action Bar (hidden on print) --}}
     <div
@@ -29,7 +28,7 @@
                 }).then(canvas => {
                     el.style.overflow = originalOverflow;
                     let linkDl = document.createElement('a');
-                    linkDl.download = 'pengambilan-barang-{{ Str::slug($orderBook->market->name) }}-{{ $orderBook->book_date->format("dmY") }}.png';
+                    linkDl.download = 'pengambilan-barang-{{ Str::slug($orderBook->market->name) }}-{{ $orderBook->book_date->format('dmY') }}.png';
                     linkDl.href = canvas.toDataURL('image/png');
                     linkDl.click();
                     this.isDownloading = false;
@@ -73,9 +72,6 @@
         @if ($plan)
             @php
                 $items = $this->itemRows;
-                $half = ceil($items->count() / 2);
-                $leftItems = $items->take($half)->values();
-                $rightItems = $items->skip($half)->values();
             @endphp
 
             @for ($currentBatch = 1; $currentBatch <= $this->totalBatches; $currentBatch++)
@@ -87,178 +83,115 @@
                         }
                     }
                 @endphp
-                <div
-                    class="w-full pt-4 print:pt-0 text-black @if ($currentBatch > 1) mt-8 print:mt-12 @endif"
-                    style="page-break-inside: avoid;">
+                <div class="w-full pt-4 print:pt-0 text-black print-half-width @if ($currentBatch > 1) mt-8 print:mt-12 @endif"
+                    style="page-break-inside: avoid; padding-right: 15px;">
                     {{-- Document Header --}}
-                    <div
-                        class="flex items-center justify-between mb-4 border-b-2 border-black pb-2 bg-white text-black print:mb-2 print:pb-1">
-                        <div>
-                            <div class="text-sm font-semibold tracking-widest uppercase">PASAR :
-                                {{ $orderBook->market->name }}</div>
-                        </div>
-                        <h1 class="text-xl font-bold uppercase tracking-widest italic text-center flex-1">
+                    <div class="mb-2 border-b-2 border-black pb-2 bg-white text-black print:mb-2 print:pb-1">
+                        <h1 class="text-base font-bold uppercase tracking-widest italic text-center mb-2">
                             Daftar Pengambilan Barang Pasar
                             {{ $this->totalBatches > 1 ? "(Muatan $currentBatch)" : '' }}
                         </h1>
-                        <div class="text-sm font-semibold">
-                            Hari / Tgl : {{ $orderBook->book_date->translatedFormat('l / d-m-Y') }}
+                        <div class="flex items-start justify-between">
+                            <div class="text-xs font-semibold tracking-widest uppercase">
+                                PASAR : {{ $orderBook->market->name }}
+                            </div>
+                            <div class="text-xs font-semibold text-right">
+                                Hari / Tgl : {{ $orderBook->book_date->translatedFormat('l / d-m-Y') }}
+                            </div>
                         </div>
                     </div>
 
                     {{-- Main Layout --}}
-                    <div class="flex flex-row gap-4 w-full text-black bg-white">
-                        {{-- Left Column --}}
-                        <div class="flex-1">
-                            <table class="w-full border-collapse text-[10px]" style="border: 2px solid #000;">
-                                <thead>
-                                    <tr style="background: #e5e7eb;">
-                                        <th colspan="3"
-                                            style="border: 1px solid #000; padding: 1px 2px; font-weight: bold;">CEK</th>
-                                        <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 1px 4px; font-weight: bold; font-style: italic;">
-                                            NAMA ITEM</th>
-                                        <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; width: 60px;">
-                                            MUATAN</th>
-                                        <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; width: 60px;">
-                                            RETUR</th>
-                                        <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 1px 2px; width: 75px; text-align: center; font-weight: bold;">
-                                            G.T</th>
+                    <div class="w-full text-black bg-white">
+                        <table class="w-full border-collapse text-[10px]" style="border: 2px solid #000;">
+                            <thead>
+                                <tr style="background: #e5e7eb;">
+                                    <th colspan="3"
+                                        style="border: 1px solid #000; padding: 1px 2px; font-weight: bold;">CEK</th>
+                                    <th rowspan="2"
+                                        style="border: 1px solid #000; padding: 1px 4px; font-weight: bold; font-style: italic;">
+                                        NAMA ITEM</th>
+                                    <th rowspan="2"
+                                        style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; width: 60px;">
+                                        MUATAN</th>
+                                    <th rowspan="2"
+                                        style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; width: 60px;">
+                                        RETUR</th>
+                                    <th rowspan="2"
+                                        style="border: 1px solid #000; padding: 1px 2px; width: 75px; text-align: center; font-weight: bold;">
+                                        G.T</th>
+                                </tr>
+                                <tr style="background: #e5e7eb;">
+                                    <th
+                                        style="border: 1px solid #000; padding: 1px; text-align: center; width: 22px; font-size: 8px;">
+                                        G</th>
+                                    <th
+                                        style="border: 1px solid #000; padding: 1px; text-align: center; width: 22px; font-size: 8px;">
+                                        T</th>
+                                    <th
+                                        style="border: 1px solid #000; padding: 1px; text-align: center; width: 22px; font-size: 8px;">
+                                        S</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($items as $item)
+                                    <tr>
+                                        <td style="border: 1px solid #000; padding: 1px 2px; text-align: center;">
+                                            {{-- <input type="checkbox" class="print:appearance-auto w-3 h-3"> --}}
+                                        </td>
+                                        <td style="border: 1px solid #000; padding: 1px 2px; text-align: center;">
+                                            {{-- <input type="checkbox" class="print:appearance-auto w-3 h-3"> --}}
+                                        </td>
+                                        <td style="border: 1px solid #000; padding: 1px 2px; text-align: center;">
+                                            {{-- <input type="checkbox" class="print:appearance-auto w-3 h-3"> --}}
+                                        </td>
+                                        <td style="border: 1px solid #000; padding: 1px 2px; font-weight: 500;">
+                                            {{ $item['category_name'] }} {{ $item['name'] }}</td>
+                                        <td
+                                            style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 11px;">
+                                            {{ !empty($item['batches'][$currentBatch]) ? $item['batches'][$currentBatch] : '' }}
+                                        </td>
+                                        <td style="border: 1px solid #000; padding: 1px 2px;"></td>
+                                        <td style="border: 1px solid #000; padding: 1px 2px;"></td>
                                     </tr>
-                                    <tr style="background: #e5e7eb;">
-                                        <th
-                                            style="border: 1px solid #000; padding: 1px; text-align: center; width: 22px; font-size: 8px;">
-                                            G</th>
-                                        <th
-                                            style="border: 1px solid #000; padding: 1px; text-align: center; width: 22px; font-size: 8px;">
-                                            T</th>
-                                        <th
-                                            style="border: 1px solid #000; padding: 1px; text-align: center; width: 22px; font-size: 8px;">
-                                            S</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($leftItems as $item)
-                                        <tr>
-                                            <td style="border: 1px solid #000; padding: 1px 2px; text-align: center;"><input
-                                                    type="checkbox" class="print:appearance-auto w-3 h-3"></td>
-                                            <td style="border: 1px solid #000; padding: 1px 2px; text-align: center;"><input
-                                                    type="checkbox" class="print:appearance-auto w-3 h-3"></td>
-                                            <td style="border: 1px solid #000; padding: 1px 2px; text-align: center;"><input
-                                                    type="checkbox" class="print:appearance-auto w-3 h-3"></td>
-                                            <td style="border: 1px solid #000; padding: 1px 2px; font-weight: 500;">
-                                                {{ $item['category_name'] }} {{ $item['name'] }}</td>
-                                            <td
-                                                style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 11px;">
-                                                {{ !empty($item['batches'][$currentBatch]) ? $item['batches'][$currentBatch] : '' }}
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 1px 2px;"></td>
-                                            <td style="border: 1px solid #000; padding: 1px 2px;"></td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {{-- Right Column --}}
-                        <div class="flex-1">
-                            <table class="w-full border-collapse text-[10px]" style="border: 2px solid #000;">
-                                <thead>
-                                    <tr style="background: #e5e7eb;">
-                                        <th colspan="3"
-                                            style="border: 1px solid #000; padding: 1px 2px; font-weight: bold;">CEK</th>
-                                        <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 1px 4px; font-weight: bold; font-style: italic;">
-                                            NAMA ITEM</th>
-                                        <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; width: 60px;">
-                                            MUATAN</th>
-                                        <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; width: 60px;">
-                                            RETUR</th>
-                                        <th rowspan="2"
-                                            style="border: 1px solid #000; padding: 1px 2px; width: 75px; text-align: center; font-weight: bold;">
-                                            G.T</th>
-                                    </tr>
-                                    <tr style="background: #e5e7eb;">
-                                        <th
-                                            style="border: 1px solid #000; padding: 1px; text-align: center; width: 22px; font-size: 8px;">
-                                            G</th>
-                                        <th
-                                            style="border: 1px solid #000; padding: 1px; text-align: center; width: 22px; font-size: 8px;">
-                                            T</th>
-                                        <th
-                                            style="border: 1px solid #000; padding: 1px; text-align: center; width: 22px; font-size: 8px;">
-                                            S</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($rightItems as $item)
-                                        <tr>
-                                            <td style="border: 1px solid #000; padding: 1px 2px; text-align: center;"><input
-                                                    type="checkbox" class="print:appearance-auto w-3 h-3"></td>
-                                            <td style="border: 1px solid #000; padding: 1px 2px; text-align: center;"><input
-                                                    type="checkbox" class="print:appearance-auto w-3 h-3"></td>
-                                            <td style="border: 1px solid #000; padding: 1px 2px; text-align: center;"><input
-                                                    type="checkbox" class="print:appearance-auto w-3 h-3"></td>
-                                            <td style="border: 1px solid #000; padding: 1px 2px; font-weight: 500;">
-                                                {{ $item['category_name'] }} {{ $item['name'] }}</td>
-                                            <td
-                                                style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 11px;">
-                                                {{ !empty($item['batches'][$currentBatch]) ? $item['batches'][$currentBatch] : '' }}
-                                            </td>
-                                            <td style="border: 1px solid #000; padding: 1px 2px;"></td>
-                                            <td style="border: 1px solid #000; padding: 1px 2px;"></td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
 
                     {{-- Footer Signatures --}}
-                    <div class="mt-4 grid grid-cols-2 gap-4 text-xs bg-white text-black">
-                        {{-- Left Signatures --}}
-                        <div class="flex flex-col" style="border: 1px solid #000;">
-                            <div class="flex" style="border-bottom: 1px solid #000;">
-                                <div class="w-[120px] p-1 font-semibold italic text-center"
-                                    style="border-right: 1px solid #000;">Checker Utama</div>
-                                <div class="flex-1 p-1"></div>
-                            </div>
-                            <div class="flex" style="border-bottom: 1px solid #000;">
-                                <div class="w-[120px] p-1 font-semibold italic text-center"
-                                    style="border-right: 1px solid #000;">Checker Cabang</div>
-                                <div class="flex-1 p-1"></div>
-                            </div>
-                            <div class="flex">
-                                <div class="w-[120px] p-1 font-semibold italic text-center"
-                                    style="border-right: 1px solid #000;">Admin </div>
-                                <div class="flex-1 p-1"></div>
-                            </div>
+                    <div class="mt-4 flex flex-col text-xs bg-white text-black" style="border: 1px solid #000;">
+                        <div class="flex" style="border-bottom: 1px solid #000;">
+                            <div class="w-[120px] p-1 font-semibold italic text-center"
+                                style="border-right: 1px solid #000;">Checker Utama</div>
+                            <div class="flex-1 p-1"></div>
                         </div>
-
-                        {{-- Right Signatures --}}
-                        <div class="flex flex-col" style="border: 1px solid #000;">
-                            <div class="flex" style="border-bottom: 1px solid #000;">
-                                <div class="w-[120px] p-1 font-bold italic text-center uppercase tracking-widest"
-                                    style="border-right: 1px solid #000;">SALES</div>
-                                <div class="flex-1 p-1 font-semibold text-center uppercase">
-                                    {{ $orderBook->employee->name }}</div>
-                            </div>
-                            <div class="flex bg-[#3f3f46] text-white" style="border-bottom: 1px solid #000;">
-                                <div class="w-[120px] p-1 font-bold italic text-center uppercase tracking-widest"
-                                    style="border-right: 1px solid #fff;">TONASE</div>
-                                <div class="flex-1 p-1 bg-white text-black font-semibold text-center">
-                                    {{ number_format($batchTonase / 1000, 2, ',', '.') }} Kg</div>
-                            </div>
-                            <div class="flex">
-                                <div class="w-[120px] p-1 font-bold italic text-center uppercase tracking-widest"
-                                    style="border-right: 1px solid #000;">DRIVER</div>
-                                <div class="flex-1 p-1 font-semibold text-center uppercase"></div>
-                            </div>
+                        <div class="flex" style="border-bottom: 1px solid #000;">
+                            <div class="w-[120px] p-1 font-semibold italic text-center"
+                                style="border-right: 1px solid #000;">Checker Cabang</div>
+                            <div class="flex-1 p-1"></div>
+                        </div>
+                        <div class="flex" style="border-bottom: 1px solid #000;">
+                            <div class="w-[120px] p-1 font-semibold italic text-center"
+                                style="border-right: 1px solid #000;">Admin </div>
+                            <div class="flex-1 p-1"></div>
+                        </div>
+                        <div class="flex" style="border-bottom: 1px solid #000;">
+                            <div class="w-[120px] p-1 font-bold italic text-center uppercase tracking-widest"
+                                style="border-right: 1px solid #000;">SALES</div>
+                            <div class="flex-1 p-1 font-semibold text-center uppercase">
+                                {{ $orderBook->employee->name }}</div>
+                        </div>
+                        <div class="flex" style="border-bottom: 1px solid #000;">
+                            <div class="w-[120px] p-1 font-bold italic text-center uppercase tracking-widest"
+                                style="border-right: 1px solid #000;">TONASE</div>
+                            <div class="flex-1 p-1 bg-white text-black font-semibold text-center">
+                                {{ number_format($batchTonase / 1000, 2, ',', '.') }} Kg</div>
+                        </div>
+                        <div class="flex">
+                            <div class="w-[120px] p-1 font-bold italic text-center uppercase tracking-widest"
+                                style="border-right: 1px solid #000;">DRIVER</div>
+                            <div class="flex-1 p-1 font-semibold text-center uppercase"></div>
                         </div>
                     </div>
 
@@ -298,6 +231,10 @@
 
         tr {
             page-break-inside: avoid;
+        }
+
+        .print-half-width {
+            width: 50% !important;
         }
     }
 </style>
