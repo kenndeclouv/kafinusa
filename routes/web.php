@@ -32,6 +32,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{market}', \App\Livewire\Markets\Show::class)->middleware('can:markets:read')->name('show');
     });
 
+    // Warehouses
+    Route::prefix('warehouses')->name('warehouses.')->group(function () {
+        Route::get('/', \App\Livewire\Warehouses\Index::class)->middleware('can:warehouses:read')->name('index');
+    });
+
+    // Stock Mutations
+    Route::prefix('stock-mutations')->name('stock-mutations.')->group(function () {
+        Route::get('/', \App\Livewire\StockMutations\Index::class)->middleware('can:stock_mutations:read')->name('index');
+        Route::get('/{warehouse}', \App\Livewire\StockMutations\Show::class)->middleware('can:stock_mutations:read')->name('show');
+    });
+
     // Employees & Sales Schedules
     Route::prefix('employees')->name('employees.')->group(function () {
         Route::get('/', \App\Livewire\Employees\Index::class)->middleware('can:employees:read')->name('index');

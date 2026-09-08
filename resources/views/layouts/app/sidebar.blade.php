@@ -41,6 +41,12 @@
                         {{ __('Jadwal Mingguan') }}
                     </flux:sidebar.item>
                 @endcan
+                @canany(['stock_mutations:read', 'stock_mutations:read-self'])
+                    <flux:sidebar.item icon="clipboard-document-list" :href="route('stock-mutations.index')"
+                        :current="request()->routeIs('stock-mutations.*')" wire:navigate.hover>
+                        {{ __('Mutasi Stok') }}
+                    </flux:sidebar.item>
+                @endcanany
             @endcanany
 
             <div class="px-3 mt-2 mb-1 text-xs font-medium text-zinc-500 dark:text-zinc-400 in-data-flux-sidebar-collapsed-desktop:hidden"
@@ -63,6 +69,12 @@
                         <flux:sidebar.item icon="user-group" :href="route('customers.index')"
                             :current="request()->routeIs('customers.*')" wire:navigate.hover>
                             {{ __('Pelanggan') }}
+                        </flux:sidebar.item>
+                    @endcan
+                    @can('warehouses:read')
+                        <flux:sidebar.item icon="building-office" :href="route('warehouses.index')"
+                            :current="request()->routeIs('warehouses.*')" wire:navigate.hover>
+                            {{ __('Gudang') }}
                         </flux:sidebar.item>
                     @endcan
                     @can('employees:read')

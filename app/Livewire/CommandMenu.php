@@ -44,6 +44,20 @@ class CommandMenu extends Component
                 'group' => 'Data Master',
             ],
             [
+                'label' => 'Gudang',
+                'icon' => 'building-office',
+                'route' => 'warehouses.index',
+                'permission' => 'warehouses:read',
+                'group' => 'Data Master',
+            ],
+            [
+                'label' => 'Mutasi Stok',
+                'icon' => 'clipboard-document-list',
+                'route' => 'stock-mutations.index',
+                'permission' => ['stock_mutations:read', 'stock_mutations:read-self'],
+                'group' => 'Transaksi',
+            ],
+            [
                 'label' => 'Pegawai',
                 'icon' => 'identification',
                 'route' => 'employees.index',

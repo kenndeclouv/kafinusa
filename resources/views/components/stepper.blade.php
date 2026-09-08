@@ -66,31 +66,25 @@
             </div>
         @elseif ($variant === 'ios')
             <!-- iOS Variant -->
-            <div
-                class="flex-1 relative flex items-stretch rounded-lg border border-zinc-200/50 dark:border-white/5 bg-zinc-100 dark:bg-white/10 shadow-xs focus-within:border-zinc-400 focus-within:ring-0 dark:focus-within:border-zinc-500 overflow-hidden transition-colors h-[34px]">
-
+            <div class="flex-1 flex items-center justify-between w-full">
                 <input id="{{ $inputId }}" x-ref="input" type="number" {{ $disabled ? 'disabled' : '' }}
                     {{ $attributes->whereStartsWith(['wire:', 'x-', '@', 'name', 'value', 'min', 'max', 'step', 'placeholder']) }}
-                    class="block w-full border-none bg-transparent px-3 py-0 text-[14px] text-zinc-900 dark:text-zinc-300 outline-none focus:ring-0 disabled:opacity-50 disabled:cursor-not-allowed text-center
-                           [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                    class="w-full bg-transparent border-none outline-none focus:ring-0 text-[15px] text-zinc-700 dark:text-zinc-300 placeholder-zinc-400 px-0 py-2 text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed" />
 
-                <div
-                    class="flex flex-col items-center bg-zinc-200/50 dark:bg-white/5 border-l border-zinc-200/50 dark:border-white/5 w-8 shrink-0 {{ $disabled ? 'opacity-50 pointer-events-none' : '' }}">
-                    <button type="button" @click="increment"
-                        class="flex items-center justify-center w-full flex-1 hover:bg-zinc-300/50 dark:hover:bg-white/10 active:bg-zinc-400/50 dark:active:bg-white/20 transition-colors cursor-pointer"
-                        aria-label="Increase" tabindex="-1">
-                        <svg class="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300 mt-0.5" fill="none"
-                            viewBox="0 0 24 24" stroke-width="3" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                <!-- Plus Minus iOS pill -->
+                <div class="flex items-center gap-1 bg-zinc-100 dark:bg-white/10 rounded-lg p-0.5 ml-2 shrink-0 border border-zinc-200/50 dark:border-white/5 shadow-xs {{ $disabled ? 'opacity-50 pointer-events-none' : '' }}">
+                    <button type="button" @click="decrement"
+                        class="w-8 h-7 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-white/15 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-all text-zinc-600 dark:text-zinc-300">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" />
                         </svg>
                     </button>
-                    <div class="h-px w-full bg-zinc-300/50 dark:bg-white/10 shrink-0"></div>
-                    <button type="button" @click="decrement"
-                        class="flex items-center justify-center w-full flex-1 hover:bg-zinc-300/50 dark:hover:bg-white/10 active:bg-zinc-400/50 dark:active:bg-white/20 transition-colors cursor-pointer"
-                        aria-label="Decrease" tabindex="-1">
-                        <svg class="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300 mb-0.5" fill="none"
-                            viewBox="0 0 24 24" stroke-width="3" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    <button type="button" @click="increment"
+                        class="w-8 h-7 flex items-center justify-center rounded-md hover:bg-white dark:hover:bg-white/15 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-all text-zinc-600 dark:text-zinc-300">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                         </svg>
                     </button>
                 </div>

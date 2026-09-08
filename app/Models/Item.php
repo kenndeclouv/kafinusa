@@ -45,4 +45,14 @@ class Item extends Model
               });
         });
     }
+
+    public function warehouseStocks()
+    {
+        return $this->hasMany(WarehouseStock::class);
+    }
+
+    public function stockMutations()
+    {
+        return $this->hasMany(StockMutation::class);
+    }
 }
