@@ -25,19 +25,21 @@
     },
     {
         "category": "GARAM",
-        "name": "KPL 1/4",
+        "name": "KPL 1\/4",
         "weight": 10,
         "promo": 62000,
-        "khusus": 61000,
-        "umum": 63000
+        "khusus": 63000,
+        "umum": 63000,
+        "lain_lain": 61000
     },
     {
         "category": "GARAM",
-        "name": "KPL 1/2",
+        "name": "KPL 1\/2",
         "weight": 10,
         "promo": 62000,
-        "khusus": 61000,
-        "umum": 63000
+        "khusus": 63000,
+        "umum": 63000,
+        "lain_lain": 61000
     },
     {
         "category": "TNE",
@@ -73,7 +75,7 @@
     },
     {
         "category": "TNE",
-        "name": "4K/10",
+        "name": "4K\/10",
         "weight": 4,
         "promo": 51900,
         "khusus": 52300,
@@ -81,7 +83,7 @@
     },
     {
         "category": "TNE",
-        "name": "4K/20",
+        "name": "4K\/20",
         "weight": 4,
         "promo": 51900,
         "khusus": 52300,
@@ -89,7 +91,7 @@
     },
     {
         "category": "TNE",
-        "name": "1/4 4,5",
+        "name": "1\/4 4,5",
         "weight": 4.5,
         "promo": 57900,
         "khusus": 58300,
@@ -97,7 +99,7 @@
     },
     {
         "category": "TNE",
-        "name": "1/2 4,5",
+        "name": "1\/2 4,5",
         "weight": 4.5,
         "promo": 57900,
         "khusus": 58300,
@@ -105,7 +107,7 @@
     },
     {
         "category": "TNE",
-        "name": "1/4 5",
+        "name": "1\/4 5",
         "weight": 5,
         "promo": 63700,
         "khusus": 64100,
@@ -113,7 +115,7 @@
     },
     {
         "category": "TNE",
-        "name": "1/2 5",
+        "name": "1\/2 5",
         "weight": 5,
         "promo": 63700,
         "khusus": 64100,
@@ -129,7 +131,7 @@
     },
     {
         "category": "TNE",
-        "name": "9K/10",
+        "name": "9K\/10",
         "weight": 9,
         "promo": 114000,
         "khusus": 114400,
@@ -137,7 +139,7 @@
     },
     {
         "category": "TNE",
-        "name": "9K/20",
+        "name": "9K\/20",
         "weight": 9,
         "promo": 114000,
         "khusus": 114400,
@@ -145,7 +147,7 @@
     },
     {
         "category": "TNE",
-        "name": "10K/10",
+        "name": "10K\/10",
         "weight": 10,
         "promo": 126400,
         "khusus": 126800,
@@ -153,7 +155,7 @@
     },
     {
         "category": "TNE",
-        "name": "10K/20",
+        "name": "10K\/20",
         "weight": 10,
         "promo": 126400,
         "khusus": 126800,
@@ -161,7 +163,7 @@
     },
     {
         "category": "TNE POLOS",
-        "name": "1/2",
+        "name": "1\/2",
         "weight": 1,
         "promo": 12000,
         "khusus": 12100,
@@ -213,7 +215,8 @@
         "weight": 1,
         "promo": 12500,
         "khusus": 12600,
-        "umum": 12600
+        "umum": 12600,
+        "lain_lain": 11900
     },
     {
         "category": "LOS",
@@ -221,7 +224,8 @@
         "weight": 1,
         "promo": 12300,
         "khusus": 12400,
-        "umum": 12400
+        "umum": 12400,
+        "lain_lain": 11700
     },
     {
         "category": "LOS",
@@ -297,7 +301,7 @@
     },
     {
         "category": "AREN",
-        "name": "1/2 KCL",
+        "name": "1\/2 KCL",
         "weight": 3.5,
         "promo": 41000,
         "khusus": 41400,
@@ -305,7 +309,7 @@
     },
     {
         "category": "AREN",
-        "name": "1/4 KCL",
+        "name": "1\/4 KCL",
         "weight": 3.5,
         "promo": 41000,
         "khusus": 41400,
@@ -313,7 +317,7 @@
     },
     {
         "category": "AREN",
-        "name": "1/4 BSR",
+        "name": "1\/4 BSR",
         "weight": 4,
         "promo": 46500,
         "khusus": 46900,
@@ -321,7 +325,7 @@
     },
     {
         "category": "AREN",
-        "name": "1/2 BSR",
+        "name": "1\/2 BSR",
         "weight": 4,
         "promo": 46500,
         "khusus": 46900,

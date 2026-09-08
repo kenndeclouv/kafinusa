@@ -71,7 +71,7 @@
                                         <li class="mb-0.5">
                                             <span>{{ $orderItem->item?->name ?? 'Produk Terhapus' }}</span>
                                             
-                                            <flux:badge :color="match($orderItem->price_type) { 'promo' => 'green', 'khusus' => 'red', default => 'zinc' }" size="sm">{{ $orderItem->quantity }} item</flux:badge>
+                                            <flux:badge :color="match($orderItem->price_type) { 'promo' => 'green', 'khusus' => 'orange', 'lain_lain' => 'red', 'umum' => 'zinc', default => 'blue' }" size="sm">{{ $orderItem->quantity }} item</flux:badge>
                                         </li>
                                     @endforeach
                                 </ul>
@@ -240,10 +240,14 @@
                                         <flux:button variant="subtle" size="sm" icon="ellipsis-vertical" class="text-zinc-500" />
                                         <flux:menu class="min-w-48">
                                             <div class="px-3 py-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">Tipe Harga</div>
-                                            <flux:menu.radio.group wire:model="orderItems.{{ $index }}.price_type">
-                                                <flux:menu.radio value="umum">Umum</flux:menu.radio>
-                                                <flux:menu.radio value="promo">Promo</flux:menu.radio>
-                                                <flux:menu.radio value="khusus">Lain-lain</flux:menu.radio>
+                                            <flux:menu.radio.group wire:model.live="orderItems.{{ $index }}.price_type">
+                                                @php
+                                                    $selectedItem = $this->items()->firstWhere('id', $orderItem['item_id']);
+                                                    $availablePrices = $selectedItem ? ($selectedItem->prices ?? ['umum' => 0]) : ['umum' => 0];
+                                                @endphp
+                                                @foreach(array_keys($availablePrices) as $priceKey)
+                                                    <flux:menu.radio value="{{ $priceKey }}">{{ ucwords(str_replace('_', ' ', $priceKey)) }}</flux:menu.radio>
+                                                @endforeach
                                             </flux:menu.radio.group>
                                             
                                             <flux:menu.separator />

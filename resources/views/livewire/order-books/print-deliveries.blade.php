@@ -198,6 +198,8 @@
                                                             'promo'
                                                                 => 'background-color: #dcfce7 !important; color: #166534;', // green-100 & green-800
                                                             'khusus'
+                                                                => 'background-color: #ffedd5 !important; color: #9a3412;', // orange-100 & orange-800
+                                                            'lain_lain'
                                                                 => 'background-color: #fee2e2 !important; color: #991b1b;', // red-100 & red-800
                                                             default => '',
                                                         };

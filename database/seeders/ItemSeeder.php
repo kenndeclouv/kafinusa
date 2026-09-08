@@ -29,11 +29,12 @@ class ItemSeeder extends Seeder
                     'name' => $itemData['name'],
                     'item_category_id' => $categoryId,
                     'weight' => $itemData['weight'] * 1000,
-                    'prices' => [
+                    'prices' => array_filter([
                         'umum' => $itemData['umum'] ?? 0,
                         'promo' => $itemData['promo'] ?? 0,
                         'khusus' => $itemData['khusus'] ?? 0,
-                    ],
+                        'lain_lain' => $itemData['lain_lain'] ?? null,
+                    ], fn($val) => $val !== null),
                 ]
             );
         }

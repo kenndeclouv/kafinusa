@@ -195,7 +195,7 @@ class Show extends Component
             'orderItems' => 'required|array|min:1',
             'orderItems.*.item_id' => 'required|exists:items,id',
             'orderItems.*.quantity' => 'required|integer|min:1',
-            'orderItems.*.price_type' => 'required|in:umum,promo,khusus',
+            'orderItems.*.price_type' => 'required|string',
         ];
     }
 
