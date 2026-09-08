@@ -66,9 +66,14 @@
                         @foreach ($order->orderItems as $index => $item)
                             @php
                                 // Attempt to get correct price based on customer category
-                                $catName = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '_', trim($order->customer?->category?->name ?? 'normal')));
-                                $prices = is_array($item->item?->prices) ? $item->item?->prices : [];
-                                $harga = $item->price > 0 ? $item->price : ($prices[$catName] ?? $prices['normal'] ?? 0);
+                                $harga = $item->price;
+                                if ($harga == 0) {
+                                    $priceTypeKey = $item->price_type ?? 'umum';
+                                    $harga = data_get($item->item ?? [], "prices.{$priceTypeKey}", 0);
+                                    if ($harga == 0) {
+                                        $harga = data_get($item->item ?? [], 'prices.umum', 0);
+                                    }
+                                }
                                 $nilai = $item->quantity * $harga;
                                 $grandTotal += $nilai;
                             @endphp
