@@ -242,7 +242,7 @@
                                             <div class="px-3 py-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">Tipe Harga</div>
                                             <flux:menu.radio.group wire:model.live="orderItems.{{ $index }}.price_type">
                                                 @php
-                                                    $selectedItem = $this->items()->firstWhere('id', $orderItem['item_id']);
+                                                    $selectedItem = $this->items()->firstWhere('id', $item['item_id'] ?? null);
                                                     $availablePrices = $selectedItem ? ($selectedItem->prices ?? ['umum' => 0]) : ['umum' => 0];
                                                 @endphp
                                                 @foreach(array_keys($availablePrices) as $priceKey)
