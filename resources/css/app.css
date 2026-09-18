@@ -112,6 +112,8 @@ button,
 [data-flux-button],
 [data-flux-sidebar-group] {
     cursor: pointer !important;
+    flex-direction: column !important;
+    justify-content: center;
 }
 
 /* Modern Scrollbar */

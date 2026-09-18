@@ -19,13 +19,17 @@ class Show extends Component
     public Warehouse $warehouse;
 
     public $search = '';
-    public $typeFilter = '';
 
     // Form fields
     public $item_id;
+    public $step = 1;
     public $type = 'in';
     public $quantity = 1;
+    public $physical_quantity = null;
     public $notes = '';
+    public $mutation_date;
+    public $sender_name;
+    public $transaction_category;
 
     public function mount(Warehouse $warehouse)
     {
@@ -45,14 +49,11 @@ class Show extends Component
         $this->resetPage();
     }
 
-    public function updatedTypeFilter()
-    {
-        $this->resetPage();
-    }
-
     public function openCreateModal()
     {
-        $this->reset(['item_id', 'quantity', 'notes', 'type']);
+        $this->reset(['item_id', 'quantity', 'physical_quantity', 'notes', 'type', 'sender_name', 'transaction_category']);
+        $this->mutation_date = date('Y-m-d');
+        $this->step = 1;
         $this->type = 'in';
         $this->quantity = 1;
         $this->resetValidation();
@@ -61,48 +62,71 @@ class Show extends Component
 
     public function save()
     {
-        $this->validate([
+        $rules = [
+            'mutation_date' => 'required|date',
             'item_id' => 'required|exists:items,id',
             'type' => 'required|in:in,out,adjustment',
-            'quantity' => 'required|integer|min:1',
             'notes' => 'nullable|string',
-        ]);
+        ];
+
+        if ($this->type === 'in') {
+            $rules['quantity'] = 'required|integer|min:1';
+            $rules['sender_name'] = 'nullable|string|max:255';
+        } else if ($this->type === 'out') {
+            $rules['quantity'] = 'required|integer|min:1';
+            $rules['transaction_category'] = 'nullable|string|max:255';
+        } else if ($this->type === 'adjustment') {
+            $rules['physical_quantity'] = 'required|integer|min:0';
+        }
+
+        $this->validate($rules);
 
         try {
             DB::transaction(function () {
                 // Lock stock record for update
                 $stock = WarehouseStock::firstOrCreate(
                     ['warehouse_id' => $this->warehouse->id, 'item_id' => $this->item_id],
-                    ['quantity' => 0]
+                    ['current_stock' => 0, 'physical_stock' => 0]
                 );
 
                 // Re-fetch with lockForUpdate to ensure atomic transaction
                 $stock = WarehouseStock::where('id', $stock->id)->lockForUpdate()->first();
 
-                $oldQuantity = $stock->quantity;
+                $oldQuantity = $stock->current_stock;
                 $newQuantity = $oldQuantity;
+                
+                $mutationQuantity = 0;
 
                 if ($this->type === 'in') {
                     $newQuantity += $this->quantity;
+                    $mutationQuantity = $this->quantity;
                 } else if ($this->type === 'out') {
                     if ($oldQuantity < $this->quantity) {
                         throw new \Exception('Stok tidak mencukupi untuk dikeluarkan.');
                     }
                     $newQuantity -= $this->quantity;
+                    $mutationQuantity = $this->quantity;
                 } else if ($this->type === 'adjustment') {
-                    throw new \Exception('Adjustment khusus belum didukung lewat form ini.');
+                    if ($this->physical_quantity !== null && $this->physical_quantity !== '') {
+                        $stock->physical_stock = $this->physical_quantity;
+                    }
                 }
 
                 // Update stock cache
-                $stock->update(['quantity' => $newQuantity]);
+                $stock->update(['current_stock' => $newQuantity]);
+                if ($this->type === 'adjustment' && $this->physical_quantity !== null && $this->physical_quantity !== '') {
+                    $stock->update(['physical_stock' => $this->physical_quantity]);
+                }
 
                 // Record mutation ledger
                 StockMutation::create([
                     'warehouse_id' => $this->warehouse->id,
                     'item_id' => $this->item_id,
                     'type' => $this->type,
-                    'quantity' => $this->quantity,
-                    'balance_after' => $newQuantity,
+                    'quantity' => $this->type === 'adjustment' ? abs($mutationQuantity) : $mutationQuantity,
+                    'mutation_date' => $this->mutation_date,
+                    'sender_name' => $this->type === 'in' ? $this->sender_name : null,
+                    'transaction_category' => $this->type === 'out' ? $this->transaction_category : null,
                     'notes' => $this->notes,
                     'user_id' => auth()->id(),
                 ]);
@@ -117,25 +141,19 @@ class Show extends Component
     }
 
     #[Computed]
-    public function mutations()
+    public function stocks()
     {
-        $query = StockMutation::query()
+        $query = WarehouseStock::query()
             ->where('warehouse_id', $this->warehouse->id)
-            ->with(['item', 'user'])
-            ->latest();
-
-        if ($this->typeFilter) {
-            $query->where('type', $this->typeFilter);
-        }
+            ->with(['item.category']);
 
         if ($this->search) {
             $query->whereHas('item', function($q) {
-                $q->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('code', 'like', '%' . $this->search . '%');
+                $q->search($this->search);
             });
         }
 
-        return $query->paginate(10);
+        return $query->paginate(15);
     }
 
     #[Computed]

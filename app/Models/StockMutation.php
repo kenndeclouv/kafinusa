@@ -17,6 +17,9 @@ class StockMutation extends Model
         'reference_type',
         'reference_id',
         'user_id',
+        'mutation_date',
+        'sender_name',
+        'transaction_category',
         'notes',
     ];
 

@@ -44,7 +44,7 @@
                 @canany(['stock_mutations:read', 'stock_mutations:read-self'])
                     <flux:sidebar.item icon="clipboard-document-list" :href="route('stock-mutations.index')"
                         :current="request()->routeIs('stock-mutations.*')" wire:navigate.hover>
-                        {{ __('Mutasi Stok') }}
+                        {{ __('Stok Gudang') }}
                     </flux:sidebar.item>
                 @endcanany
             @endcanany

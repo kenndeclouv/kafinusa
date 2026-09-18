@@ -41,6 +41,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('stock-mutations')->name('stock-mutations.')->group(function () {
         Route::get('/', \App\Livewire\StockMutations\Index::class)->middleware('can:stock_mutations:read')->name('index');
         Route::get('/{warehouse}', \App\Livewire\StockMutations\Show::class)->middleware('can:stock_mutations:read')->name('show');
+        Route::get('/{warehouse}/ledger', \App\Livewire\StockMutations\Ledger::class)->middleware('can:stock_mutations:read')->name('ledger');
     });
 
     // Employees & Sales Schedules

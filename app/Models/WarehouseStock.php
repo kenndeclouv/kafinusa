@@ -13,6 +13,7 @@ class WarehouseStock extends Model
         'warehouse_id',
         'item_id',
         'current_stock',
+        'physical_stock',
     ];
 
     public function warehouse()

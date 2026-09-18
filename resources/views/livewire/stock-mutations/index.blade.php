@@ -6,10 +6,10 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
         @forelse($this->warehouses as $warehouse)
-            <a href="{{ route('stock-mutations.show', $warehouse->id) }}" wire:navigate class="block">
-                <flux:card class="h-full hover:border-accent hover:shadow-md transition-all relative overflow-hidden group cursor-pointer">
+            <a wire:key="warehouse-{{ $warehouse->id }}" href="{{ route('stock-mutations.show', $warehouse->id) }}" wire:navigate class="block">
+                <flux:card class="h-full hover:border-accent hover:shadow-md relative overflow-hidden group cursor-pointer">
                     <!-- Background Decoration -->
                     <div class="absolute top-0 right-0 -mt-6 -mr-6 text-zinc-100 dark:text-zinc-800/50 pointer-events-none group-hover:scale-110 transition-transform duration-300">
                         <flux:icon.building-office class="w-32 h-32 opacity-50" />
@@ -26,7 +26,7 @@
                             </div>
                         </div>
 
-                        <div class="mt-auto pt-6 grid grid-cols-1 gap-4">
+                        {{-- <div class="mt-auto pt-6 grid grid-cols-1 gap-4">
                             <div class="rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-white/10 p-4 shadow-sm">
                                 <div class="flex items-center justify-between mb-2">
                                     <flux:text class="text-sm font-medium text-zinc-600 dark:text-zinc-300">Macam Barang</flux:text>
@@ -38,7 +38,7 @@
                                     <flux:heading size="2xl" class="!font-bold">{{ number_format($warehouse->stocks_count ?? 0) }}</flux:heading>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
                 </flux:card>
             </a>
