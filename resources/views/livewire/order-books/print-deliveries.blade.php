@@ -1,9 +1,9 @@
 <div class="p-2 sm:p-4 print:p-0 max-w-[1400px] mx-auto">
     {{-- Print Action Bar (hidden on print) --}}
     <div
-        class="no-print flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 p-4 bg-zinc-50 dark:bg-white/5 rounded-2xl border border-zinc-200 dark:border-white/10">
+        class="no-print flex flex-col lg:flex-row items-center justify-between gap-4 mb-6 p-4 bg-zinc-50 dark:bg-white/5 rounded-2xl border border-zinc-200 dark:border-white/10">
 
-        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto" x-data="{
+        <div class="flex flex-col lg:flex-row gap-2 w-full lg:w-auto" x-data="{
             isDownloading: false,
             downloadImage() {
                 this.isDownloading = true;
@@ -40,16 +40,16 @@
         }">
 
             <flux:button href="{{ route('order-books.shipments', $orderBook) }}" wire:navigate variant="outline"
-                icon="arrow-left" class="w-full sm:w-auto">
+                icon="arrow-left" class="w-full lg:w-auto">
                 Kembali & Edit
             </flux:button>
             <flux:button onclick="window.print()" variant="primary" icon="printer"
-                class="w-full sm:w-auto hidden sm:flex">
+                class="w-full lg:w-auto hidden lg:flex">
                 Cetak
             </flux:button>
 
             <flux:dropdown>
-                <flux:button variant="outline" icon="ellipsis-vertical" class="w-full sm:w-auto px-4" />
+                <flux:button variant="outline" icon="ellipsis-vertical" class="w-full lg:w-auto px-4" />
                 <flux:menu>
                     <flux:menu.item icon="photo" x-on:click="downloadImage()">
                         <span x-show="!isDownloading">Download Image (High-Res)</span>
@@ -60,7 +60,7 @@
             </flux:dropdown>
         </div>
 
-        <span class="text-sm text-center sm:text-right text-zinc-500 dark:text-zinc-400 w-full sm:w-auto">
+        <span class="text-sm text-center lg:text-right text-zinc-500 dark:text-zinc-400 w-full lg:w-auto">
             Atau tekan <kbd class="bg-zinc-200 dark:bg-zinc-700 px-1.5 py-0.5 rounded text-xs">Ctrl+P</kbd> untuk cetak
             / simpan PDF
         </span>

@@ -1,5 +1,5 @@
 <div x-data="shipmentManager(@js($this->ordersWithItems->flatMap->orderItems->mapWithKeys(fn($i) => [$i->id => $i->item?->weight ?? 0])), @js($this->ordersWithItems->flatMap->orderItems->mapWithKeys(fn($i) => [$i->id => $i->order_id])), @entangle('assignments'), @entangle('totalBatches'))">
-    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4 mb-6">
         <div>
             <flux:heading size="xl">Atur Pembagian Muatan</flux:heading>
             <flux:subheading>
@@ -7,13 +7,13 @@
                 {{ $orderBook->employee->name }}
             </flux:subheading>
         </div>
-        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        <div class="flex flex-col lg:flex-row gap-2 w-full lg:w-auto">
             <flux:button :href="route('order-books.show', $orderBook)" wire:navigate variant="filled" icon="arrow-left"
-                class="w-full sm:w-auto">
+                class="w-full lg:w-auto">
                 Kembali
             </flux:button>
-            <div class="flex items-center gap-2 w-full sm:w-auto">
-                <flux:button wire:click="addBatch" variant="primary" icon="plus" class="flex-1 sm:flex-none">
+            <div class="flex items-center gap-2 w-full lg:w-auto">
+                <flux:button wire:click="addBatch" variant="primary" icon="plus" class="flex-1 lg:flex-none">
                     Tambah Muatan
                 </flux:button>
             </div>
@@ -236,10 +236,10 @@
             Isi kolom muatan sesuai jumlah yang ingin dikirim. Kolom "Sisa" harus 0 sebelum bisa disimpan.
         </p>
         
-        <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-            <flux:button wire:click="save('nota')" variant="outline" icon="document-text" class="w-full sm:w-auto">Simpan & Cetak Nota</flux:button>
-            <flux:button wire:click="save('delivery')" variant="outline" icon="clipboard-document-list" class="w-full sm:w-auto">Simpan & Cetak Pengiriman</flux:button>
-            <flux:button wire:click="save('summary')" variant="primary" icon="truck" class="w-full sm:w-auto">Simpan & Cetak Daftar</flux:button>
+        <div class="flex flex-col lg:flex-row gap-2 w-full lg:w-auto">
+            <flux:button wire:click="save('nota')" variant="outline" icon="document-text" class="w-full lg:w-auto">Simpan & Cetak Nota</flux:button>
+            <flux:button wire:click="save('delivery')" variant="outline" icon="clipboard-document-list" class="w-full lg:w-auto">Simpan & Cetak Pengiriman</flux:button>
+            <flux:button wire:click="save('summary')" variant="primary" icon="truck" class="w-full lg:w-auto">Simpan & Cetak Daftar</flux:button>
         </div>
     </div>
 </div>

@@ -267,7 +267,7 @@ if ($dismissible === false) {
         @endunblaze x-on:modal-show.document="handleShow($event)"
         x-on:modal-close.document="handleClose($event)">
         <?php if ($overflow): ?>
-        <div class="flex min-h-full items-end md:items-center justify-center max-md:!p-0 md:p-4 sm:p-6">
+        <div class="flex min-h-full items-end lg:items-center justify-center max-md:!p-0 md:p-4 sm:p-6">
             <div {{ $contentAttributes->class($contentClasses) }} data-flux-modal-content>
                 <!-- Grab Handle (Mobile Only) -->
                 <?php if ($variant !== 'bare'): ?>

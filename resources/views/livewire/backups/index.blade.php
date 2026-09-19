@@ -1,12 +1,12 @@
 <div>
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
         <div>
             <flux:heading size="xl">Tutup Buku & Backup</flux:heading>
             <flux:subheading>Kelola status tutup buku bulanan. Bulan yang ditutup tidak bisa dimodifikasi.</flux:subheading>
         </div>
-        <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0">
+        <div class="flex flex-col lg:flex-row items-center gap-3 w-full lg:w-auto mt-4 lg:mt-0">
             @can('backups:create')
-                <flux:button x-on:click="$flux.modal('create-backup-modal').show()" variant="primary" icon="lock-closed" class="w-full sm:w-auto">
+                <flux:button x-on:click="$flux.modal('create-backup-modal').show()" variant="primary" icon="lock-closed" class="w-full lg:w-auto">
                     Tutup Buku Manual
                 </flux:button>
             @endcan

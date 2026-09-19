@@ -1,14 +1,14 @@
 <div>
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
         <div>
             <flux:heading size="xl">Pelanggan</flux:heading>
             <flux:subheading>Kelola daftar pelanggan di sini.</flux:subheading>
         </div>
-        <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0">
+        <div class="flex flex-col lg:flex-row items-center gap-3 w-full lg:w-auto mt-4 lg:mt-0">
             <flux:input wire:model.live.debounce.300ms="search" placeholder="Cari nama, pasar..." icon="magnifying-glass"
-                class="w-full sm:w-64" />
+                class="w-full lg:w-64" />
             @can('customers:create')
-                <flux:button wire:click="addCustomer" variant="primary" icon="plus" class="ms-auto w-full sm:w-auto">Tambah
+                <flux:button wire:click="addCustomer" variant="primary" icon="plus" class="ms-auto w-full lg:w-auto">Tambah
                     Pelanggan
                 </flux:button>
             @endcan

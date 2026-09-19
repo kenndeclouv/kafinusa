@@ -1,4 +1,4 @@
-<div x-data="{ open: false }" @open-mobile-master-data.window="open = true" x-show="open"
+<div x-data="{ open: false }" @toggle-mobile-master-data.window="open = !open" @close-mobile-master-data.window="open = false" x-show="open"
     class="fixed inset-0 z-[60] lg:hidden flex flex-col justify-end" style="display: none;">
 
     <!-- Backdrop -->
@@ -14,14 +14,14 @@
         x-transition:leave="transition-all ease-in duration-300 transform"
         x-transition:leave-start="translate-y-0 scale-100 opacity-100"
         x-transition:leave-end="translate-y-[120%] opacity-0"
-        class="relative w-[calc(100%-2rem)] mx-auto mb-6 flex flex-col"
+        class="relative w-[calc(100%-2rem)] mx-auto mb-24 flex flex-col"
         style="padding-bottom: env(safe-area-inset-bottom);">
 
         <x-liquid-glass tint="rgba(255, 255, 255, 0.7)" darkTint="rgba(28, 28, 30, 0.7)"
             class="w-full rounded-[1.5rem] shadow-2xl flex flex-col overflow-hidden border border-white/40 dark:border-white/10">
 
             <!-- Items Vertical List -->
-            <div class="flex flex-col w-full">
+            <div class="flex flex-col w-full max-h-[80vh] overflow-y-auto overscroll-contain">
 
                 <!-- GROUP: DATABASE -->
                 @can('markets:read')
@@ -80,42 +80,7 @@
                     </a>
                 @endcan
 
-                <!-- GROUP: HAK AKSES -->
-                @can('users:read')
-                    <a href="{{ route('users.index') }}" wire:navigate
-                        class="flex items-center px-5 py-3.5 active:bg-black/5 dark:active:bg-white/5 transition-colors border-b border-black/5 dark:border-white/5">
-                        <flux:icon.users class="w-5 h-5 text-zinc-700 dark:text-zinc-300 mr-4" />
-                        <span class="text-[17px] font-normal text-zinc-900 dark:text-white flex-1">Pengguna</span>
-                    </a>
-                @endcan
-
-                @can('roles:read')
-                    <a href="{{ route('roles.index') }}" wire:navigate
-                        class="flex items-center px-5 py-3.5 active:bg-black/5 dark:active:bg-white/5 transition-colors border-b border-black/5 dark:border-white/5">
-                        <flux:icon.key class="w-5 h-5 text-zinc-700 dark:text-zinc-300 mr-4" />
-                        <span class="text-[17px] font-normal text-zinc-900 dark:text-white flex-1">Peran</span>
-                    </a>
-                @endcan
-
-                @can('notifications:send')
-                    <a href="{{ route('notifications.index') }}" wire:navigate
-                        class="flex items-center px-5 py-3.5 active:bg-black/5 dark:active:bg-white/5 transition-colors">
-                        <flux:icon.paper-airplane class="w-5 h-5 text-zinc-700 dark:text-zinc-300 mr-4" />
-                        <span class="text-[17px] font-normal text-zinc-900 dark:text-white flex-1">Kirim Notifikasi</span>
-                    </a>
-                @endcan
             </div>
         </x-liquid-glass>
-
-        <!-- Cancel Button (iOS Style floating separated button) -->
-        <div class="mt-2">
-            <x-liquid-glass tint="rgba(255, 255, 255, 0.7)" darkTint="rgba(28, 28, 30, 0.7)"
-                class="w-full rounded-[1.5rem] shadow-lg border border-white/40 dark:border-white/10 overflow-hidden">
-                <button @click="open = false"
-                    class="w-full py-3.5 text-[17px] font-semibold text-blue-500 dark:text-blue-400 active:bg-black/5 dark:active:bg-white/5 transition-colors">
-                    Batal
-                </button>
-            </x-liquid-glass>
-        </div>
     </div>
 </div>

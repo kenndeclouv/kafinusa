@@ -1,5 +1,5 @@
 <div>
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
         <div>
             <flux:heading size="xl">Dashboard Mutasi Stok</flux:heading>
             <flux:subheading>Pilih gudang untuk melihat buku mutasi (ledger) dan mengatur stok manual.</flux:subheading>

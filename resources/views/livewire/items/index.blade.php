@@ -1,14 +1,14 @@
 <div>
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
         <div>
             <flux:heading size="xl">Barang</flux:heading>
             <flux:subheading>Manage your inventory items here.</flux:subheading>
         </div>
-        <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0">
+        <div class="flex flex-col lg:flex-row items-center gap-3 w-full lg:w-auto mt-4 lg:mt-0">
             <flux:input wire:model.live.debounce.300ms="search" placeholder="Cari kode, nama, kategori..."
-                icon="magnifying-glass" class="w-full sm:w-64" />
+                icon="magnifying-glass" class="w-full lg:w-64" />
             @can('items:create')
-                <flux:button wire:click="openCreateModal" variant="primary" icon="plus" class="ms-auto w-full sm:w-auto">
+                <flux:button wire:click="openCreateModal" variant="primary" icon="plus" class="ms-auto w-full lg:w-auto">
                     Tambah Barang
                 </flux:button>
             @endcan

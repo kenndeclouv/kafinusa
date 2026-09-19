@@ -1,6 +1,6 @@
-<div class="flex items-start flex-col md:flex-row">
+<div class="flex items-start flex-col lg:flex-row">
     <!-- Sidebar / Navlist -->
-    <div class="me-10 w-full pb-4 md:w-[220px] order-2 md:order-1 mt-8 md:mt-0">
+    <div class="me-10 w-full pb-4 lg:w-[220px] order-2 lg:order-1 mt-8 lg:mt-0">
         <flux:navlist aria-label="{{ __('Settings') }}">
             <flux:navlist.item :href="route('profile.edit')" wire:navigate>{{ __('Profile') }}</flux:navlist.item>
             <flux:navlist.item :href="route('security.edit')" wire:navigate>{{ __('Security') }}</flux:navlist.item>

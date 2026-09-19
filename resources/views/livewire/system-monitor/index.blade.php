@@ -68,7 +68,7 @@
 
     <div class="mt-6" wire:poll.10s="$refresh">
         <flux:card>
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-6 border-b border-zinc-200 dark:border-white/10 gap-4">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between mb-6 pb-6 border-b border-zinc-200 dark:border-white/10 gap-4">
                 <div>
                     <flux:heading size="lg">System Configuration & Status</flux:heading>
                     <flux:subheading>Detailed information about the application and database environment.</flux:subheading>

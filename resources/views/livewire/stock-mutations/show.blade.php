@@ -7,11 +7,11 @@
             <flux:icon.building-office class="w-64 h-64 opacity-50" />
         </div>
 
-        <div class="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between gap-6">
+        <div class="relative z-10 flex flex-col lg:flex-row lg:items-start justify-between gap-6">
             <div class="flex-1">
                 <div class="flex items-center gap-4 mb-6">
                     <flux:button href="{{ route('stock-mutations.index') }}" wire:navigate variant="ghost"
-                        icon="arrow-left" class="hidden sm:flex" />
+                        icon="arrow-left" class="hidden lg:flex" />
                     <div class="flex items-center gap-4">
                         <div class="rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 p-3 shadow-md">
                             <flux:icon.building-office class="w-6 h-6" />
@@ -41,7 +41,7 @@
                 </div>
             </div>
 
-            <div class="flex flex-col gap-3 sm:min-w-60 mt-4 sm:mt-0">
+            <div class="flex flex-col gap-3 sm:min-w-60 mt-4 lg:mt-0">
                 <div
                     class="rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-white/10 p-5 shadow-sm">
                     <div class="flex items-center justify-between mb-3">
@@ -59,22 +59,22 @@
         </div>
     </flux:card>
 
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
         <div class="flex items-center gap-2">
             <flux:heading size="lg">Daftar Stok Barang</flux:heading>
             <flux:badge size="sm" color="zinc" class="rounded-full">{{ $this->stocks->total() }}</flux:badge>
         </div>
-        <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0">
+        <div class="flex flex-col lg:flex-row items-center gap-3 w-full lg:w-auto mt-4 lg:mt-0">
             <flux:input wire:model.live.debounce.300ms="search" placeholder="Cari nama barang..."
-                icon="magnifying-glass" class="w-full sm:w-64" />
+                icon="magnifying-glass" class="w-full lg:w-64" />
 
             <flux:button href="{{ route('stock-mutations.ledger', $warehouse->id) }}" wire:navigate variant="outline"
-                icon="document-text" class="w-full sm:w-auto">
+                icon="document-text" class="w-full lg:w-auto">
                 Buku Mutasi
             </flux:button>
 
             @canany(['stock_mutations:create', 'stock_mutations:create-self'])
-                <flux:button wire:click="openCreateModal" variant="primary" icon="plus" class="ms-auto w-full sm:w-auto">
+                <flux:button wire:click="openCreateModal" variant="primary" icon="plus" class="ms-auto w-full lg:w-auto">
                     Mutasi Manual
                 </flux:button>
             @endcanany

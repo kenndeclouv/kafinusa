@@ -1,14 +1,14 @@
 <div>
-    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4 mb-6">
         <div>
             <flux:heading size="xl">Pelanggan Tidak Beli: {{ $orderBook->market->name }}</flux:heading>
             <flux:subheading>
                 Tanggal: {{ $orderBook->book_date->format('d M Y') }} &bull; Sales: {{ $orderBook->employee->name }}
             </flux:subheading>
         </div>
-        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        <div class="flex flex-col lg:flex-row gap-2 w-full lg:w-auto">
             <flux:button href="{{ route('order-books.show', $orderBook) }}" wire:navigate variant="filled"
-                icon="arrow-left" class="w-full sm:w-auto">Kembali
+                icon="arrow-left" class="w-full lg:w-auto">Kembali
             </flux:button>
         </div>
     </div>

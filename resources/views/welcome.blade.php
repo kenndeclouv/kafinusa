@@ -70,17 +70,17 @@
             Platform modern untuk mencatat daftar barang, mengelola pelanggan, dan memantau pergerakan tonase di setiap pasar dengan antarmuka yang memanjakan mata.
         </p>
         
-        <div class="flex flex-col sm:flex-row items-center gap-4">
+        <div class="flex flex-col lg:flex-row items-center gap-4">
             @auth
-                <flux:button href="{{ route('dashboard') }}" wire:navigate variant="primary"  icon-trailing="arrow-right" class="rounded-full shadow-lg shadow-sky-500/25 px-8 w-full sm:w-auto">
+                <flux:button href="{{ route('dashboard') }}" wire:navigate variant="primary"  icon-trailing="arrow-right" class="rounded-full shadow-lg shadow-sky-500/25 px-8 w-full lg:w-auto">
                     Buka Dashboard
                 </flux:button>
             @else
-                <flux:button href="{{ route('login') }}" wire:navigate variant="primary"  icon-trailing="arrow-right" class="rounded-full shadow-lg shadow-sky-500/25 px-8 w-full sm:w-auto">
+                <flux:button href="{{ route('login') }}" wire:navigate variant="primary"  icon-trailing="arrow-right" class="rounded-full shadow-lg shadow-sky-500/25 px-8 w-full lg:w-auto">
                     Mulai Sekarang
                 </flux:button>
             @endauth
-            <flux:button href="#" variant="subtle"  class="rounded-full px-8 w-full sm:w-auto">
+            <flux:button href="#" variant="subtle"  class="rounded-full px-8 w-full lg:w-auto">
                 Pelajari Lebih Lanjut
             </flux:button>
         </div>
@@ -165,7 +165,7 @@
 
     <!-- Footer -->
     <footer class="w-full border-t border-zinc-200 dark:border-white/5 py-8 mt-auto relative z-10">
-        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col lg:flex-row items-center justify-between gap-4">
             <p class="text-sm text-zinc-500 dark:text-zinc-400">
                 &copy; {{ date('Y') }} OrderMaster. All rights reserved.
             </p>

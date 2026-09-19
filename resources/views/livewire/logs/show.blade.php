@@ -32,7 +32,7 @@
         dark:text-sky-400 dark:border-sky-500/20
     ">
     </div>
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
         <div>
             <flux:heading size="xl">Log Details</flux:heading>
             <flux:subheading class="font-mono text-xs mt-1">{{ $filename }}</flux:subheading>

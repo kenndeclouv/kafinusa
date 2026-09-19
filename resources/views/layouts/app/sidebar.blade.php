@@ -223,6 +223,7 @@
 
     <x-mobile-bottom-nav />
     <x-mobile-bottom-sheet />
+    <x-mobile-bottom-sheet-more />
 
     @persist('toast')
         <flux:toast.group position="top center" class="pointer-events-none">

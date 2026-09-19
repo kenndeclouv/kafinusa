@@ -1,5 +1,5 @@
 <div>
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
         <div>
             <flux:heading size="xl">{{ __('Notifikasi') }}</flux:heading>
             <flux:subheading>{{ __('Kelola dan kirim notifikasi push ke pengguna.') }}</flux:subheading>

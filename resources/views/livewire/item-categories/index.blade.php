@@ -1,11 +1,11 @@
 <div>
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
         <div>
             <flux:heading size="xl">Kategori Barang</flux:heading>
             <flux:subheading>Kelola daftar kategori barang di sini.</flux:subheading>
         </div>
         @can('item_categories:create')
-            <flux:button wire:click="openCreateModal" variant="primary" icon="plus" class="w-full sm:w-auto">Tambah Kategori
+            <flux:button wire:click="openCreateModal" variant="primary" icon="plus" class="w-full lg:w-auto">Tambah Kategori
             </flux:button>
         @endcan
     </div>

@@ -1,14 +1,14 @@
 <div>
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
         <div>
             <flux:heading size="xl">Arsip Buku Order: {{ \Carbon\Carbon::parse($month . '-01')->translatedFormat('F Y') }}</flux:heading>
             <flux:subheading>Menampilkan buku order dari bulan yang sudah ditutup (read-only).</flux:subheading>
         </div>
-        <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0">
+        <div class="flex flex-col lg:flex-row items-center gap-3 w-full lg:w-auto mt-4 lg:mt-0">
             <flux:input wire:model.live.debounce.300ms="search" placeholder="Cari pasar, sales, status..."
-                icon="magnifying-glass" class="w-full sm:w-64" />
+                icon="magnifying-glass" class="w-full lg:w-64" />
             
-            <flux:button href="{{ route('backups.index') }}" wire:navigate variant="outline" icon="arrow-left" class="w-full sm:w-auto">
+            <flux:button href="{{ route('backups.index') }}" wire:navigate variant="outline" icon="arrow-left" class="w-full lg:w-auto">
                 Kembali
             </flux:button>
         </div>

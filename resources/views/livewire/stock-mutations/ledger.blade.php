@@ -1,9 +1,9 @@
 <div>
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
         <div>
             <div class="flex items-center gap-3 mb-2">
-                <flux:button href="{{ route('stock-mutations.show', $warehouse->id) }}" wire:navigate variant="ghost" icon="arrow-left" size="sm" class="hidden sm:flex" />
+                <flux:button href="{{ route('stock-mutations.show', $warehouse->id) }}" wire:navigate variant="ghost" icon="arrow-left" size="sm" class="hidden lg:flex" />
                 <flux:heading size="xl">Buku Mutasi (Ledger)</flux:heading>
                 <flux:badge size="sm" color="zinc" class="rounded-full">{{ $this->mutations->total() }}</flux:badge>
             </div>
@@ -11,7 +11,7 @@
                 Gudang: <span class="font-medium text-zinc-800 dark:text-zinc-200">{{ $warehouse->name }}</span>
             </flux:text>
         </div>
-        <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0">
+        <div class="flex flex-col lg:flex-row items-center gap-3 w-full lg:w-auto mt-4 lg:mt-0">
             <!-- Filter Bulan -->
             <div class="w-full sm:w-32">
                 <x-searchable-select wire:model.live="month" :options="[
@@ -38,7 +38,7 @@
                 <x-searchable-select wire:model.live="typeFilter" :options="['in' => 'Masuk (In)', 'out' => 'Keluar (Out)']" searchable="false" placeholder="Semua Tipe" />
             </div>
             <flux:input wire:model.live.debounce.300ms="search" placeholder="Cari nama barang..."
-                icon="magnifying-glass" class="w-full sm:w-64" />
+                icon="magnifying-glass" class="w-full lg:w-64" />
         </div>
     </div>
 

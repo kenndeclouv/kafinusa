@@ -9,22 +9,22 @@
         </div>
     @endif
 
-    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-4 mb-6">
         <div>
             <flux:heading size="xl">Isi Buku Order: {{ $orderBook->market->name }}</flux:heading>
             <flux:subheading>
                 Tanggal: {{ $orderBook->book_date->format('d M Y') }} &bull; Sales: {{ $orderBook->employee->name }}
             </flux:subheading>
         </div>
-        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        <div class="flex flex-col lg:flex-row gap-2 w-full lg:w-auto">
             <flux:button href="{{ route('order-books.index') }}" wire:navigate variant="filled" icon="arrow-left"
-                class="w-full sm:w-auto">
+                class="w-full lg:w-auto">
                 Kembali
             </flux:button>
 
-            <div class="flex items-center gap-2 w-full sm:w-auto">
+            <div class="flex items-center gap-2 w-full lg:w-auto">
                 @can('orders:create')
-                    <flux:button wire:click="openCreateModal" variant="primary" icon="plus" class="flex-1 sm:flex-none">
+                    <flux:button wire:click="openCreateModal" variant="primary" icon="plus" class="flex-1 lg:flex-none">
                         Tambah Pesanan
                     </flux:button>
                 @endcan
@@ -168,14 +168,14 @@
     </div>
 
     @if ($this->orders->total() > 0)
-        <div class="py-4 flex flex-col sm:flex-row items-center justify-end gap-3">
+        <div class="py-4 flex flex-col lg:flex-row items-center justify-end gap-3">
             <flux:button href="{{ route('order-books.unordered-customers', $orderBook) }}" wire:navigate
-                variant="outline" icon="users" class="w-full sm:w-auto">
+                variant="outline" icon="users" class="w-full lg:w-auto">
                 Pelanggan Tidak Beli
             </flux:button>
 
             <flux:button href="{{ route('order-books.shipments', $orderBook) }}" wire:navigate variant="primary"
-                icon="truck" class="w-full sm:w-auto">
+                icon="truck" class="w-full lg:w-auto">
                 Atur Pembagian Muatan
             </flux:button>
         </div>

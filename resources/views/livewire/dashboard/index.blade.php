@@ -26,7 +26,7 @@
                     </flux:subheading>
                 </div>
 
-                <div class="flex flex-col-reverse sm:flex-row justify-end gap-2">
+                <div class="flex flex-col-reverse lg:flex-row justify-end gap-2">
                     <flux:button class="!rounded-full" variant="filled" x-on:click="open = false">Nanti Saja
                     </flux:button>
                     <flux:button class="!rounded-full" variant="primary"
@@ -45,7 +45,7 @@
          DESKTOP VIEW
          ========================================== -->
     <div class="hidden md:block">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 md:mb-8">
             <div>
                 <flux:heading size="xl" class="">Halo, {{ auth()->user()->name }}!</flux:heading>
                 <flux:subheading>Berikut adalah ringkasan pekerjaan Anda hari ini.</flux:subheading>
@@ -120,7 +120,7 @@
         @endcanany
 
         @can('order_books:read')
-            <div class="mt-8 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="mt-8 mb-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <div>
                     <flux:heading size="lg">Strategi & Kinerja Bisnis</flux:heading>
                     <p class="text-sm text-zinc-500">Pantau performa distribusi dan penjualan Anda.</p>
@@ -172,14 +172,14 @@
         @endcan
 
         <div class="mt-8">
-            <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-4">
+            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-4">
                 <div>
                     <flux:heading size="lg">Tugas & Jadwal Anda</flux:heading>
                     <p class="text-sm text-zinc-500 mt-1">Order book yang ditugaskan kepada Anda untuk hari ini dan
                         besok.</p>
                 </div>
                 @canany(['order_books:read', 'order_books:read-self'])
-                    <a class="mt-4 md:mt-0 text-sm font-semibold text-accent hover:text-accent/80 transition-colors"
+                    <a class="mt-4 lg:mt-0 text-sm font-semibold text-accent hover:text-accent/80 transition-colors"
                         href="{{ route('order-books.index') }}" wire:navigate>Lihat Semua Riwayat</a>
                 @endcanany
             </div>

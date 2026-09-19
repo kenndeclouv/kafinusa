@@ -1,11 +1,11 @@
 <div>
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
         <div>
             <flux:heading size="xl">Peran</flux:heading>
             <flux:subheading>Manage system roles and permissions.</flux:subheading>
         </div>
         @can('roles:create')
-            <flux:button wire:click="addRole" variant="primary" icon="plus" class="w-full sm:w-auto">Tambah Peran
+            <flux:button wire:click="addRole" variant="primary" icon="plus" class="w-full lg:w-auto">Tambah Peran
             </flux:button>
         @endcan
     </div>

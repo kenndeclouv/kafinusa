@@ -1,21 +1,21 @@
 <div>
 
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
         <div>
             <flux:heading size="xl">Buku Order</flux:heading>
             <flux:subheading>Kelola buku order harian per pasar.</flux:subheading>
         </div>
-        <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0">
+        <div class="flex flex-col lg:flex-row items-center gap-3 w-full lg:w-auto mt-4 lg:mt-0">
             <flux:input wire:model.live.debounce.300ms="search" placeholder="Cari pasar, sales, status..."
-                icon="magnifying-glass" class="w-full sm:w-64" />
-            <x-searchable-select wire:model.live="filterMonth" class="w-full sm:w-48" :options="['all' => 'Semua Bulan'] + $this->availableMonths"
+                icon="magnifying-glass" class="w-full lg:w-64" />
+            <x-searchable-select wire:model.live="filterMonth" class="w-full lg:w-48" :options="['all' => 'Semua Bulan'] + $this->availableMonths"
                 :searchable="false" />
             @can('order_books:create')
                 <flux:button wire:click="openGenerateModal" variant="outline" icon="calendar-days"
-                    class="ms-auto w-full sm:w-auto">
+                    class="ms-auto w-full lg:w-auto">
                     Generate dari Jadwal
                 </flux:button>
-                <flux:button wire:click="openCreateModal" variant="primary" icon="plus" class="w-full sm:w-auto">
+                <flux:button wire:click="openCreateModal" variant="primary" icon="plus" class="w-full lg:w-auto">
                     Buka Buku Baru
                 </flux:button>
             @endcan
@@ -24,7 +24,7 @@
                     <x-delete-modal id="bulk-delete" action="deleteSelected" requireSlide="true" 
                         title="Hapus {{ count($selected) }} Buku Order?" 
                         description="Menghapus buku ini akan menghapus semua pesanan pelanggan di dalamnya. Tindakan ini tidak dapat dibatalkan.">
-                        <flux:button variant="danger" icon="trash" class="w-full sm:w-auto">
+                        <flux:button variant="danger" icon="trash" class="w-full lg:w-auto">
                             Hapus ({{ count($selected) }})
                         </flux:button>
                     </x-delete-modal>

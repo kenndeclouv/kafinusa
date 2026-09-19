@@ -1,13 +1,13 @@
 <div>
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
         <div>
             <flux:heading size="xl">Template Jadwal Mingguan</flux:heading>
             <flux:subheading>Atur siklus jadwal kunjungan sales per minggu.</flux:subheading>
         </div>
-        <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0">
+        <div class="flex flex-col lg:flex-row items-center gap-3 w-full lg:w-auto mt-4 lg:mt-0">
             <flux:input wire:model.live.debounce.300ms="search" placeholder="Cari pasar atau sales..."
-                icon="magnifying-glass" class="w-full sm:w-64" />
-            <flux:button x-on:click="$flux.modal('add-schedule-modal').show()" variant="primary" icon="plus" class="ms-auto w-full sm:w-auto">
+                icon="magnifying-glass" class="w-full lg:w-64" />
+            <flux:button x-on:click="$flux.modal('add-schedule-modal').show()" variant="primary" icon="plus" class="ms-auto w-full lg:w-auto">
                 Tambah Jadwal
             </flux:button>
         </div>
