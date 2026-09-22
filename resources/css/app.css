@@ -8,21 +8,6 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Re-assign Flux's gray of choice... */
-/* @theme {
-    --color-zinc-50: var(--color-gray-50);
-    --color-zinc-100: var(--color-gray-100);
-    --color-zinc-200: var(--color-gray-200);
-    --color-zinc-300: var(--color-gray-300);
-    --color-zinc-400: var(--color-gray-400);
-    --color-zinc-500: var(--color-gray-500);
-    --color-zinc-600: var(--color-gray-600);
-    --color-zinc-700: var(--color-gray-700);
-    --color-zinc-800: var(--color-gray-800);
-    --color-zinc-900: var(--color-gray-900);
-    --color-zinc-950: var(--color-gray-950);
-} */
-
 @theme {
     --color-accent: var(--color-emerald-600);
     --color-accent-content: var(--color-emerald-600);
@@ -54,6 +39,8 @@
     ::backdrop,
     ::file-selector-button {
         border-color: var(--color-gray-200, currentColor);
+        /* corner-shape: squircle; */
+        corner-shape: superellipse(0.9);
     }
 
     dialog::backdrop {
@@ -78,10 +65,6 @@ textarea:focus[data-flux-control],
 select:focus[data-flux-control] {
     @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
 }
-
-/* \[:where(&)\]:size-4 {
-    @apply size-4;
-} */
 
 #nprogress .bar {
     background: var(--color-accent) !important;
@@ -131,8 +114,8 @@ button,
 
 /* Remove Autofill Background Color */
 input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus, 
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
     transition: background-color 5000s ease-in-out 0s;
     -webkit-text-fill-color: inherit !important;
@@ -150,5 +133,55 @@ input:-webkit-autofill:active {
     /* Beri jarak bawah untuk mobile bottom nav agar konten tidak tertutup */
     [data-flux-main] {
         padding-bottom: 6rem !important;
+    }
+}
+
+@media print {
+
+    /* Hide UI elements not meant for printing */
+    [data-flux-sidebar],
+    nav,
+    .no-print,
+    .flux-toast-group {
+        display: none !important;
+    }
+
+    /* Remove padding and margins for main content */
+    body {
+        padding: 0 !important;
+        margin: 0 !important;
+        background: white !important;
+        overflow: visible !important;
+    }
+
+    [data-flux-main] {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+    }
+
+    /* Ensure tables expand and borders print */
+    table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+    }
+
+    th,
+    td {
+        border-width: 1px !important;
+        border-style: solid !important;
+        border-color: #e4e4e7 !important;
+        /* zinc-200 */
+    }
+
+    /* Force background colors to print */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Hide box shadows */
+    * {
+        box-shadow: none !important;
     }
 }

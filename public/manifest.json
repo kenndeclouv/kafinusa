@@ -1,7 +1,7 @@
 {
-  "name": "Pak Malik ERD",
-  "short_name": "Pak Malik",
-  "description": "Dashboard Aplikasi Pak Malik",
+  "name": "Kafinusa",
+  "short_name": "Kafinusa",
+  "description": "Dashboard Aplikasi Kafinusa",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#ffffff",

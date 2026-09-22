@@ -66,6 +66,40 @@
                     {{ __('Masuk') }}
                 </flux:button>
             </div>
+
+            <!-- Install App Button (Alpine.js handled PWA) -->
+            <div x-data="{ deferredPrompt: null, showInstallBtn: false }" 
+                 @beforeinstallprompt.window="
+                    event.preventDefault();
+                    deferredPrompt = event;
+                    showInstallBtn = true;
+                 " 
+                 x-show="showInstallBtn" 
+                 style="display: none;" 
+                 class="mt-2">
+                 
+                <div class="relative flex items-center py-2 mb-2">
+                    <div class="grow border-t border-zinc-200 dark:border-white/10"></div>
+                    <span class="shrink-0 px-3 text-xs text-zinc-500 dark:text-zinc-400">Atau</span>
+                    <div class="grow border-t border-zinc-200 dark:border-white/10"></div>
+                </div>
+
+                <flux:button variant="outline" type="button" class="w-full !rounded-full" 
+                    @click="
+                        if (deferredPrompt) {
+                            deferredPrompt.prompt();
+                            deferredPrompt.userChoice.then((choiceResult) => {
+                                if (choiceResult.outcome === 'accepted') {
+                                    showInstallBtn = false;
+                                }
+                                deferredPrompt = null;
+                            });
+                        }
+                    ">
+                    <flux:icon.arrow-down-on-square class="w-5 h-5 mr-2" />
+                    {{ __('Install Aplikasi di HP') }}
+                </flux:button>
+            </div>
         </form>
     </div>
 </x-layouts::auth>

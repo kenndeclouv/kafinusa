@@ -32,6 +32,45 @@
                     </a>
                 @endcanany
 
+                @can('productions:read')
+                    <a href="{{ route('productions.index') }}" wire:navigate
+                        class="flex items-center px-5 py-3.5 active:bg-black/5 dark:active:bg-white/5 transition-colors border-b border-black/5 dark:border-white/5">
+                        <flux:icon.wrench-screwdriver class="w-5 h-5 text-zinc-700 dark:text-zinc-300 mr-4" />
+                        <span class="text-[17px] font-normal text-zinc-900 dark:text-white flex-1">Produksi Harian</span>
+                    </a>
+                @endcan
+
+                <!-- Laporan -->
+                @canany(['order_books:read', 'stock_mutations:read'])
+                    <div class="px-5 py-2 mt-2 bg-zinc-100/50 dark:bg-zinc-800/50 border-y border-black/5 dark:border-white/5">
+                        <span class="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Laporan</span>
+                    </div>
+                @endcanany
+
+                @can('order_books:read')
+                    <a href="{{ route('reports.daily-recap') }}" wire:navigate
+                        class="flex items-center px-5 py-3.5 active:bg-black/5 dark:active:bg-white/5 transition-colors border-b border-black/5 dark:border-white/5">
+                        <flux:icon.document-text class="w-5 h-5 text-zinc-700 dark:text-zinc-300 mr-4" />
+                        <span class="text-[17px] font-normal text-zinc-900 dark:text-white flex-1">Rekap Penjualan</span>
+                    </a>
+                @endcan
+
+                @can('stock_mutations:read')
+                    <a href="{{ route('reports.stock-circulation') }}" wire:navigate
+                        class="flex items-center px-5 py-3.5 active:bg-black/5 dark:active:bg-white/5 transition-colors border-b border-black/5 dark:border-white/5">
+                        <flux:icon.clipboard-document-list class="w-5 h-5 text-zinc-700 dark:text-zinc-300 mr-4" />
+                        <span class="text-[17px] font-normal text-zinc-900 dark:text-white flex-1">Sirkulasi Stok</span>
+                    </a>
+                @endcan
+
+                @can('productions:read')
+                    <a href="{{ route('reports.daily-production') }}" wire:navigate
+                        class="flex items-center px-5 py-3.5 active:bg-black/5 dark:active:bg-white/5 transition-colors border-b border-black/5 dark:border-white/5">
+                        <flux:icon.clipboard-document-check class="w-5 h-5 text-zinc-700 dark:text-zinc-300 mr-4" />
+                        <span class="text-[17px] font-normal text-zinc-900 dark:text-white flex-1">Rekap Produksi</span>
+                    </a>
+                @endcan
+
                 @can('sales_schedules:read')
                     <a href="{{ route('sales-schedules.index') }}" wire:navigate
                         class="flex items-center px-5 py-3.5 active:bg-black/5 dark:active:bg-white/5 transition-colors border-b border-black/5 dark:border-white/5">

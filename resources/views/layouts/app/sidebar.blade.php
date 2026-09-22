@@ -47,6 +47,12 @@
                         {{ __('Stok Gudang') }}
                     </flux:sidebar.item>
                 @endcanany
+                @can('productions:read')
+                    <flux:sidebar.item icon="wrench-screwdriver" :href="route('productions.index')"
+                        :current="request()->routeIs('productions.*')" wire:navigate.hover>
+                        {{ __('Produksi Harian') }}
+                    </flux:sidebar.item>
+                @endcan
             @endcanany
 
             <div class="px-3 mt-2 mb-1 text-xs font-medium text-zinc-500 dark:text-zinc-400 in-data-flux-sidebar-collapsed-desktop:hidden"
@@ -130,6 +136,31 @@
                     @endif
                 </flux:sidebar.group>
             @endcanany
+
+            @can('order_books:read')
+                <flux:sidebar.group expandable
+                    :expanded="request()->routeIs('reports.*')" icon="document-chart-bar"
+                    :heading="__('Laporan')">
+                    @can('order_books:read')
+                        <flux:sidebar.item icon="document-text" :href="route('reports.daily-recap')"
+                            :current="request()->routeIs('reports.daily-recap')" wire:navigate.hover>
+                            {{ __('Rekap Penjualan') }}
+                        </flux:sidebar.item>
+                    @endcan
+                    @can('stock_mutations:read')
+                        <flux:sidebar.item icon="clipboard-document-list" :href="route('reports.stock-circulation')"
+                            :current="request()->routeIs('reports.stock-circulation')" wire:navigate.hover>
+                            {{ __('Sirkulasi Stok') }}
+                        </flux:sidebar.item>
+                    @endcan
+                    @can('productions:read')
+                        <flux:sidebar.item icon="clipboard-document-check" :href="route('reports.daily-production')"
+                            :current="request()->routeIs('reports.daily-production')" wire:navigate.hover>
+                            {{ __('Daftar Produksi') }}
+                        </flux:sidebar.item>
+                    @endcan
+                </flux:sidebar.group>
+            @endcan
 
             @canany(['logs.view', 'system_monitor.view', 'backups:read'])
                 <flux:sidebar.group expandable

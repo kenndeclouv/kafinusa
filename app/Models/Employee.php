@@ -44,4 +44,28 @@ class Employee extends Model
     {
         return $this->hasMany(SalesSchedule::class);
     }
+
+    /**
+     * Get the employee's avatar URL
+     */
+    public function avatarUrl(): ?string
+    {
+        return $this->user ? $this->user->avatarUrl() : null;
+    }
+
+    /**
+     * Get the employee's initials
+     */
+    public function initials(): string
+    {
+        if ($this->user) {
+            return $this->user->initials();
+        }
+
+        $initials = \Illuminate\Support\Str::initials($this->name, true);
+
+        return \Illuminate\Support\Str::length($initials) > 1
+            ? \Illuminate\Support\Str::substr($initials, 0, 1).\Illuminate\Support\Str::substr($initials, -1)
+            : $initials;
+    }
 }

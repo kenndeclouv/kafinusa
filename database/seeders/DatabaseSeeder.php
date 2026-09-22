@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             ItemSeeder::class,
             EmployeeSeeder::class,
             SalesScheduleSeeder::class,
+            WarehouseSeeder::class,
         ]);
 
         $superadmin = User::firstOrCreate(

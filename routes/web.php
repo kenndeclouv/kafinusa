@@ -44,6 +44,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{warehouse}/ledger', \App\Livewire\StockMutations\Ledger::class)->middleware('can:stock_mutations:read')->name('ledger');
     });
 
+    // Productions
+    Route::prefix('productions')->name('productions.')->group(function () {
+        Route::get('/', \App\Livewire\Productions\Index::class)->middleware('can:productions:read')->name('index');
+    });
+
     // Employees & Sales Schedules
     Route::prefix('employees')->name('employees.')->group(function () {
         Route::get('/', \App\Livewire\Employees\Index::class)->middleware('can:employees:read')->name('index');
@@ -95,6 +100,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('notifications/send', \App\Livewire\Notifications\Index::class)
             ->middleware('can:notifications:send')
             ->name('notifications.index');
+    });
+
+    // Reports
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('daily-recap', \App\Livewire\Reports\DailyRecap::class)->name('daily-recap');
+        Route::get('print-daily-recap', \App\Livewire\Reports\PrintDailyRecap::class)->name('print-daily-recap');
+        Route::get('stock-circulation', \App\Livewire\Reports\StockCirculation::class)->name('stock-circulation');
+        Route::get('print-stock-circulation', \App\Livewire\Reports\PrintStockCirculation::class)->name('print-stock-circulation');
+        Route::get('daily-production', \App\Livewire\Reports\DailyProduction::class)->name('daily-production');
+        Route::get('print-daily-production', \App\Livewire\Reports\PrintDailyProduction::class)->name('print-daily-production');
     });
 
     // Logs & System Monitor

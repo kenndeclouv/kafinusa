@@ -1,0 +1,79 @@
+<?php
+
+namespace App\Livewire\Reports;
+
+use Livewire\Component;
+use App\Models\Production;
+use App\Models\ItemCategory;
+use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Url;
+
+class PrintDailyProduction extends Component
+{
+    #[Url]
+    public $date;
+    
+    #[Url]
+    public $warehouse_id;
+
+    public function mount()
+    {
+        $this->date = $this->date ?: date('Y-m-d');
+        if (!$this->warehouse_id) {
+            $this->warehouse_id = \App\Models\Warehouse::first()->id ?? null;
+        }
+    }
+
+    #[Computed]
+    public function categories()
+    {
+        return ItemCategory::with(['items' => function($q) {
+            $q->orderBy('name');
+        }])->orderBy('name')->get();
+    }
+
+    #[Computed]
+    public function reportData()
+    {
+        Gate::authorize('productions:read');
+
+        if (!$this->date || !$this->warehouse_id) {
+            return collect();
+        }
+
+        // Get all productions on this date for the selected warehouse
+        $productions = Production::with(['user', 'rawItem', 'results.item'])
+            ->where('date', $this->date)
+            ->where('warehouse_id', $this->warehouse_id)
+            ->orderBy('id', 'asc') // So it displays sequentially like NO 1, 2, 3...
+            ->get();
+
+        $data = [];
+
+        foreach ($productions as $index => $prod) {
+            $row = [
+                'no' => $index + 1,
+                'user' => $prod->user,
+                'raw_quantity' => $prod->raw_quantity,
+                'notes' => $prod->notes,
+                'items' => [] // Keyed by item_id
+            ];
+
+            foreach ($prod->results as $result) {
+                $row['items'][$result->item_id] = $result->quantity;
+            }
+
+            $data[] = $row;
+        }
+
+        return collect($data);
+    }
+
+    public function render()
+    {
+        return view('livewire.reports.print-daily-production')
+            ->title('Cetak Daftar Produksi Harian')
+            ->layout('layouts.print');
+    }
+}

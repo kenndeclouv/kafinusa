@@ -12,28 +12,29 @@
 
 @fonts
 
-@if (env('APP_ENV') != 'local')
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#059669">
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js').then(function(registration) {
-                    console.log('ServiceWorker registration successful');
-                }, function(err) {
-                    console.log('ServiceWorker registration failed: ', err);
-                });
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#059669">
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                console.log('ServiceWorker registration successful');
+            }, function(err) {
+                console.log('ServiceWorker registration failed: ', err);
             });
-        }
-
-        // Capture the PWA install prompt
-        window.deferredPrompt = null;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            window.deferredPrompt = e;
-            window.dispatchEvent(new Event('pwa-installable'));
         });
-    </script>
+    }
+
+    // Capture the PWA install prompt
+    window.deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        window.deferredPrompt = e;
+        window.dispatchEvent(new Event('pwa-installable'));
+    });
+</script>
+
+@if (env('APP_ENV') != 'local')
 
     <!-- OneSignal Web SDK -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
