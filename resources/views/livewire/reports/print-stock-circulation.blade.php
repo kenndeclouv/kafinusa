@@ -119,7 +119,11 @@
                             </th>
                             <th colspan="{{ $this->items->count() }}"
                                 style="border: 1px solid #000; padding: 1px 4px; text-align: center; font-weight: bold; color: #1d4ed8; background: #eff6ff;">
-                                SISA SALDO (STOK)
+                                STOC GUDANG
+                            </th>
+                            <th rowspan="2"
+                                style="border: 1px solid #000; padding: 1px 4px; text-align: center; vertical-align: bottom; font-weight: bold; width: 120px;">
+                                KETERANGAN
                             </th>
                         </tr>
                         <tr style="background: #e5e7eb;">
@@ -171,6 +175,7 @@
                                     {{ $initial != 0 ? number_format($initial) : '0' }}
                                 </td>
                             @endforeach
+                            <td style="border: 1px solid #000; padding: 1px 4px;"></td>
                         </tr>
 
                         <!-- DAILY ROWS -->
@@ -218,6 +223,7 @@
                                         {{ $bal != 0 ? number_format($bal) : '0' }}
                                     </td>
                                 @endforeach
+                                <td style="border: 1px solid #000; padding: 1px 4px;"></td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -252,6 +258,7 @@
                                     {{ number_format($finalBal) }}
                                 </td>
                             @endforeach
+                            <td style="border: 1px solid #000; padding: 1px 4px;"></td>
                         </tr>
                     </tfoot>
                 </table>

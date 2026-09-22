@@ -11,9 +11,12 @@ use App\Models\StockMutation;
 use Illuminate\Support\Carbon;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
+use App\Traits\SortsReportCategories;
 
 class PrintStockCirculation extends Component
 {
+    use SortsReportCategories;
+
     #[Url]
     public $month;
     
@@ -54,7 +57,14 @@ class PrintStockCirculation extends Component
     public function items()
     {
         if (!$this->item_category_id) return collect();
-        return Item::where('item_category_id', $this->item_category_id)->orderBy('code')->get();
+        $items = Item::where('item_category_id', $this->item_category_id)->get();
+        $category = ItemCategory::find($this->item_category_id);
+        
+        if ($category) {
+            return $this->sortItems($items, $category->name);
+        }
+        
+        return $items;
     }
 
     #[Computed]

@@ -7,9 +7,12 @@ use App\Models\OrderBook;
 use App\Models\ItemCategory;
 use Illuminate\Support\Carbon;
 use Livewire\Attributes\Computed;
+use App\Traits\SortsReportCategories;
 
 class DailyRecap extends Component
 {
+    use SortsReportCategories;
+
     public $date;
 
     public function mount()
@@ -68,14 +71,15 @@ class DailyRecap extends Component
         }
 
         // Get categories that have those items
-        return ItemCategory::with(['items' => function ($q) use ($soldItemIds) {
+        $categories = ItemCategory::with(['items' => function ($q) use ($soldItemIds) {
                 $q->whereIn('id', $soldItemIds)->orderBy('code');
             }])
             ->whereHas('items', function ($q) use ($soldItemIds) {
                 $q->whereIn('id', $soldItemIds);
             })
-            ->orderBy('name')
             ->get();
+            
+        return $this->sortCategoriesAndItems($categories);
     }
 
     public function render()

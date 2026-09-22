@@ -7,9 +7,12 @@ use App\Models\Production;
 use App\Models\ItemCategory;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
+use App\Traits\SortsReportCategories;
 
 class DailyProduction extends Component
 {
+    use SortsReportCategories;
+
     public $date;
     public $warehouse_id;
 
@@ -23,9 +26,10 @@ class DailyProduction extends Component
     #[Computed]
     public function categories()
     {
-        return ItemCategory::with(['items' => function($q) {
-            $q->orderBy('name');
-        }])->orderBy('name')->get();
+        $categories = ItemCategory::with(['items' => function($q) {
+            // Do not force orderBy here, trait will handle it
+        }])->get();
+        return $this->sortCategoriesAndItems($categories);
     }
 
     #[Computed]

@@ -8,9 +8,12 @@ use App\Models\ItemCategory;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
+use App\Traits\SortsReportCategories;
 
 class PrintDailyProduction extends Component
 {
+    use SortsReportCategories;
+
     #[Url]
     public $date;
     
@@ -28,9 +31,10 @@ class PrintDailyProduction extends Component
     #[Computed]
     public function categories()
     {
-        return ItemCategory::with(['items' => function($q) {
-            $q->orderBy('name');
-        }])->orderBy('name')->get();
+        $categories = ItemCategory::with(['items' => function($q) {
+            // Do not force orderBy here, trait will handle it
+        }])->get();
+        return $this->sortCategoriesAndItems($categories);
     }
 
     #[Computed]

@@ -39,8 +39,8 @@
             }
         }">
 
-            <flux:button href="{{ route('reports.daily-recap', ['date' => $date, 'market_id' => $market_id]) }}"
-                wire:navigate variant="outline" icon="arrow-left" class="w-full lg:w-auto">
+            <flux:button href="{{ route('reports.daily-recap', ['date' => $date]) }}" wire:navigate variant="outline"
+                icon="arrow-left" class="w-full lg:w-auto">
                 Kembali
             </flux:button>
             <flux:button onclick="window.print()" variant="primary" icon="printer"
@@ -71,18 +71,15 @@
     <div id="print-container" class="w-full overflow-x-auto bg-white print:overflow-visible">
         <div class="min-w-[950px] pt-4 print:pt-0 text-black">
             <!-- Print Header -->
-            <div
-                class="flex items-center justify-between mb-4 border-b-2 border-black pb-2 bg-white text-black print:mb-2 print:pb-1">
-                <div>
-                    <div class="text-sm font-semibold tracking-widest uppercase">PASAR :
-                        {{ $this->market_id ? \App\Models\Market::find($this->market_id)?->name ?? 'SEMUA PASAR' : 'SEMUA PASAR' }}
-                    </div>
+            <div class="mb-4 text-black">
+                <div class="text-center font-bold leading-tight">
+                    <h1 class="text-xl uppercase">REKAPITULASI PENJUALAN HARIAN</h1>
+                    <h2 class="text-lg uppercase">UD. CITRA MAJU BERSAMA</h2>
                 </div>
-                <h1 class="text-xl font-bold uppercase tracking-widest italic text-center flex-1">
-                    REKAPITULASI PENJUALAN HARIAN
-                </h1>
-                <div class="text-sm font-semibold">
-                    Hari / Tgl : {{ \Carbon\Carbon::parse($date)->translatedFormat('l / d-m-Y') }}
+                <div class="border-b-[2px] border-black mt-2 w-full flex justify-end pb-1">
+                    <div class="text-sm font-semibold">
+                        Hari/tgl : {{ \Carbon\Carbon::parse($date)->translatedFormat('l / d-m-Y') }}
+                    </div>
                 </div>
             </div>
 
