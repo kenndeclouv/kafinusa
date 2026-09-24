@@ -100,118 +100,107 @@
                     </p>
                 </div>
             @else
-                <table class="w-full border-collapse text-[10px]" style="border: 2px solid #000;">
-                    <thead>
-                        <tr style="background: #e5e7eb;">
-                            <th rowspan="2"
-                                style="border: 1px solid #000; padding: 1px 4px; text-align: center; vertical-align: bottom; font-weight: bold; width: 40px;">
-                                NO.
-                            </th>
-                            @foreach ($this->categories as $category)
-                                @if ($category->items->count() > 0)
-                                    <th colspan="{{ $category->items->count() }}"
-                                        style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold;">
+                @foreach ($this->categories as $category)
+                    @php
+                        // Filter productions that have at least one item from this category
+                        $categoryItemIds = $category->items->pluck('id')->toArray();
+                        $categoryRows = $this->reportData->filter(function($row) use ($categoryItemIds) {
+                            foreach ($row['items'] as $itemId => $qty) {
+                                if (in_array($itemId, $categoryItemIds)) return true;
+                            }
+                            return false;
+                        });
+                    @endphp
+
+                    @if ($categoryRows->isNotEmpty())
+                        <table class="w-full border-collapse text-[10px] mb-6" style="border: 2px solid #000;">
+                            <thead>
+                                <tr style="background: #e5e7eb;">
+                                    <th colspan="{{ $category->items->count() + 3 }}"
+                                        style="border: 1px solid #000; padding: 4px; text-align: center; font-weight: bold; font-size: 11px; text-transform: uppercase;">
                                         {{ $category->name }}
                                     </th>
-                                @endif
-                            @endforeach
-                            <th rowspan="2"
-                                style="border: 1px solid #000; padding: 1px 4px; text-align: center; vertical-align: bottom; font-weight: bold; min-width: 60px;">
-                                TTL BAHAN
-                            </th>
-                            <th rowspan="2"
-                                style="border: 1px solid #000; padding: 1px 4px; text-align: center; vertical-align: bottom; font-weight: bold;">
-                                KETERANGAN
-                            </th>
-                        </tr>
-                        <tr style="background: #e5e7eb;">
-                            @foreach ($this->categories as $category)
-                                @foreach ($category->items as $item)
-                                    <th
-                                        style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 9px; width: 35px;">
-                                        <div class="flex flex-col items-center gap-0.5">
-                                            <span>{{ $item->name }}</span>
-                                            <span
-                                                class="font-normal">{{ $item->weight >= 1000 ? $item->weight / 1000 . 'kg' : $item->weight . 'gr' }}</span>
-                                        </div>
+                                </tr>
+                                <tr style="background: #e5e7eb;">
+                                    <th style="border: 1px solid #000; padding: 1px 4px; text-align: center; vertical-align: bottom; font-weight: bold; width: 40px;">
+                                        NO.
                                     </th>
+                                    @foreach ($category->items as $item)
+                                        <th style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 9px; width: 35px;">
+                                            <div class="flex flex-col items-center gap-0.5">
+                                                <span>{{ $item->name }}</span>
+                                                <span class="font-normal">{{ $item->weight >= 1000 ? $item->weight / 1000 . 'kg' : $item->weight . 'gr' }}</span>
+                                            </div>
+                                        </th>
+                                    @endforeach
+                                    <th style="border: 1px solid #000; padding: 1px 4px; text-align: center; vertical-align: bottom; font-weight: bold; min-width: 60px;">
+                                        TTL BAHAN
+                                    </th>
+                                    <th style="border: 1px solid #000; padding: 1px 4px; text-align: center; vertical-align: bottom; font-weight: bold; width: 120px;">
+                                        KETERANGAN
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $columnTotals = array_fill_keys($categoryItemIds, 0);
+                                    $totalBahan = 0;
+                                @endphp
+
+                                @foreach ($categoryRows as $row)
+                                    @php
+                                        $totalBahan += $row['raw_quantity'];
+                                    @endphp
+                                    <tr>
+                                        <td style="border: 1px solid #000; padding: 1px 4px; text-align: center; font-weight: bold;">
+                                            {{ $row['no'] }}
+                                            <div style="font-size: 9px; font-weight: normal; margin-top: 2px;">
+                                                {{ $row['user']->name }}
+                                            </div>
+                                        </td>
+
+                                        @foreach ($category->items as $item)
+                                            @php
+                                                $qty = $row['items'][$item->id] ?? 0;
+                                                $columnTotals[$item->id] += $qty;
+                                            @endphp
+                                            <td style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 11px;">
+                                                {{ $qty > 0 ? number_format($qty) : '' }}
+                                            </td>
+                                        @endforeach
+
+                                        <td style="border: 1px solid #000; padding: 1px 4px; text-align: center; font-weight: bold;">
+                                            {{ number_format($row['raw_quantity']) }}
+                                        </td>
+
+                                        <td style="border: 1px solid #000; padding: 1px 4px;">
+                                            {{ $row['notes'] ?: '' }}
+                                        </td>
+                                    </tr>
                                 @endforeach
-                            @endforeach
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @php
-                            // Array to keep track of column totals
-                            $columnTotals = [];
-                            foreach ($this->categories as $category) {
-                                foreach ($category->items as $item) {
-                                    $columnTotals[$item->id] = 0;
-                                }
-                            }
-                            $totalBahan = 0;
-                        @endphp
-
-                        @foreach ($this->reportData as $row)
-                            @php
-                                $totalBahan += $row['raw_quantity'];
-                            @endphp
-                            <tr>
-                                <td
-                                    style="border: 1px solid #000; padding: 1px 4px; text-align: center; font-weight: bold;">
-                                    {{ $row['no'] }}
-                                    <div style="font-size: 9px; font-weight: normal; margin-top: 2px;">
-                                        {{ $row['user']->name }}</div>
-                                </td>
-
-                                @foreach ($this->categories as $category)
+                            </tbody>
+                            <tfoot>
+                                <tr style="background: #e5e7eb;">
+                                    <td style="border: 1px solid #000; padding: 1px 4px; text-align: right; font-weight: bold; text-transform: uppercase;">
+                                        TTL
+                                    </td>
                                     @foreach ($category->items as $item)
                                         @php
-                                            $qty = $row['items'][$item->id] ?? 0;
-                                            $columnTotals[$item->id] += $qty;
+                                            $totalQty = $columnTotals[$item->id] ?? 0;
                                         @endphp
-                                        <td
-                                            style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 11px;">
-                                            {{ $qty > 0 ? number_format($qty) : '' }}
+                                        <td style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 11px;">
+                                            {{ $totalQty > 0 ? number_format($totalQty) : '-' }}
                                         </td>
                                     @endforeach
-                                @endforeach
-
-                                <td
-                                    style="border: 1px solid #000; padding: 1px 4px; text-align: center; font-weight: bold;">
-                                    {{ number_format($row['raw_quantity']) }}
-                                </td>
-
-                                <td style="border: 1px solid #000; padding: 1px 4px; max-width: 250px;">
-                                    {{ $row['notes'] ?: '-' }}
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot>
-                        <tr style="background: #e5e7eb;">
-                            <td
-                                style="border: 1px solid #000; padding: 1px 4px; text-align: right; font-weight: bold; text-transform: uppercase;">
-                                TOTAL
-                            </td>
-                            @foreach ($this->categories as $category)
-                                @foreach ($category->items as $item)
-                                    @php
-                                        $totalQty = $columnTotals[$item->id] ?? 0;
-                                    @endphp
-                                    <td
-                                        style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 11px;">
-                                        {{ $totalQty > 0 ? number_format($totalQty) : '-' }}
+                                    <td style="border: 1px solid #000; padding: 1px 4px; text-align: center; font-weight: bold;">
+                                        {{ number_format($totalBahan) }}
                                     </td>
-                                @endforeach
-                            @endforeach
-                            <td
-                                style="border: 1px solid #000; padding: 1px 4px; text-align: center; font-weight: bold;">
-                                {{ number_format($totalBahan) }}
-                            </td>
-                            <td style="border: 1px solid #000; padding: 1px 4px;"></td>
-                        </tr>
-                    </tfoot>
-                </table>
+                                    <td style="border: 1px solid #000; padding: 1px 4px;"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    @endif
+                @endforeach
             @endif
 
             {{-- Print Footer --}}

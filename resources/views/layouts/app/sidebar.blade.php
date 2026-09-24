@@ -271,6 +271,43 @@
     <livewire:command-menu />
 
     @fluxScripts
+
+    <!-- Global Loading Overlay -->
+    <div x-data="{
+            requests: 0,
+            get show() { return this.requests > 0; },
+            startLoading() {
+                this.requests++;
+            },
+            stopLoading() {
+                if (this.requests > 0) this.requests--;
+            }
+        }"
+        x-init="
+            document.addEventListener('livewire:navigating', () => startLoading());
+            document.addEventListener('livewire:navigated', () => stopLoading());
+            
+            Livewire.hook('commit', ({ commit, succeed, fail }) => {
+                if (commit.calls.length > 0) {
+                    startLoading();
+                    succeed(() => stopLoading());
+                    fail(() => stopLoading());
+                }
+            });
+        "
+        x-show="show"
+        x-transition.opacity.duration.300ms
+        style="display: none;"
+        class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white/40 dark:bg-black/40 backdrop-blur-[2px]"
+    >
+        <svg class="animate-spin h-12 w-12 text-zinc-900 dark:text-white mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <div class="px-4 py-2 bg-white dark:bg-zinc-800 rounded-full shadow-lg border border-zinc-200 dark:border-zinc-700">
+            <span class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Mohon Tunggu...</span>
+        </div>
+    </div>
 </body>
 
 </html>

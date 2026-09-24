@@ -7,7 +7,10 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ShipmentPlan;
 use App\Models\ShipmentPlanItem;
+use App\Models\ShipmentBatch;
 use App\Models\Item;
+use App\Models\Warehouse;
+use App\Models\StockMutation;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +24,15 @@ class ManageShipments extends Component
 
     // assignments[order_item_id][batch_number] = quantity
     public array $assignments = [];
+
+    // Batch metadata
+    public array $batchStatuses = [];
+    public array $batchIds = [];
+
+    // Modal state for shipping
+    public ?int $selectedBatchForShipping = null;
+    public ?string $shippingDate = null;
+    public ?int $shippingWarehouseId = null;
 
     public function mount(OrderBook $orderBook)
     {
@@ -43,7 +55,7 @@ class ManageShipments extends Component
 
     protected function loadExistingPlan(): void
     {
-        $plan = $this->orderBook->shipmentPlan()->with('items')->first();
+        $plan = $this->orderBook->shipmentPlan()->with(['items', 'batches'])->first();
 
         if ($plan) {
             $this->totalBatches = $plan->total_batches;
@@ -71,9 +83,25 @@ class ManageShipments extends Component
             foreach ($plan->items as $planItem) {
                 $this->assignments[$planItem->order_item_id][$planItem->batch_number] = $planItem->quantity;
             }
+
+            foreach ($plan->batches as $batch) {
+                $this->batchStatuses[$batch->batch_number] = $batch->status;
+                $this->batchIds[$batch->batch_number] = $batch->id;
+            }
+
+            $this->fillMissingBatchMetadata();
         } else {
             // Default: semua item masuk muatan 1 dengan full quantity
             $this->initializeDefaults();
+        }
+    }
+
+    protected function fillMissingBatchMetadata(): void
+    {
+        for ($b = 1; $b <= $this->totalBatches; $b++) {
+            if (!isset($this->batchStatuses[$b])) {
+                $this->batchStatuses[$b] = 'pending';
+            }
         }
     }
 
@@ -94,6 +122,13 @@ class ManageShipments extends Component
         }
 
         $this->totalBatches = 1;
+        $this->fillMissingBatchMetadata();
+    }
+
+    #[Computed]
+    public function warehouses()
+    {
+        return Warehouse::all()->pluck('name', 'id');
     }
 
     #[Computed]
@@ -159,6 +194,7 @@ class ManageShipments extends Component
         }
 
         $this->totalBatches--;
+        $this->fillMissingBatchMetadata();
     }
 
     public function updatedAssignments($value, $key = null): void
@@ -251,6 +287,7 @@ class ManageShipments extends Component
             $plan = $this->orderBook->shipmentPlan;
             if ($plan) {
                 $plan->items()->delete();
+                $plan->batches()->delete();
                 $plan->delete();
             }
 
@@ -274,6 +311,21 @@ class ManageShipments extends Component
                     }
                 }
             }
+
+            // Simpan metadata batch (hanya yang pending, yang shipped jangan di-overwrite datenya)
+            for ($b = 1; $b <= $this->totalBatches; $b++) {
+                $existingBatch = $plan->batches()->where('batch_number', $b)->first();
+                if (!$existingBatch) {
+                    ShipmentBatch::create([
+                        'shipment_plan_id' => $plan->id,
+                        'batch_number'     => $b,
+                        'shipment_date'    => $this->orderBook->book_date->format('Y-m-d'),
+                        'status'           => $this->batchStatuses[$b] ?? 'pending',
+                    ]);
+                } else {
+                    // Update if necessary, but don't touch date/warehouse if already shipped
+                }
+            }
         });
 
         if ($type === 'nota') {
@@ -283,6 +335,100 @@ class ManageShipments extends Component
         } else {
             $this->redirect(route('order-books.shipments.print', $this->orderBook), navigate: true);
         }
+    }
+
+    public function openShippingModal(int $batchNumber): void
+    {
+        $this->selectedBatchForShipping = $batchNumber;
+        $this->shippingDate = $this->orderBook->book_date->format('Y-m-d');
+        
+        // Coba auto-select gudang pertama jika ada
+        $warehouses = $this->warehouses();
+        if ($warehouses->isNotEmpty()) {
+            $this->shippingWarehouseId = $warehouses->keys()->first();
+        } else {
+            $this->shippingWarehouseId = null;
+        }
+
+        $this->modal('shipping-modal')->show();
+    }
+
+    public function confirmShipping(): void
+    {
+        $batchNumber = $this->selectedBatchForShipping;
+        $warehouseId = $this->shippingWarehouseId;
+        $date = $this->shippingDate;
+
+        if (!$batchNumber) return;
+
+        if (!$warehouseId || !$date) {
+            Flux::toast(
+                heading: 'Data Tidak Lengkap',
+                text: 'Silakan pilih tanggal dan gudang asal terlebih dahulu.',
+                variant: 'danger'
+            );
+            return;
+        }
+
+        // 1. Validasi dulu apakah assignmennya udah di save
+        // Untuk aman, kita save dulu
+        $this->save('silent');
+
+        // Reload the plan
+        $plan = $this->orderBook->shipmentPlan()->with(['items', 'batches'])->first();
+        $batch = $plan->batches->where('batch_number', $batchNumber)->first();
+
+        if (!$batch || $batch->status === 'shipped') {
+            return; // already shipped
+        }
+
+        // Lakukan pemotongan stok
+        DB::transaction(function () use ($plan, $batch, $batchNumber, $warehouseId, $date) {
+            $itemsInBatch = $plan->items->where('batch_number', $batchNumber);
+            $groupedItems = [];
+
+            foreach ($itemsInBatch as $pi) {
+                $orderItem = OrderItem::find($pi->order_item_id);
+                if ($orderItem) {
+                    $itemId = $orderItem->item_id;
+                    if (!isset($groupedItems[$itemId])) $groupedItems[$itemId] = 0;
+                    $groupedItems[$itemId] += $pi->quantity;
+                }
+            }
+
+            foreach ($groupedItems as $itemId => $qty) {
+                if ($qty <= 0) continue;
+
+                // Create stock mutation OUT
+                $mutation = new StockMutation([
+                    'item_id' => $itemId,
+                    'warehouse_id' => $warehouseId,
+                    'user_id' => auth()->id(),
+                    'type' => 'out',
+                    'quantity' => $qty,
+                    'notes' => "Pengiriman Muatan {$batchNumber} (Pasar {$this->orderBook->market->name})"
+                ]);
+                $mutation->created_at = $date . ' ' . now()->format('H:i:s');
+                $mutation->save();
+            }
+
+            $batch->update([
+                'status' => 'shipped',
+                'shipment_date' => $date,
+                'warehouse_id' => $warehouseId,
+            ]);
+        });
+
+        // Update local state
+        $this->batchStatuses[$batchNumber] = 'shipped';
+        
+        Flux::modal('shipping-modal')->close();
+
+        Flux::toast(
+            heading: 'Muatan Terkirim',
+            text: "Stok telah dipotong dari Gudang. Muatan {$batchNumber} terkunci.",
+            variant: 'success'
+        );
     }
 
     public function render()

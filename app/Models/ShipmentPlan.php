@@ -26,4 +26,9 @@ class ShipmentPlan extends Model
     {
         return $this->hasMany(ShipmentPlanItem::class);
     }
+
+    public function batches()
+    {
+        return $this->hasMany(ShipmentBatch::class);
+    }
 }

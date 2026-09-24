@@ -42,13 +42,17 @@
 
         @for ($b = 1; $b <= $totalBatches; $b++)
             <div
-                class="min-w-[220px] flex-1 shrink-0 rounded-2xl bg-zinc-50 dark:bg-white/5 border border-zinc-200 dark:border-white/5 p-4 flex flex-col gap-1 snap-start">
+                class="min-w-[280px] flex-1 shrink-0 rounded-2xl bg-zinc-50 dark:bg-white/5 border {{ ($batchStatuses[$b] ?? '') === 'shipped' ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-500/10' : 'border-zinc-200 dark:border-white/5' }} p-4 flex flex-col gap-1 snap-start relative">
                 <div class="flex items-center justify-between">
-                    <span class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Muatan
-                        {{ $b }}</span>
-                    @if ($totalBatches > 1 && $b > 1)
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Muatan {{ $b }}</span>
+                        @if (($batchStatuses[$b] ?? '') === 'shipped')
+                            <flux:badge color="success" size="sm">Terkirim</flux:badge>
+                        @endif
+                    </div>
+                    @if ($totalBatches > 1 && $b > 1 && ($batchStatuses[$b] ?? '') !== 'shipped')
                         <flux:button wire:click="removeBatch({{ $b }})" variant="ghost" size="sm"
-                            icon="trash" class="text-red-500!" />
+                            icon="trash" class="text-red-500! -mr-2 -mt-2" />
                     @endif
                 </div>
                 <div class="flex items-baseline gap-2">
@@ -70,6 +74,19 @@
                     </div>
                 </div>
                 <span class="text-xs text-zinc-500">Maks. 7 ton/truk</span>
+
+                {{-- Batch Settings --}}
+                <div class="flex flex-col gap-2 mt-2 pt-3 border-t border-zinc-200 dark:border-white/10 relative z-20">
+                    @if (($batchStatuses[$b] ?? '') !== 'shipped')
+                        <flux:button wire:click="openShippingModal({{ $b }})" variant="primary" size="sm" icon="truck" class="w-full">Kirim (Potong Stok)</flux:button>
+                    @endif
+                </div>
+
+                {{-- Lock overlay if shipped --}}
+                @if (($batchStatuses[$b] ?? '') === 'shipped')
+                    <div class="absolute inset-0 bg-white/40 dark:bg-black/40 z-10 rounded-2xl pointer-events-none flex items-center justify-center backdrop-blur-[1px]">
+                    </div>
+                @endif
             </div>
         @endfor
     </div>
@@ -129,9 +146,11 @@
                                                 
                                                 <flux:menu>
                                                     @for ($b = 1; $b <= $totalBatches; $b++)
-                                                        <flux:menu.item wire:click="moveToBatch({{ $order->id }}, {{ $b }})">
-                                                            Pindah semua ke Muatan {{ $b }}
-                                                        </flux:menu.item>
+                                                        @if (($batchStatuses[$b] ?? '') !== 'shipped')
+                                                            <flux:menu.item wire:click="moveToBatch({{ $order->id }}, {{ $b }})">
+                                                                Pindah semua ke Muatan {{ $b }}
+                                                            </flux:menu.item>
+                                                        @endif
                                                     @endfor
                                                 </flux:menu>
                                             </flux:dropdown>
@@ -166,7 +185,8 @@
                                                 x-model.number="assignments[{{ $orderItem->id }}][{{ $b }}]"
                                                 x-on:input="updateAssignment({{ $orderItem->id }}, {{ $b }}, {{ $orderItem->quantity }})"
                                                 min="0" x-bind:max="(parseInt(assignments[{{ $orderItem->id }}][{{ $b }}]) || 0) + remaining({{ $orderItem->id }}, {{ $orderItem->quantity }})"
-                                                placeholder="0" />
+                                                placeholder="0"
+                                                :disabled="($batchStatuses[$b] ?? '') === 'shipped'" />
                                         </div>
                                     </td>
                                 @endfor
@@ -242,8 +262,44 @@
             <flux:button wire:click="save('summary')" variant="primary" icon="truck" class="w-full lg:w-auto">Simpan & Cetak Daftar</flux:button>
         </div>
     </div>
-</div>
+    <flux:modal name="shipping-modal" class="md:w-96 !rounded-3xl" :closable="false" scroll="body">
+        <form wire:submit="confirmShipping">
+            <flux:heading size="lg">Konfirmasi Pengiriman</flux:heading>
+            <flux:subheading>Muatan {{ $selectedBatchForShipping }} akan dikirim dan stok akan dipotong.</flux:subheading>
 
+            <!-- iOS Style Connected List -->
+            <div class="mt-4 bg-white dark:bg-white/5 rounded-3xl border border-zinc-200 dark:border-white/10 shadow-xs flex flex-col relative overflow-hidden">
+                <!-- Tanggal -->
+                <label class="flex flex-row items-center px-4 py-1.5 relative group transition-colors focus-within:bg-zinc-50 dark:focus-within:bg-white/[0.07] cursor-text">
+                    <span class="text-[15px] font-medium text-zinc-900 dark:text-white w-1/3 shrink-0 py-2 select-none">
+                        Tanggal
+                    </span>
+                    <div class="flex-1 w-full">
+                        <x-date-picker variant="ios" wire:model="shippingDate" placeholder="Pilih Tanggal" />
+                    </div>
+                    <div class="absolute bottom-0 right-4 left-4 h-px bg-zinc-200 dark:bg-white/10"></div>
+                </label>
+                <x-error-ios name="shippingDate" />
+
+                <!-- Gudang -->
+                <label class="flex flex-row items-center px-4 py-1.5 relative group transition-colors focus-within:bg-zinc-50 dark:focus-within:bg-white/[0.07] cursor-text">
+                    <span class="text-[15px] font-medium text-zinc-900 dark:text-white w-1/3 shrink-0 py-2 select-none">
+                        Gudang
+                    </span>
+                    <div class="flex-1 w-full">
+                        <x-searchable-select wire:model="shippingWarehouseId" :options="$this->warehouses->toArray()" :searchable="false" variant="ios" placeholder="Pilih gudang" />
+                    </div>
+                </label>
+                <x-error-ios name="shippingWarehouseId" />
+            </div>
+
+            <div class="mt-6 flex flex-col gap-2">
+                <flux:button class="!rounded-full" type="submit" variant="primary">Eksekusi Potong Stok</flux:button>
+                <flux:button class="!rounded-full" x-on:click="$flux.modal('shipping-modal').close()" variant="outline">Batal</flux:button>
+            </div>
+        </form>
+    </flux:modal>
+</div>
 @script
     <script>
         Alpine.data('shipmentManager', (itemsWeight, itemToOrder, assignments, totalBatches) => ({

@@ -41,111 +41,109 @@
                 </flux:text>
             </div>
         @else
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left whitespace-nowrap">
-                    <thead class="text-xs text-zinc-700 uppercase bg-zinc-50 dark:bg-zinc-800/50 dark:text-zinc-300 border-b border-zinc-200 dark:border-white/10">
-                        <tr>
-                            <th rowspan="2" class="px-4 py-3 font-semibold border-r border-zinc-200 dark:border-white/10 align-middle text-center sticky left-0 z-10 bg-zinc-50 dark:bg-zinc-800/50">
-                                NO.
-                            </th>
-                            @foreach($this->categories as $category)
-                                @if($category->items->count() > 0)
-                                    <th colspan="{{ $category->items->count() }}" class="px-4 py-2 font-bold text-center border-r border-zinc-200 dark:border-white/10 bg-zinc-100/50 dark:bg-zinc-800/80">
-                                        {{ $category->name }}
-                                    </th>
-                                @endif
-                            @endforeach
-                            <th rowspan="2" class="px-4 py-3 font-semibold border-r border-zinc-200 dark:border-white/10 align-middle text-center min-w-[120px]">
-                                TTL BAHAN
-                            </th>
-                            <th rowspan="2" class="px-4 py-3 font-semibold align-middle text-center">
-                                KETERANGAN
-                            </th>
-                        </tr>
-                        <tr class="border-t border-zinc-200 dark:border-white/10">
-                            @foreach($this->categories as $category)
-                                @foreach($category->items as $item)
-                                    <th class="px-3 py-2 font-medium border-r border-zinc-200 dark:border-white/10 text-center min-w-[60px]">
-                                        <div class="flex flex-col items-center gap-1">
-                                            <span class="text-zinc-900 dark:text-white">{{ $item->name }}</span>
-                                            <span class="text-[10px] text-zinc-500 font-normal">{{ $item->weight >= 1000 ? ($item->weight/1000).'kg' : $item->weight.'gr' }}</span>
-                                        </div>
-                                    </th>
-                                @endforeach
-                            @endforeach
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-zinc-200 dark:divide-white/10">
-                        @php
-                            // Array to keep track of column totals
-                            $columnTotals = [];
-                            foreach($this->categories as $category) {
-                                foreach($category->items as $item) {
-                                    $columnTotals[$item->id] = 0;
-                                }
+            <div class="flex flex-col gap-8">
+                @foreach($this->categories as $category)
+                    @php
+                        $categoryItemIds = $category->items->pluck('id')->toArray();
+                        $categoryRows = $this->reportData->filter(function($row) use ($categoryItemIds) {
+                            foreach ($row['items'] as $itemId => $qty) {
+                                if (in_array($itemId, $categoryItemIds)) return true;
                             }
-                            $totalBahan = 0;
-                        @endphp
-                        
-                        @foreach($this->reportData as $row)
-                            @php
-                                $totalBahan += $row['raw_quantity'];
-                            @endphp
-                            <tr class="hover:bg-zinc-50/50 dark:hover:bg-white/[0.02] transition-colors group">
-                                <td class="px-4 py-2 text-zinc-900 dark:text-white border-r border-zinc-200 dark:border-white/10 sticky left-0 bg-white dark:bg-zinc-900 group-hover:bg-zinc-50 dark:group-hover:bg-zinc-800/50">
-                                    <div class="flex items-center gap-3">
-                                        <span class="font-bold w-4 text-center">{{ $row['no'] }}</span>
-                                        <div class="flex items-center gap-2">
-                                            <flux:avatar :src="$row['user']->avatarUrl()" :name="$row['user']->name" :initials="$row['user']->initials()" size="xs" />
-                                            <span class="text-xs text-zinc-500">{{ $row['user']->name }}</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                
-                                @foreach($this->categories as $category)
-                                    @foreach($category->items as $item)
-                                        @php
-                                            $qty = $row['items'][$item->id] ?? 0;
-                                            $columnTotals[$item->id] += $qty;
-                                        @endphp
-                                        <td class="px-3 py-3 text-center border-r border-zinc-200 dark:border-white/10 {{ $qty > 0 ? 'text-zinc-900 dark:text-zinc-100 font-semibold' : 'text-zinc-300 dark:text-zinc-700' }}">
-                                            {{ $qty > 0 ? number_format($qty) : '' }}
-                                        </td>
-                                    @endforeach
-                                @endforeach
+                            return false;
+                        });
+                    @endphp
 
-                                <td class="px-4 py-3 text-center border-r border-zinc-200 dark:border-white/10 font-bold text-red-600 dark:text-red-400">
-                                    {{ number_format($row['raw_quantity']) }}
-                                </td>
-                                
-                                <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400 text-sm max-w-[200px] truncate" title="{{ $row['notes'] }}">
-                                    {{ $row['notes'] ?: '-' }}
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                    <tfoot class="bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-200 dark:border-white/10">
-                        <tr>
-                            <td class="px-4 py-4 font-bold text-zinc-900 dark:text-white border-r border-zinc-200 dark:border-white/10 text-right sticky left-0 bg-zinc-50 dark:bg-zinc-800/50">
-                                TOTAL
-                            </td>
-                            @foreach($this->categories as $category)
-                                @foreach($category->items as $item)
+                    @if($categoryRows->isNotEmpty())
+                        <div class="overflow-x-auto rounded-xl border border-zinc-200 dark:border-white/10 shadow-sm">
+                            <div class="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 font-bold text-center border-b border-zinc-200 dark:border-white/10 uppercase tracking-widest text-zinc-700 dark:text-zinc-300">
+                                {{ $category->name }}
+                            </div>
+                            <table class="w-full text-sm text-left whitespace-nowrap">
+                                <thead class="text-xs text-zinc-700 uppercase bg-zinc-50 dark:bg-zinc-800/50 dark:text-zinc-300 border-b border-zinc-200 dark:border-white/10">
+                                    <tr>
+                                        <th class="px-4 py-3 font-semibold border-r border-zinc-200 dark:border-white/10 align-middle text-center sticky left-0 z-10 bg-zinc-50 dark:bg-zinc-800/50 w-20">
+                                            NO.
+                                        </th>
+                                        @foreach($category->items as $item)
+                                            <th class="px-3 py-2 font-medium border-r border-zinc-200 dark:border-white/10 text-center min-w-[60px]">
+                                                <div class="flex flex-col items-center gap-1">
+                                                    <span class="text-zinc-900 dark:text-white">{{ $item->name }}</span>
+                                                    <span class="text-[10px] text-zinc-500 font-normal">{{ $item->weight >= 1000 ? ($item->weight/1000).'kg' : $item->weight.'gr' }}</span>
+                                                </div>
+                                            </th>
+                                        @endforeach
+                                        <th class="px-4 py-3 font-semibold border-r border-zinc-200 dark:border-white/10 align-middle text-center min-w-[120px]">
+                                            TTL BAHAN
+                                        </th>
+                                        <th class="px-4 py-3 font-semibold align-middle text-center min-w-[150px]">
+                                            KETERANGAN
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-zinc-200 dark:divide-white/10">
                                     @php
-                                        $totalQty = $columnTotals[$item->id] ?? 0;
+                                        $columnTotals = array_fill_keys($categoryItemIds, 0);
+                                        $totalBahan = 0;
                                     @endphp
-                                    <td class="px-3 py-4 text-center font-bold border-r border-zinc-200 dark:border-white/10 text-[15px] {{ $totalQty > 0 ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-600' }}">
-                                        {{ $totalQty > 0 ? number_format($totalQty) : '-' }}
-                                    </td>
-                                @endforeach
-                            @endforeach
-                            <td class="px-4 py-4 text-center font-bold text-red-600 dark:text-red-400 border-r border-zinc-200 dark:border-white/10 text-[15px]">
-                                {{ number_format($totalBahan) }}
-                            </td>
-                            <td class="px-4 py-4"></td>
-                        </tr>
-                    </tfoot>
-                </table>
+                                    
+                                    @foreach($categoryRows as $row)
+                                        @php
+                                            $totalBahan += $row['raw_quantity'];
+                                        @endphp
+                                        <tr class="hover:bg-zinc-50/50 dark:hover:bg-white/[0.02] transition-colors group">
+                                            <td class="px-4 py-2 text-zinc-900 dark:text-white border-r border-zinc-200 dark:border-white/10 sticky left-0 bg-white dark:bg-zinc-900 group-hover:bg-zinc-50 dark:group-hover:bg-zinc-800/50">
+                                                <div class="flex items-center gap-3">
+                                                    <span class="font-bold w-4 text-center">{{ $row['no'] }}</span>
+                                                    <div class="flex items-center gap-2">
+                                                        <flux:avatar :src="$row['user']->avatarUrl()" :name="$row['user']->name" :initials="$row['user']->initials()" size="xs" />
+                                                        <span class="text-xs text-zinc-500">{{ $row['user']->name }}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            
+                                            @foreach($category->items as $item)
+                                                @php
+                                                    $qty = $row['items'][$item->id] ?? 0;
+                                                    $columnTotals[$item->id] += $qty;
+                                                @endphp
+                                                <td class="px-3 py-3 text-center border-r border-zinc-200 dark:border-white/10 {{ $qty > 0 ? 'text-zinc-900 dark:text-zinc-100 font-semibold' : 'text-zinc-300 dark:text-zinc-700' }}">
+                                                    {{ $qty > 0 ? number_format($qty) : '' }}
+                                                </td>
+                                            @endforeach
+
+                                            <td class="px-4 py-3 text-center border-r border-zinc-200 dark:border-white/10 font-bold text-red-600 dark:text-red-400">
+                                                {{ number_format($row['raw_quantity']) }}
+                                            </td>
+                                            
+                                            <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400 text-sm max-w-[200px] truncate" title="{{ $row['notes'] }}">
+                                                {{ $row['notes'] ?: '-' }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot class="bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-200 dark:border-white/10">
+                                    <tr>
+                                        <td class="px-4 py-4 font-bold text-zinc-900 dark:text-white border-r border-zinc-200 dark:border-white/10 text-right sticky left-0 bg-zinc-50 dark:bg-zinc-800/50 uppercase">
+                                            TOTAL
+                                        </td>
+                                        @foreach($category->items as $item)
+                                            @php
+                                                $totalQty = $columnTotals[$item->id] ?? 0;
+                                            @endphp
+                                            <td class="px-3 py-4 text-center font-bold border-r border-zinc-200 dark:border-white/10 text-[15px] {{ $totalQty > 0 ? 'text-zinc-900 dark:text-white' : 'text-zinc-400 dark:text-zinc-600' }}">
+                                                {{ $totalQty > 0 ? number_format($totalQty) : '-' }}
+                                            </td>
+                                        @endforeach
+                                        <td class="px-4 py-4 text-center font-bold text-red-600 dark:text-red-400 border-r border-zinc-200 dark:border-white/10 text-[15px]">
+                                            {{ number_format($totalBahan) }}
+                                        </td>
+                                        <td class="px-4 py-4"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    @endif
+                @endforeach
             </div>
         @endif
     </div>
