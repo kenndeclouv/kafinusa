@@ -169,15 +169,19 @@
 
     @if ($this->orders->total() > 0)
         <div class="py-4 flex flex-col lg:flex-row items-center justify-end gap-3">
-            <flux:button href="{{ route('order-books.unordered-customers', $orderBook) }}" wire:navigate
-                variant="outline" icon="users" class="w-full lg:w-auto">
-                Pelanggan Tidak Beli
-            </flux:button>
+            @can('order_books:read')
+                <flux:button href="{{ route('order-books.unordered-customers', $orderBook) }}" wire:navigate
+                    variant="outline" icon="users" class="w-full lg:w-auto">
+                    Pelanggan Tidak Beli
+                </flux:button>
+            @endcan
 
-            <flux:button href="{{ route('order-books.shipments', $orderBook) }}" wire:navigate variant="primary"
-                icon="truck" class="w-full lg:w-auto">
-                Atur Pembagian Muatan
-            </flux:button>
+            @can('order_books:manage-shipments')
+                <flux:button href="{{ route('order-books.shipments', $orderBook) }}" wire:navigate variant="primary"
+                    icon="truck" class="w-full lg:w-auto">
+                    Atur Pembagian Muatan
+                </flux:button>
+            @endcan
         </div>
     @endif
 

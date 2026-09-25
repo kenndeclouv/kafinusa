@@ -14,7 +14,7 @@ class PrintDeliveries extends Component
     public function mount(OrderBook $orderBook)
     {
         abort_unless(
-            auth()->user() && auth()->user()->hasAnyPermission(['order_books:read', 'order_books:read-self']),
+            auth()->user() && auth()->user()->can('order_books:print-deliveries'),
             403
         );
 

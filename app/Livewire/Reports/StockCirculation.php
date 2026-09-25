@@ -31,13 +31,22 @@ class StockCirculation extends Component
 
     public function mount()
     {
+        abort_unless(
+            auth()->user() && auth()->user()->can('reports:stock-circulation'),
+            403
+        );
+
         $this->month = $this->month ?: date('m');
         $this->year = $this->year ?: date('Y');
         
-        // Set default warehouse if available
-        if (!$this->warehouse_id) {
-            $warehouse = Warehouse::first();
-            $this->warehouse_id = $warehouse ? $warehouse->id : null;
+        $user = auth()->user();
+        if ($user->hasRole('checker') && !$user->hasRole('kepala_checker') && !$user->hasRole('superadmin')) {
+            $this->warehouse_id = $user->warehouse_id;
+        } else {
+            if (!$this->warehouse_id) {
+                $warehouse = Warehouse::first();
+                $this->warehouse_id = $warehouse ? $warehouse->id : null;
+            }
         }
 
         // Set default category if available
@@ -50,7 +59,14 @@ class StockCirculation extends Component
     #[Computed]
     public function warehouses()
     {
-        return Warehouse::orderBy('name')->pluck('name', 'id')->toArray();
+        $query = Warehouse::orderBy('name');
+        
+        $user = auth()->user();
+        if ($user->hasRole('checker') && !$user->hasRole('kepala_checker') && !$user->hasRole('superadmin')) {
+            $query->where('id', $user->warehouse_id);
+        }
+
+        return $query->pluck('name', 'id')->toArray();
     }
 
     #[Computed]

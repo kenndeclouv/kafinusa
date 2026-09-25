@@ -21,12 +21,22 @@ class Ledger extends Component
 
     public function mount(Warehouse $warehouse)
     {
-        // RBAC validation
-        $user = auth()->user();
-        if ($user->hasRole('checker') && !$user->hasRole('kepala_checker') && !$user->hasRole('superadmin')) {
-            if ($user->warehouse_id !== $warehouse->id) {
-                abort(403, 'Anda tidak memiliki akses ke gudang ini.');
-            }
+        abort_unless(
+            auth()->user() && auth()->user()->can('stock_mutations:read'),
+            403
+        );
+
+        // Checker biasa hanya boleh akses gudangnya sendiri
+        if (
+            auth()->user()->hasRole('checker') &&
+            !auth()->user()->hasRole('kepala_checker') &&
+            !auth()->user()->hasRole('superadmin')
+        ) {
+            abort_if(
+                auth()->user()->warehouse_id !== $warehouse->id,
+                403,
+                'Anda hanya dapat mengakses gudang yang di-assign ke akun Anda.'
+            );
         }
         
         $this->warehouse = $warehouse;

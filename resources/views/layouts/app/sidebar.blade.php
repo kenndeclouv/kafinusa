@@ -137,30 +137,30 @@
                 </flux:sidebar.group>
             @endcanany
 
-            @can('order_books:read')
+            @canany(['reports:daily-recap', 'reports:stock-circulation', 'reports:daily-production'])
                 <flux:sidebar.group expandable
                     :expanded="request()->routeIs('reports.*')" icon="document-chart-bar"
                     :heading="__('Laporan')">
-                    @can('order_books:read')
+                    @can('reports:daily-recap')
                         <flux:sidebar.item icon="document-text" :href="route('reports.daily-recap')"
                             :current="request()->routeIs('reports.daily-recap')" wire:navigate.hover>
                             {{ __('Rekap Penjualan') }}
                         </flux:sidebar.item>
                     @endcan
-                    @can('stock_mutations:read')
+                    @can('reports:stock-circulation')
                         <flux:sidebar.item icon="clipboard-document-list" :href="route('reports.stock-circulation')"
                             :current="request()->routeIs('reports.stock-circulation')" wire:navigate.hover>
                             {{ __('Sirkulasi Stok') }}
                         </flux:sidebar.item>
                     @endcan
-                    @can('productions:read')
+                    @can('reports:daily-production')
                         <flux:sidebar.item icon="clipboard-document-check" :href="route('reports.daily-production')"
                             :current="request()->routeIs('reports.daily-production')" wire:navigate.hover>
                             {{ __('Daftar Produksi') }}
                         </flux:sidebar.item>
                     @endcan
                 </flux:sidebar.group>
-            @endcan
+            @endcanany
 
             @canany(['logs.view', 'system_monitor.view', 'backups:read'])
                 <flux:sidebar.group expandable

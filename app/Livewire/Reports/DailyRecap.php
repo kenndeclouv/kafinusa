@@ -17,6 +17,10 @@ class DailyRecap extends Component
 
     public function mount()
     {
+        abort_unless(
+            auth()->user() && auth()->user()->can('reports:daily-recap'),
+            403
+        );
         $this->date = date('Y-m-d');
     }
 

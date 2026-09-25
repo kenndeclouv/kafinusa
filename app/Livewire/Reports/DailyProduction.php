@@ -18,9 +18,31 @@ class DailyProduction extends Component
 
     public function mount()
     {
+        abort_unless(
+            auth()->user() && auth()->user()->can('reports:daily-production'),
+            403
+        );
         $this->date = date('Y-m-d');
-        // Get the first warehouse as default
-        $this->warehouse_id = \App\Models\Warehouse::first()->id ?? null;
+        
+        $user = auth()->user();
+        if ($user->hasRole('checker') && !$user->hasRole('kepala_checker') && !$user->hasRole('superadmin')) {
+            $this->warehouse_id = $user->warehouse_id;
+        } else {
+            $this->warehouse_id = \App\Models\Warehouse::first()->id ?? null;
+        }
+    }
+
+    #[Computed]
+    public function warehouses()
+    {
+        $query = \App\Models\Warehouse::orderBy('name');
+        
+        $user = auth()->user();
+        if ($user->hasRole('checker') && !$user->hasRole('kepala_checker') && !$user->hasRole('superadmin')) {
+            $query->where('id', $user->warehouse_id);
+        }
+        
+        return $query->pluck('name', 'id')->toArray();
     }
 
     #[Computed]
@@ -32,11 +54,6 @@ class DailyProduction extends Component
         return $this->sortCategoriesAndItems($categories);
     }
 
-    #[Computed]
-    public function warehouses()
-    {
-        return \App\Models\Warehouse::orderBy('name')->pluck('name', 'id')->toArray();
-    }
 
     #[Computed]
     public function reportData()

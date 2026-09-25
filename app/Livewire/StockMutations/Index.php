@@ -8,18 +8,29 @@ use Livewire\Component;
 
 class Index extends Component
 {
+    public function mount()
+    {
+        abort_unless(
+            auth()->user() && auth()->user()->can('stock_mutations:read'),
+            403
+        );
+    }
+
     #[Computed]
     public function warehouses()
     {
-        $user = auth()->user();
-        
-        $query = Warehouse::query()->withCount('stocks');
+        $query = Warehouse::query()->withCount('stocks')->orderBy('name');
 
-        if ($user->hasRole('checker') && !$user->hasRole('kepala_checker') && !$user->hasRole('superadmin')) {
-            $query->where('id', $user->warehouse_id);
+        // Checker biasa hanya melihat gudangnya sendiri
+        if (
+            auth()->user()->hasRole('checker') &&
+            !auth()->user()->hasRole('kepala_checker') &&
+            !auth()->user()->hasRole('superadmin')
+        ) {
+            $query->where('id', auth()->user()->warehouse_id);
         }
 
-        return $query->orderBy('name')->get();
+        return $query->get();
     }
 
     public function render()

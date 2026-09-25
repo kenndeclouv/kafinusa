@@ -33,14 +33,24 @@ class Show extends Component
 
     public function mount(Warehouse $warehouse)
     {
-        // RBAC validation
-        $user = auth()->user();
-        if ($user->hasRole('checker') && !$user->hasRole('kepala_checker') && !$user->hasRole('superadmin')) {
-            if ($user->warehouse_id !== $warehouse->id) {
-                abort(403, 'Anda tidak memiliki akses ke gudang ini.');
-            }
+        abort_unless(
+            auth()->user() && auth()->user()->can('stock_mutations:read'),
+            403
+        );
+
+        // Checker biasa hanya boleh akses gudangnya sendiri (kepala_checker bebas)
+        if (
+            auth()->user()->hasRole('checker') &&
+            !auth()->user()->hasRole('kepala_checker') &&
+            !auth()->user()->hasRole('superadmin')
+        ) {
+            abort_if(
+                auth()->user()->warehouse_id !== $warehouse->id,
+                403,
+                'Anda hanya dapat mengakses gudang yang di-assign ke akun Anda.'
+            );
         }
-        
+
         $this->warehouse = $warehouse;
     }
 
@@ -51,6 +61,8 @@ class Show extends Component
 
     public function openCreateModal()
     {
+        Gate::authorize('stock_mutations:create');
+
         $this->reset(['item_id', 'quantity', 'physical_quantity', 'notes', 'type', 'sender_name', 'transaction_category']);
         $this->mutation_date = date('Y-m-d');
         $this->step = 1;
@@ -62,6 +74,7 @@ class Show extends Component
 
     public function save()
     {
+        Gate::authorize('stock_mutations:create');
         $rules = [
             'mutation_date' => 'required|date',
             'item_id' => 'required|exists:items,id',

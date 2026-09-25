@@ -31,13 +31,27 @@ class PrintStockCirculation extends Component
 
     public function mount()
     {
+        abort_unless(
+            auth()->user() && auth()->user()->can('reports:stock-circulation'),
+            403
+        );
+
         $this->month = $this->month ?: date('m');
         $this->year = $this->year ?: date('Y');
         
-        // Set default warehouse if available
-        if (!$this->warehouse_id) {
-            $warehouse = Warehouse::first();
-            $this->warehouse_id = $warehouse ? $warehouse->id : null;
+        $user = auth()->user();
+        if ($user->hasRole('checker') && !$user->hasRole('kepala_checker') && !$user->hasRole('superadmin')) {
+            abort_if(
+                $this->warehouse_id && $this->warehouse_id != $user->warehouse_id,
+                403,
+                'Anda hanya dapat melihat sirkulasi dari gudang Anda sendiri.'
+            );
+            $this->warehouse_id = $user->warehouse_id;
+        } else {
+            if (!$this->warehouse_id) {
+                $warehouse = Warehouse::first();
+                $this->warehouse_id = $warehouse ? $warehouse->id : null;
+            }
         }
 
         // Set default category if available

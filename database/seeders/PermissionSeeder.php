@@ -26,7 +26,8 @@ class PermissionSeeder extends Seeder
             'permissions',
             'warehouses',
             'stock_mutations',
-            'warehouse_stocks'
+            'warehouse_stocks',
+            'productions'
         ];
 
         // Aksi standar CRUD
@@ -50,6 +51,11 @@ class PermissionSeeder extends Seeder
             'backups:delete',
             'order_books:bypass-lock',
             'stock_mutations:adjustment',
+            'order_books:manage-shipments',
+            'order_books:print-deliveries',
+            'reports:daily-recap',
+            'reports:stock-circulation',
+            'reports:daily-production'
         ];
 
         foreach ($customPermissions as $permission) {

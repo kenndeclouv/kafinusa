@@ -22,9 +22,25 @@ class PrintDailyProduction extends Component
 
     public function mount()
     {
+        abort_unless(
+            auth()->user() && auth()->user()->can('reports:daily-production'),
+            403
+        );
+
         $this->date = $this->date ?: date('Y-m-d');
-        if (!$this->warehouse_id) {
-            $this->warehouse_id = \App\Models\Warehouse::first()->id ?? null;
+        
+        $user = auth()->user();
+        if ($user->hasRole('checker') && !$user->hasRole('kepala_checker') && !$user->hasRole('superadmin')) {
+            abort_if(
+                $this->warehouse_id && $this->warehouse_id != $user->warehouse_id,
+                403,
+                'Anda hanya dapat melihat produksi dari gudang Anda sendiri.'
+            );
+            $this->warehouse_id = $user->warehouse_id;
+        } else {
+            if (!$this->warehouse_id) {
+                $this->warehouse_id = \App\Models\Warehouse::first()->id ?? null;
+            }
         }
     }
 

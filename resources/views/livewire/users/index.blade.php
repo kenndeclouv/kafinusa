@@ -169,6 +169,24 @@
                             </div>
                         </label>
                         <x-error-ios name="roles" />
+
+                        {{-- Field Gudang: hanya tampil kalau role 'checker' dipilih --}}
+                        <div x-data x-show="$wire.roles && $wire.roles.includes('checker')" x-transition style="display:none;">
+                            <div class="absolute right-4 left-4 h-px bg-zinc-200 dark:bg-white/10"></div>
+                            <label
+                                class="flex flex-row items-center px-4 py-1.5 relative group transition-colors focus-within:bg-zinc-50 dark:focus-within:bg-white/[0.07] cursor-text">
+                                <span
+                                    class="text-[15px] font-medium text-zinc-900 dark:text-white w-1/3 shrink-0 py-2 select-none flex flex-col">
+                                    <span>Gudang</span>
+                                    <span class="text-[10px] text-zinc-500 font-normal leading-tight">Wajib untuk<br>role Checker</span>
+                                </span>
+                                <div class="flex-1">
+                                    <x-searchable-select wire:model="warehouse_id" :options="$this->warehouseOptions" variant="ios"
+                                        placeholder="Pilih gudang yang di-assign..." class="[&>button]:!ms-0 [&>button]:!w-full" />
+                                </div>
+                            </label>
+                            <x-error-ios name="warehouse_id" />
+                        </div>
                     </div>
 
 

@@ -258,7 +258,9 @@
         
         <div class="flex flex-col lg:flex-row gap-2 w-full lg:w-auto">
             <flux:button wire:click="save('nota')" variant="outline" icon="document-text" class="w-full lg:w-auto">Simpan & Cetak Nota</flux:button>
-            <flux:button wire:click="save('delivery')" variant="outline" icon="clipboard-document-list" class="w-full lg:w-auto">Simpan & Cetak Pengiriman</flux:button>
+            @can('order_books:print-deliveries')
+                <flux:button wire:click="save('delivery')" variant="outline" icon="clipboard-document-list" class="w-full lg:w-auto">Simpan & Cetak Pengiriman</flux:button>
+            @endcan
             <flux:button wire:click="save('summary')" variant="primary" icon="truck" class="w-full lg:w-auto">Simpan & Cetak Daftar</flux:button>
         </div>
     </div>

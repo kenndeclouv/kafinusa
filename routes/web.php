@@ -70,13 +70,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Transaksi / Order Books
     Route::prefix('order-books')->name('order-books.')->group(function () {
-        Route::get('/', \App\Livewire\OrderBooks\Index::class)->name('index');
-        Route::get('{orderBook}', \App\Livewire\OrderBooks\Show::class)->name('show');
-        Route::get('{orderBook}/shipments', \App\Livewire\OrderBooks\ManageShipments::class)->name('shipments');
-        Route::get('{orderBook}/shipments/print', \App\Livewire\OrderBooks\PrintShipments::class)->name('shipments.print');
-        Route::get('{orderBook}/shipments/notas', \App\Livewire\OrderBooks\PrintNotas::class)->name('shipments.notas');
-        Route::get('{orderBook}/shipments/deliveries', \App\Livewire\OrderBooks\PrintDeliveries::class)->name('shipments.deliveries');
-        Route::get('{orderBook}/unordered-customers', \App\Livewire\OrderBooks\UnorderedCustomers::class)->name('unordered-customers');
+        Route::get('/', \App\Livewire\OrderBooks\Index::class)->middleware('can:order_books:read')->name('index');
+        Route::get('{orderBook}', \App\Livewire\OrderBooks\Show::class)->middleware('can:order_books:read')->name('show');
+        Route::get('{orderBook}/shipments', \App\Livewire\OrderBooks\ManageShipments::class)->middleware('can:order_books:manage-shipments')->name('shipments');
+        Route::get('{orderBook}/shipments/print', \App\Livewire\OrderBooks\PrintShipments::class)->middleware('can:order_books:manage-shipments')->name('shipments.print');
+        Route::get('{orderBook}/shipments/notas', \App\Livewire\OrderBooks\PrintNotas::class)->middleware('can:order_books:manage-shipments')->name('shipments.notas');
+        Route::get('{orderBook}/shipments/deliveries', \App\Livewire\OrderBooks\PrintDeliveries::class)->middleware('can:order_books:print-deliveries')->name('shipments.deliveries');
+        Route::get('{orderBook}/unordered-customers', \App\Livewire\OrderBooks\UnorderedCustomers::class)->middleware('can:order_books:read')->name('unordered-customers');
     });
 
     // Backups
@@ -104,12 +104,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Reports
     Route::prefix('reports')->name('reports.')->group(function () {
-        Route::get('daily-recap', \App\Livewire\Reports\DailyRecap::class)->name('daily-recap');
-        Route::get('print-daily-recap', \App\Livewire\Reports\PrintDailyRecap::class)->name('print-daily-recap');
-        Route::get('stock-circulation', \App\Livewire\Reports\StockCirculation::class)->name('stock-circulation');
-        Route::get('print-stock-circulation', \App\Livewire\Reports\PrintStockCirculation::class)->name('print-stock-circulation');
-        Route::get('daily-production', \App\Livewire\Reports\DailyProduction::class)->name('daily-production');
-        Route::get('print-daily-production', \App\Livewire\Reports\PrintDailyProduction::class)->name('print-daily-production');
+        Route::get('daily-recap', \App\Livewire\Reports\DailyRecap::class)->middleware('can:reports:daily-recap')->name('daily-recap');
+        Route::get('print-daily-recap', \App\Livewire\Reports\PrintDailyRecap::class)->middleware('can:reports:daily-recap')->name('print-daily-recap');
+        Route::get('stock-circulation', \App\Livewire\Reports\StockCirculation::class)->middleware('can:reports:stock-circulation')->name('stock-circulation');
+        Route::get('print-stock-circulation', \App\Livewire\Reports\PrintStockCirculation::class)->middleware('can:reports:stock-circulation')->name('print-stock-circulation');
+        Route::get('daily-production', \App\Livewire\Reports\DailyProduction::class)->middleware('can:reports:daily-production')->name('daily-production');
+        Route::get('print-daily-production', \App\Livewire\Reports\PrintDailyProduction::class)->middleware('can:reports:daily-production')->name('print-daily-production');
     });
 
     // Logs & System Monitor

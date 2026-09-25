@@ -103,11 +103,11 @@
                                         <flux:dropdown>
                                             <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" />
                                             <flux:menu>
-                                                @canany(['order_books:read', 'order_books:read-self'])
+                                                @can('order_books:manage-shipments')
                                                     <flux:menu.item :href="route('order-books.shipments', $book->id)"
                                                         wire:navigate icon="truck">
                                                         Atur Muatan</flux:menu.item>
-                                                @endcanany
+                                                @endcan
                                                 @can('order_books:update')
                                                     <flux:menu.item wire:click="editBook({{ $book->id }})" icon="pencil">
                                                         Edit</flux:menu.item>

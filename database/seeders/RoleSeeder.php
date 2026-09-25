@@ -78,5 +78,31 @@ class RoleSeeder extends Seeder
             'order_items:update',
             'order_items:delete',
         ]);
+
+        // Checker biasa: hanya bisa akses gudang sendiri (filtering by warehouse_id dilakukan di logic)
+        $checker = Role::firstOrCreate(['name' => 'checker']);
+        $checker->syncPermissions([
+            'stock_mutations:read',
+            'stock_mutations:create',
+            'productions:read',
+            'productions:create',
+            'reports:daily-recap',
+            'reports:stock-circulation',
+            'reports:daily-production',
+        ]);
+
+        // Kepala Checker: bisa akses semua gudang, semua laporan
+        $kepalaChecker = Role::firstOrCreate(['name' => 'kepala_checker']);
+        $kepalaChecker->syncPermissions([
+            'stock_mutations:read',
+            'stock_mutations:create',
+            'stock_mutations:adjustment',
+            'productions:read',
+            'productions:create',
+            'reports:daily-recap',
+            'reports:stock-circulation',
+            'reports:daily-production',
+            'warehouses:read',
+        ]);
     }
 }

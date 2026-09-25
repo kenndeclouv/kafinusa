@@ -73,7 +73,7 @@
                 Buku Mutasi
             </flux:button>
 
-            @canany(['stock_mutations:create', 'stock_mutations:create-self'])
+            @can('stock_mutations:create')
                 <flux:button wire:click="openCreateModal" variant="primary" icon="plus" class="ms-auto w-full lg:w-auto">
                     Mutasi Manual
                 </flux:button>
@@ -139,10 +139,10 @@
                                     <flux:text class="mt-2 mb-4 text-sm text-zinc-500 dark:text-zinc-400">Belum ada
                                         barang yang memiliki stok di gudang ini.</flux:text>
                                     <div class="mt-2">
-                                        @canany(['stock_mutations:create', 'stock_mutations:create-self'])
+                                        @can('stock_mutations:create')
                                             <flux:button wire:click="openCreateModal" variant="primary" icon="plus">
                                                 Input Stok Awal (Mutasi)</flux:button>
-                                        @endcanany
+                                        @endcan
                                     </div>
                                 </div>
                             </td>

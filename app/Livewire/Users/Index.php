@@ -24,6 +24,7 @@ class Index extends Component
     public $email = '';
     public $password = '';
     public $roles = [];
+    public $warehouse_id = null;
 
     protected function rules()
     {
@@ -33,6 +34,7 @@ class Index extends Component
             'password' => $this->editingUserId ? 'nullable|string|min:8' : 'required|string|min:8',
             'roles' => 'nullable|array',
             'roles.*' => 'string|exists:roles,name',
+            'warehouse_id' => 'nullable|exists:warehouses,id',
         ];
     }
 
@@ -53,7 +55,7 @@ class Index extends Component
 
     public function addUser()
     {
-        $this->reset(['editingUserId', 'name', 'email', 'password', 'roles']);
+        $this->reset(['editingUserId', 'name', 'email', 'password', 'roles', 'warehouse_id']);
         $this->resetValidation();
         $this->modal('create-user-modal')->show();
     }
@@ -68,6 +70,7 @@ class Index extends Component
         $this->email = $user->email;
         $this->password = '';
         $this->roles = $user->roles->pluck('name')->toArray();
+        $this->warehouse_id = $user->warehouse_id;
         
         $this->modal('create-user-modal')->show();
     }
@@ -79,6 +82,7 @@ class Index extends Component
         $data = [
             'name' => $this->name,
             'email' => $this->email,
+            'warehouse_id' => in_array('checker', $this->roles) ? $this->warehouse_id : null,
         ];
 
         if (!empty($this->password)) {
@@ -118,6 +122,12 @@ class Index extends Component
     public function roleOptions()
     {
         return Role::pluck('name', 'name')->map(fn($name) => \Illuminate\Support\Str::headline($name))->toArray();
+    }
+
+    #[Computed]
+    public function warehouseOptions()
+    {
+        return \App\Models\Warehouse::orderBy('name')->pluck('name', 'id')->toArray();
     }
 
     public function render()

@@ -28,6 +28,14 @@ class Index extends Component
     public $notes;
     public $results = [];
 
+    public function mount()
+    {
+        abort_unless(
+            auth()->user() && auth()->user()->can('productions:read'),
+            403
+        );
+    }
+
     public function updatedSearch()
     {
         $this->resetPage();
