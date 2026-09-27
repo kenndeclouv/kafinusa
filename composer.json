@@ -68,6 +68,12 @@
         "lint:check": [
             "pint --parallel --test"
         ],
+        "check:syntax": [
+            "@php scripts/check-syntax.php"
+        ],
+        "check": [
+            "@check:syntax"
+        ],
         "ci:check": [
             "Composer\\Config::disableProcessTimeout",
             "@test"
