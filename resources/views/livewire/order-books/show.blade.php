@@ -235,7 +235,7 @@
                                 </div>
 
                                 <div class="w-24 ml-2 shrink-0">
-                                    <x-stepper wire:model="orderItems.{{ $index }}.quantity" variant="ios"
+                                    <x-stepper wire:model="orderItems.{{ $index }}.quantity" variant="inside"
                                         min="1" step="1" placeholder="1" />
                                 </div>
 

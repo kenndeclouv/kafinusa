@@ -40,7 +40,7 @@
     ::file-selector-button {
         border-color: var(--color-gray-200, currentColor);
         /* corner-shape: squircle; */
-        corner-shape: superellipse(1.4);
+        /* corner-shape: superellipse(1.4); */
     }
 
     dialog::backdrop {
