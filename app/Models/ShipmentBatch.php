@@ -17,4 +17,9 @@ class ShipmentBatch extends Model
     protected $casts = [
         'shipment_date' => 'date',
     ];
+
+    public function shipmentPlan()
+    {
+        return $this->belongsTo(ShipmentPlan::class);
+    }
 }

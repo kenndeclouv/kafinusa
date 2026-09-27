@@ -13,12 +13,48 @@
                 Kembali
             </flux:button>
             <div class="flex items-center gap-2 w-full lg:w-auto">
+                @if(collect($batchStatuses)->contains('pending'))
+                <flux:button wire:click="openBulkShippingModal" variant="primary" icon="check-badge" class="bg-emerald-600 hover:bg-emerald-700 border-emerald-600 flex-1 lg:flex-none">
+                    Kirim Semua
+                </flux:button>
+                @endif
                 <flux:button wire:click="addBatch" variant="primary" icon="plus" class="flex-1 lg:flex-none">
                     Tambah Muatan
                 </flux:button>
             </div>
         </div>
     </div>
+
+    @if($this->incomingBatches->isNotEmpty())
+        <div class="mb-6">
+            <flux:heading size="lg" class="mb-3">Muatan Titipan (Pindahan ke Hari Ini)</flux:heading>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                @foreach($this->incomingBatches as $incBatch)
+                    @php
+                        $incTotalWeight = 0;
+                        foreach($incBatch->shipmentPlan->items as $pi) {
+                            if($pi->batch_number == $incBatch->batch_number && $pi->orderItem && $pi->orderItem->item) {
+                                $incTotalWeight += $pi->quantity * $pi->orderItem->item->weight;
+                            }
+                        }
+                    @endphp
+                    <div class="p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-2xl relative overflow-hidden">
+                        <div class="flex justify-between items-start mb-2 relative z-10">
+                            <div>
+                                <div class="font-bold text-amber-900 dark:text-amber-100">Buku: {{ $incBatch->shipmentPlan->orderBook->book_date->format('d M Y') }}</div>
+                                <div class="text-xs text-amber-700 dark:text-amber-300">Sales: {{ $incBatch->shipmentPlan->orderBook->employee->name ?? '-' }}</div>
+                            </div>
+                            <flux:badge color="warning" size="sm">Muatan {{ $incBatch->batch_number }}</flux:badge>
+                        </div>
+                        <div class="text-xl font-bold text-amber-900 dark:text-amber-100 relative z-10" x-text="formatWeight({{ $incTotalWeight }})"></div>
+                        <div class="mt-2 text-xs font-semibold text-amber-700 dark:text-amber-300 relative z-10">
+                            Status: {{ $incBatch->status === 'shipped' ? 'Terkirim' : 'Menunggu Dikirim' }}
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
 
     {{-- Batch Weight Summary Cards --}}
     <div class="flex overflow-x-auto gap-3 mb-6 pb-2 snap-x">
@@ -44,15 +80,25 @@
             <div
                 class="min-w-[280px] flex-1 shrink-0 rounded-2xl bg-zinc-50 dark:bg-white/5 border {{ ($batchStatuses[$b] ?? '') === 'shipped' ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-500/10' : 'border-zinc-200 dark:border-white/5' }} p-4 flex flex-col gap-1 snap-start relative">
                 <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-2">
                         <span class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Muatan {{ $b }}</span>
                         @if (($batchStatuses[$b] ?? '') === 'shipped')
                             <flux:badge color="success" size="sm">Terkirim</flux:badge>
                         @endif
+                        @if(isset($batchDates[$b]) && $batchDates[$b] !== $orderBook->book_date->format('Y-m-d'))
+                            <flux:badge color="warning" size="sm">{{ \Carbon\Carbon::parse($batchDates[$b])->translatedFormat('d M') }}</flux:badge>
+                        @endif
                     </div>
-                    @if ($totalBatches > 1 && $b > 1 && ($batchStatuses[$b] ?? '') !== 'shipped')
-                        <flux:button wire:click="removeBatch({{ $b }})" variant="ghost" size="sm"
-                            icon="trash" class="text-red-500! -mr-2 -mt-2" />
+                    @if (($batchStatuses[$b] ?? '') !== 'shipped')
+                        <flux:dropdown align="end">
+                            <flux:button variant="ghost" size="sm" icon="ellipsis-vertical" class="text-zinc-500! -mr-2 -mt-2" />
+                            <flux:menu>
+                                <flux:menu.item wire:click="openChangeDateModal({{ $b }})" icon="calendar">Ganti Tanggal</flux:menu.item>
+                                @if ($totalBatches > 1 && $b > 1)
+                                    <flux:menu.item wire:click="removeBatch({{ $b }})" icon="trash" class="text-red-500!">Hapus Muatan</flux:menu.item>
+                                @endif
+                            </flux:menu>
+                        </flux:dropdown>
                     @endif
                 </div>
                 <div class="flex items-baseline gap-2">
@@ -298,6 +344,67 @@
             <div class="mt-6 flex flex-col gap-2">
                 <flux:button class="!rounded-full" type="submit" variant="primary">Eksekusi Potong Stok</flux:button>
                 <flux:button class="!rounded-full" x-on:click="$flux.modal('shipping-modal').close()" variant="outline">Batal</flux:button>
+            </div>
+        </form>
+    </flux:modal>
+
+    <flux:modal name="bulk-shipping-modal" class="md:w-96 !rounded-3xl" :closable="false" scroll="body">
+        <form wire:submit="confirmBulkShipping">
+            <flux:heading size="lg">Konfirmasi Kirim Semua</flux:heading>
+            <flux:subheading>Semua muatan yang jadwalnya hari ini akan dikirim sekaligus.</flux:subheading>
+
+            <div class="mt-4 bg-white dark:bg-white/5 rounded-3xl border border-zinc-200 dark:border-white/10 shadow-xs flex flex-col relative overflow-hidden">
+                <!-- Tanggal -->
+                <label class="flex flex-row items-center px-4 py-1.5 relative group transition-colors focus-within:bg-zinc-50 dark:focus-within:bg-white/[0.07] cursor-text">
+                    <span class="text-[15px] font-medium text-zinc-900 dark:text-white w-1/3 shrink-0 py-2 select-none">
+                        Tanggal
+                    </span>
+                    <div class="flex-1 w-full">
+                        <x-date-picker variant="ios" wire:model="bulkShippingDate" placeholder="Pilih Tanggal" />
+                    </div>
+                    <div class="absolute bottom-0 right-4 left-4 h-px bg-zinc-200 dark:bg-white/10"></div>
+                </label>
+                <x-error-ios name="bulkShippingDate" />
+
+                <!-- Gudang -->
+                <label class="flex flex-row items-center px-4 py-1.5 relative group transition-colors focus-within:bg-zinc-50 dark:focus-within:bg-white/[0.07] cursor-text">
+                    <span class="text-[15px] font-medium text-zinc-900 dark:text-white w-1/3 shrink-0 py-2 select-none">
+                        Gudang
+                    </span>
+                    <div class="flex-1 w-full">
+                        <x-searchable-select wire:model="bulkShippingWarehouseId" :options="$this->warehouses->toArray()" :searchable="false" variant="ios" placeholder="Pilih gudang" />
+                    </div>
+                </label>
+                <x-error-ios name="bulkShippingWarehouseId" />
+            </div>
+
+            <div class="mt-6 flex flex-col gap-2">
+                <flux:button class="!rounded-full" type="submit" variant="primary">Kirim & Potong Stok</flux:button>
+                <flux:button class="!rounded-full" x-on:click="$flux.modal('bulk-shipping-modal').close()" variant="outline">Batal</flux:button>
+            </div>
+        </form>
+    </flux:modal>
+
+    <flux:modal name="change-date-modal" class="md:w-96 !rounded-3xl" :closable="false" scroll="body">
+        <form wire:submit="confirmChangeDate">
+            <flux:heading size="lg">Ganti Tanggal Pengiriman</flux:heading>
+            <flux:subheading>Pindah jadwal pengiriman muatan ke hari lain.</flux:subheading>
+
+            <div class="mt-4 bg-white dark:bg-white/5 rounded-3xl border border-zinc-200 dark:border-white/10 shadow-xs flex flex-col relative overflow-hidden">
+                <label class="flex flex-row items-center px-4 py-1.5 relative group transition-colors focus-within:bg-zinc-50 dark:focus-within:bg-white/[0.07] cursor-text">
+                    <span class="text-[15px] font-medium text-zinc-900 dark:text-white w-1/3 shrink-0 py-2 select-none">
+                        Tanggal
+                    </span>
+                    <div class="flex-1 w-full">
+                        <x-date-picker variant="ios" wire:model="newBatchDate" placeholder="Pilih Tanggal" />
+                    </div>
+                </label>
+                <x-error-ios name="newBatchDate" />
+            </div>
+
+            <div class="mt-6 flex flex-col gap-2">
+                <flux:button class="!rounded-full" type="submit" variant="primary">Simpan Tanggal</flux:button>
+                <flux:button class="!rounded-full" x-on:click="$flux.modal('change-date-modal').close()" variant="outline">Batal</flux:button>
             </div>
         </form>
     </flux:modal>
