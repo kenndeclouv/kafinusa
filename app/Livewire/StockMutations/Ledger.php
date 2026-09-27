@@ -7,6 +7,7 @@ use App\Models\Warehouse;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Support\Facades\Gate;
 
 class Ledger extends Component
 {
@@ -63,6 +64,106 @@ class Ledger extends Component
     public function updatedYear()
     {
         $this->resetPage();
+    }
+
+    public $editingMutationId = null;
+    public $editQuantity = 0;
+    public $editNotes = '';
+
+    public function editMutation($id)
+    {
+        Gate::authorize('stock_mutations:update');
+        $mutation = StockMutation::findOrFail($id);
+        
+        $this->editingMutationId = $mutation->id;
+        $this->editQuantity = $mutation->quantity;
+        $this->editNotes = $mutation->notes;
+        
+        $this->modal('edit-mutation-modal')->show();
+    }
+
+    public function updateMutation()
+    {
+        Gate::authorize('stock_mutations:update');
+        $this->validate([
+            'editQuantity' => 'required|numeric|min:0',
+            'editNotes' => 'nullable|string',
+        ]);
+
+        $mutation = StockMutation::findOrFail($this->editingMutationId);
+        
+        try {
+            \DB::transaction(function () use ($mutation) {
+                // Revert old quantity
+                $stock = \App\Models\WarehouseStock::where('warehouse_id', $mutation->warehouse_id)
+                    ->where('item_id', $mutation->item_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($stock) {
+                    if ($mutation->type === 'in') {
+                        $stock->current_stock -= $mutation->quantity;
+                    } elseif ($mutation->type === 'out') {
+                        $stock->current_stock += $mutation->quantity;
+                    }
+                    // For adjustment, we can't easily revert because adjustment just overrides stock.
+                    // But if it's an adjustment, this simplified CRUD will just let them change the number?
+                    // Actually, if it's an adjustment, the quantity is the absolute value.
+                    // Let's keep it simple: only adjust 'in' and 'out'.
+                    if ($mutation->type !== 'adjustment') {
+                        // Apply new quantity
+                        if ($mutation->type === 'in') {
+                            $stock->current_stock += $this->editQuantity;
+                        } elseif ($mutation->type === 'out') {
+                            $stock->current_stock -= $this->editQuantity;
+                        }
+                        $stock->save();
+                    }
+                }
+
+                $mutation->update([
+                    'quantity' => $this->editQuantity,
+                    'notes' => $this->editNotes,
+                ]);
+            });
+
+            $this->modal('edit-mutation-modal')->close();
+            \Flux::toast(heading: 'Berhasil', text: 'Mutasi stok berhasil diubah.', variant: 'success');
+            $this->reset(['editingMutationId', 'editQuantity', 'editNotes']);
+
+        } catch (\Exception $e) {
+            \Flux::toast(heading: 'Gagal', text: $e->getMessage(), variant: 'danger');
+        }
+    }
+
+    public function deleteMutation($id)
+    {
+        Gate::authorize('stock_mutations:delete');
+        $mutation = StockMutation::findOrFail($id);
+        
+        try {
+            \DB::transaction(function () use ($mutation) {
+                $stock = \App\Models\WarehouseStock::where('warehouse_id', $mutation->warehouse_id)
+                    ->where('item_id', $mutation->item_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($stock && $mutation->type !== 'adjustment') {
+                    if ($mutation->type === 'in') {
+                        $stock->current_stock -= $mutation->quantity;
+                    } elseif ($mutation->type === 'out') {
+                        $stock->current_stock += $mutation->quantity;
+                    }
+                    $stock->save();
+                }
+
+                $mutation->delete();
+            });
+
+            \Flux::toast(heading: 'Berhasil', text: 'Mutasi stok berhasil dihapus.', variant: 'success');
+        } catch (\Exception $e) {
+            \Flux::toast(heading: 'Gagal', text: $e->getMessage(), variant: 'danger');
+        }
     }
 
     #[Computed]

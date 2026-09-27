@@ -169,7 +169,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-                    <button type="button" wire:click="$set('type', 'in'); $set('step', 2)"
+                    <button type="button" x-on:click="$wire.set('type', 'in'); $wire.set('step', 2)"
                         class="flex flex-col items-center justify-center p-8 rounded-3xl border-2 border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 hover:border-emerald-500 hover:bg-zinc-100 dark:hover:border-emerald-500/50 dark:hover:bg-white/10 transition-all group">
                         <div class="rounded-full bg-emerald-100 dark:bg-emerald-500/20 p-4 mb-4 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
                             <flux:icon.arrow-down-tray class="w-8 h-8" />
@@ -178,7 +178,7 @@
                         <flux:text class="text-sm text-zinc-500 mt-1 text-center">Pembelian, Stok Awal, dll.</flux:text>
                     </button>
 
-                    <button type="button" wire:click="$set('type', 'out'); $set('step', 2)"
+                    <button type="button" x-on:click="$wire.set('type', 'out'); $wire.set('step', 2)"
                         class="flex flex-col items-center justify-center p-8 rounded-3xl border-2 border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/5 hover:border-rose-500 hover:bg-zinc-100 dark:hover:border-rose-500/50 dark:hover:bg-white/10 transition-all group">
                         <div class="rounded-full bg-rose-100 dark:bg-rose-500/20 p-4 mb-4 text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform">
                             <flux:icon.arrow-up-tray class="w-8 h-8" />
@@ -189,7 +189,7 @@
                 </div>
 
                 <div class="mt-8 flex justify-center">
-                    <flux:button variant="ghost" size="sm" wire:click="$set('type', 'adjustment'); $set('step', 2)" class="text-zinc-500">
+                    <flux:button variant="ghost" size="sm" x-on:click="$wire.set('type', 'adjustment'); $wire.set('step', 2)" class="text-zinc-500">
                         Atau sesuaikan stok opname (Adjustment)
                     </flux:button>
                 </div>
@@ -201,7 +201,7 @@
 
             @if ($step === 2)
                 <div class="flex items-center gap-3 mb-2">
-                    <button type="button" wire:click="$set('step', 1)" class="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-500">
+                    <button type="button" x-on:click="$wire.set('step', 1)" class="p-1.5 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-500">
                         <flux:icon.arrow-left class="w-5 h-5" />
                     </button>
                     <div>
@@ -313,7 +313,7 @@
 
                 <div class="mt-6 flex flex-col gap-2">
                     <flux:button class="!rounded-full" type="submit" variant="primary">Simpan Mutasi</flux:button>
-                    <flux:button class="!rounded-full" type="button" wire:click="$set('step', 1)" variant="outline">Kembali</flux:button>
+                    <flux:button class="!rounded-full" type="button" x-on:click="$wire.set('step', 1)" variant="outline">Kembali</flux:button>
                 </div>
             @endif
         </form>

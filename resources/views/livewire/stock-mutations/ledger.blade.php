@@ -55,6 +55,7 @@
                     <flux:table.column>Sisa Stok</flux:table.column>
                     <flux:table.column>User</flux:table.column>
                     <flux:table.column>Catatan</flux:table.column>
+                    <flux:table.column></flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
                     @forelse ($this->mutations as $mutation)
@@ -81,6 +82,31 @@
                             <flux:table.cell>{{ number_format($mutation->balance_after) }}</flux:table.cell>
                             <flux:table.cell>{{ $mutation->user?->name }}</flux:table.cell>
                             <flux:table.cell class="max-w-xs truncate" title="{{ $mutation->notes }}">{{ $mutation->notes ?? '-' }}</flux:table.cell>
+                            <flux:table.cell>
+                                @canany(['stock_mutations:update', 'stock_mutations:delete'])
+                                <flux:dropdown position="bottom end">
+                                    <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal" inset="top bottom" />
+                                    <flux:menu>
+                                        @can('stock_mutations:update')
+                                        <flux:menu.item wire:click="editMutation({{ $mutation->id }})" icon="pencil-square">Edit Mutasi</flux:menu.item>
+                                        @endcan
+                                        
+                                        @can('stock_mutations:delete')
+                                        <flux:menu.separator />
+                                        <x-delete-modal
+                                            id="delete-mutation-{{ $mutation->id }}"
+                                            action="deleteMutation({{ $mutation->id }})"
+                                            title="Hapus riwayat mutasi?"
+                                            description="Perubahan stok yang terjadi akibat mutasi ini akan dikembalikan dan data akan dihapus secara permanen."
+                                            requireSlide="true"
+                                        >
+                                            <flux:menu.item icon="trash" class="!text-red-500 hover:!bg-red-50 dark:hover:!bg-red-900/20">Hapus Riwayat</flux:menu.item>
+                                        </x-delete-modal>
+                                        @endcan
+                                    </flux:menu>
+                                </flux:dropdown>
+                                @endcanany
+                            </flux:table.cell>
                         </flux:table.row>
                     @empty
                         <tr>
@@ -103,4 +129,22 @@
             <flux:pagination :paginator="$this->mutations" class="p-4 border-t border-zinc-200 dark:border-white/5" />
         @endif
     </div>
+
+    <!-- Modal Edit Mutasi -->
+    <flux:modal :closable="false" scroll="body" name="edit-mutation-modal" class="md:max-w-xl !rounded-3xl">
+        <form wire:submit="updateMutation">
+            <flux:heading>Edit Catatan Mutasi</flux:heading>
+            <flux:description>Sesuaikan jumlah atau catatan untuk mutasi yang dipilih.</flux:description>
+
+            <div class="mt-4 space-y-4">
+                <flux:input wire:model="editQuantity" type="number" label="Jumlah (Qty)" placeholder="Masukkan jumlah barang..." min="0" required />
+                <flux:textarea wire:model="editNotes" label="Catatan Tambahan (Opsional)" placeholder="Tambahkan informasi penting di sini..." rows="3" />
+            </div>
+
+            <div class="mt-6 flex flex-col gap-2">
+                <flux:button class="!rounded-full" type="submit" variant="primary">Simpan Perubahan</flux:button>
+                <flux:button class="!rounded-full" x-on:click="$flux.modal('edit-mutation-modal').close()" variant="outline">Batal</flux:button>
+            </div>
+        </form>
+    </flux:modal>
 </div>

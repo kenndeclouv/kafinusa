@@ -24,7 +24,7 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    if (event.request.method !== 'GET') {
+    if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) {
         return;
     }
 
@@ -58,10 +58,10 @@ self.addEventListener('fetch', event => {
             .catch(() => {
                 // Jika jaringan mati dan meminta halaman HTML, kembalikan offline page
                 if (event.request.mode === 'navigate' || (event.request.method === 'GET' && event.request.headers.get('accept').includes('text/html'))) {
-                    return caches.match('/offline');
+                    return caches.match('/offline').then(response => response || Response.error());
                 }
                 // Jika tidak, coba ambil dari cache
-                return caches.match(event.request);
+                return caches.match(event.request).then(response => response || Response.error());
             })
     );
 });

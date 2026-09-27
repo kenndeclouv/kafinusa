@@ -273,14 +273,19 @@
     @fluxScripts
 
     <!-- Global Loading Overlay -->
-    <div x-data="{
+    <dialog x-data="{
             requests: 0,
-            get show() { return this.requests > 0; },
             startLoading() {
                 this.requests++;
+                if (this.$el.isConnected && !this.$el.open) {
+                    try { this.$el.showModal(); } catch (e) {}
+                }
             },
             stopLoading() {
                 if (this.requests > 0) this.requests--;
+                if (this.requests === 0 && this.$el.isConnected && this.$el.open) {
+                    try { this.$el.close(); } catch (e) {}
+                }
             }
         }"
         x-init="
@@ -295,10 +300,8 @@
                 }
             });
         "
-        x-show="show"
-        x-transition.opacity.duration.300ms
-        style="display: none;"
-        class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white/40 dark:bg-black/40 backdrop-blur-[2px]"
+        class="backdrop:bg-white/40 dark:backdrop:bg-black/40 backdrop:backdrop-blur-[2px] bg-transparent outline-none m-auto inset-0 open:flex flex-col items-center justify-center p-0 border-none"
+        style="max-width: none; max-height: none; width: 100vw; height: 100vh; overflow: hidden;"
     >
         <svg class="animate-spin h-12 w-12 text-zinc-900 dark:text-white mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -307,7 +310,7 @@
         <div class="px-4 py-2 bg-white dark:bg-zinc-800 rounded-full shadow-lg border border-zinc-200 dark:border-zinc-700">
             <span class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Mohon Tunggu...</span>
         </div>
-    </div>
+    </dialog>
 </body>
 
 </html>

@@ -22,7 +22,7 @@ class Show extends Component
     public $editingOrderId = null;
     public $customer_id;
     
-    // Array to hold the dynamic order items: [['item_id' => '', 'quantity' => 1]]
+    // Array to hold the dynamic order items: [['item_id' => '', 'quantity' => null]]
     public $orderItems = [];
 
     public function mount(OrderBook $orderBook)
@@ -148,7 +148,7 @@ class Show extends Component
         $this->editingOrderId = null;
         $this->customer_id = null;
         $this->orderItems = [
-            ['item_id' => '', 'quantity' => 1, 'price_type' => 'umum']
+            ['item_id' => '', 'quantity' => null, 'price_type' => 'umum']
         ];
         $this->modal('create-order-modal')->show();
     }
@@ -179,7 +179,7 @@ class Show extends Component
 
     public function addOrderItem()
     {
-        $this->orderItems[] = ['item_id' => '', 'quantity' => 1, 'price_type' => 'umum'];
+        $this->orderItems[] = ['item_id' => '', 'quantity' => null, 'price_type' => 'umum'];
     }
 
     public function removeOrderItem($index)

@@ -25,7 +25,7 @@ class Show extends Component
     public $item_id;
     public $step = 1;
     public $type = 'in';
-    public $quantity = 1;
+    public $quantity = null;
     public $physical_quantity = null;
     public $notes = '';
     public $mutation_date;
@@ -68,7 +68,7 @@ class Show extends Component
         $this->mutation_date = date('Y-m-d');
         $this->step = 1;
         $this->type = 'in';
-        $this->quantity = 1;
+        $this->quantity = null;
         $this->resetValidation();
         $this->modal('create-mutation-modal')->show();
     }
