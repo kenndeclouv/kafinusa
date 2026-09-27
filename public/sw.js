@@ -1,6 +1,6 @@
 importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
 
-const CACHE_NAME = 'pak-malik-cache-v4';
+const CACHE_NAME = 'kafinusa-cache-v1';
 const STATIC_ASSETS = [
     '/',
     '/offline'

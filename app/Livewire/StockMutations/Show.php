@@ -11,6 +11,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Flux\Flux;
+use Illuminate\Support\Facades\Gate;
 
 class Show extends Component
 {
