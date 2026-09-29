@@ -63,7 +63,7 @@
             @canany(['markets:read', 'customers:read', 'employees:read', 'items:read', 'customer-categories:read',
                 'item-categories:read'])
                 <flux:sidebar.group expandable
-                    :expanded="request()->routeIs('markets.*', 'customers.*', 'employees.*', 'items.*', 'customer-categories.*', 'item-categories.*')"
+                    :expanded="request()->routeIs('markets.*', 'customers.*', 'employees.*', 'items.*', 'customer-categories.*', 'item-categories.*', 'warehouses.*', 'teams.*')"
                     icon="circle-stack" :heading="__('Database')">
                     @can('markets:read')
                         <flux:sidebar.item icon="building-storefront" :href="route('markets.index')"
@@ -81,6 +81,10 @@
                         <flux:sidebar.item icon="building-office" :href="route('warehouses.index')"
                             :current="request()->routeIs('warehouses.*')" wire:navigate.hover>
                             {{ __('Gudang') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="user-group" :href="route('teams.index')"
+                            :current="request()->routeIs('teams.*')" wire:navigate.hover>
+                            {{ __('Master Tim') }}
                         </flux:sidebar.item>
                     @endcan
                     @can('employees:read')
@@ -138,8 +142,7 @@
             @endcanany
 
             @canany(['reports:daily-recap', 'reports:stock-circulation', 'reports:daily-production'])
-                <flux:sidebar.group expandable
-                    :expanded="request()->routeIs('reports.*')" icon="document-chart-bar"
+                <flux:sidebar.group expandable :expanded="request()->routeIs('reports.*')" icon="document-chart-bar"
                     :heading="__('Laporan')">
                     @can('reports:daily-recap')
                         <flux:sidebar.item icon="document-text" :href="route('reports.daily-recap')"
@@ -164,8 +167,8 @@
 
             @canany(['logs.view', 'system_monitor.view', 'backups:read'])
                 <flux:sidebar.group expandable
-                    :expanded="request()->routeIs('logs.*') || request()->routeIs('system-monitor.*') || request()->routeIs('backups.*')" icon="cpu-chip"
-                    :heading="__('Sistem / Developer')">
+                    :expanded="request()->routeIs('logs.*') || request()->routeIs('system-monitor.*') || request()->routeIs('backups.*')"
+                    icon="cpu-chip" :heading="__('Sistem / Developer')">
                     @can('backups:read')
                         <flux:sidebar.item icon="archive-box" :href="route('backups.index')"
                             :current="request()->routeIs('backups.*')" wire:navigate.hover>
@@ -274,38 +277,38 @@
 
     <!-- Global Loading Overlay -->
     <dialog x-data="{
-            requests: 0,
-            startLoading() {
-                this.requests++;
-                if (this.$el.isConnected && !this.$el.open) {
-                    try { this.$el.showModal(); } catch (e) {}
-                }
-            },
-            stopLoading() {
-                if (this.requests > 0) this.requests--;
-                if (this.requests === 0 && this.$el.isConnected && this.$el.open) {
-                    try { this.$el.close(); } catch (e) {}
-                }
+        requests: 0,
+        startLoading() {
+            this.requests++;
+            if (this.$el.isConnected && !this.$el.open) {
+                try { this.$el.showModal(); } catch (e) {}
             }
-        }"
-        x-init="
-            document.addEventListener('livewire:navigating', () => startLoading());
-            document.addEventListener('livewire:navigated', () => stopLoading());
-            
-            Livewire.hook('commit', ({ commit, succeed, fail }) => {
-                if (commit.calls.length > 0) {
-                    startLoading();
-                    succeed(() => stopLoading());
-                    fail(() => stopLoading());
-                }
-            });
-        "
+        },
+        stopLoading() {
+            if (this.requests > 0) this.requests--;
+            if (this.requests === 0 && this.$el.isConnected && this.$el.open) {
+                try { this.$el.close(); } catch (e) {}
+            }
+        }
+    }" x-init="document.addEventListener('livewire:navigating', () => startLoading());
+    document.addEventListener('livewire:navigated', () => stopLoading());
+    
+    Livewire.hook('commit', ({ commit, succeed, fail }) => {
+        if (commit.calls.length > 0) {
+            startLoading();
+            succeed(() => stopLoading());
+            fail(() => stopLoading());
+        }
+    });"
         class="backdrop:bg-white/40 dark:backdrop:bg-black/40 backdrop:backdrop-blur-[2px] bg-transparent outline-none m-auto inset-0 open:flex flex-col items-center justify-center p-0 border-none"
-        style="max-width: none; max-height: none; width: 100vw; height: 100vh; overflow: hidden;"
-    >
-        <svg class="animate-spin h-12 w-12 text-zinc-900 dark:text-white mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        style="max-width: none; max-height: none; width: 100vw; height: 100vh; overflow: hidden;">
+        <svg class="animate-spin h-12 w-12 text-zinc-900 dark:text-white mb-4" xmlns="http://www.w3.org/2000/svg"
+            fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+            </circle>
+            <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+            </path>
         </svg>
         {{-- <div class="px-4 py-2 bg-white dark:bg-zinc-800 rounded-full shadow-lg border border-zinc-200 dark:border-zinc-700">
             <span class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Mohon Tunggu...</span>

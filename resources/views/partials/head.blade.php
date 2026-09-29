@@ -14,27 +14,27 @@
 
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#059669">
-<script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js').then(function(registration) {
-                console.log('ServiceWorker registration successful');
-            }, function(err) {
-                console.log('ServiceWorker registration failed: ', err);
-            });
-        });
-    }
-
-    // Capture the PWA install prompt
-    window.deferredPrompt = null;
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        window.deferredPrompt = e;
-        window.dispatchEvent(new Event('pwa-installable'));
-    });
-</script>
 
 @if (env('APP_ENV') != 'local')
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    console.log('ServiceWorker registration successful');
+                }, function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+
+        // Capture the PWA install prompt
+        window.deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            window.deferredPrompt = e;
+            window.dispatchEvent(new Event('pwa-installable'));
+        });
+    </script>
 
     <!-- OneSignal Web SDK -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
@@ -48,12 +48,12 @@
                 },
                 serviceWorkerPath: "sw.js"
             });
-            
+
             @auth
             // Sinkronisasi ID user di Laravel dengan OneSignal
             // Supaya kita bisa kirim notif spesifik via userIds: [1, 2, 3]
             await OneSignal.login("{{ auth()->id() }}");
-            @endauth
+        @endauth
         });
     </script>
 @endif

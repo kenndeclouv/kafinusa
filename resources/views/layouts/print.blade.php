@@ -9,14 +9,19 @@
     @fluxAppearance
     <style>
         @media print {
+            html, body {
+                background-color: white !important;
+                color: black !important;
+            }
             .no-print { display: none !important; }
             @page { margin: 1cm; }
         }
     </style>
 </head>
-<body class="min-h-screen bg-white text-zinc-900 font-sans">
+<body class="min-h-screen bg-white text-zinc-900 font-sans print:bg-white print:text-black">
     {{ $slot }}
     @livewireScripts
     @fluxScripts
+
 </body>
 </html>

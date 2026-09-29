@@ -24,5 +24,29 @@ class WarehouseSeeder extends Seeder
                 ['description' => $warehouse['description']]
             );
         }
+
+        // Seed 4 Teams for Gudang Saos (Tim A - D)
+        $saos = \App\Models\Warehouse::where('name', 'Gudang Saos')->first();
+        if ($saos) {
+            $saosTeams = ['Tim A', 'Tim B', 'Tim C', 'Tim D'];
+            foreach ($saosTeams as $teamName) {
+                \App\Models\Team::updateOrCreate(
+                    ['name' => $teamName],
+                    ['warehouse_id' => $saos->id]
+                );
+            }
+        }
+
+        // Seed 4 Teams for Gudang Njambon (Tim E - H)
+        $njambon = \App\Models\Warehouse::where('name', 'Gudang Njambon')->first();
+        if ($njambon) {
+            $njambonTeams = ['Tim E', 'Tim F', 'Tim G', 'Tim H'];
+            foreach ($njambonTeams as $teamName) {
+                \App\Models\Team::updateOrCreate(
+                    ['name' => $teamName],
+                    ['warehouse_id' => $njambon->id]
+                );
+            }
+        }
     }
 }

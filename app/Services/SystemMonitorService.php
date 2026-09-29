@@ -59,9 +59,10 @@ class SystemMonitorService
     
     protected function getServerUptime(): string
     {
-        try {
-            if (PHP_OS_FAMILY === 'Windows') {
-                $output = shell_exec('powershell -Command "(get-date) - (gcim Win32_OperatingSystem).LastBootUpTime | Select-Object Days, Hours, Minutes | ConvertTo-Json"');
+        return \Illuminate\Support\Facades\Cache::remember('system_monitor_uptime', 60, function () {
+            try {
+                if (PHP_OS_FAMILY === 'Windows') {
+                    $output = shell_exec('powershell -NoProfile -Command "(get-date) - (gcim Win32_OperatingSystem).LastBootUpTime | Select-Object Days, Hours, Minutes | ConvertTo-Json"');
                 if ($output) {
                     $data = json_decode($output, true);
                     if ($data) {
@@ -79,10 +80,11 @@ class SystemMonitorService
                     return "{$days}h {$hours}m {$minutes}s";
                 }
             }
-        } catch (\Exception $e) {
-            // Ignore
-        }
-        return 'N/A';
+            } catch (\Exception $e) {
+                // Ignore
+            }
+            return 'N/A';
+        });
     }
 
     protected function getCacheSessionInfo(): array
@@ -112,7 +114,7 @@ class SystemMonitorService
             $val = 0;
             try {
                 if (PHP_OS_FAMILY === 'Windows') {
-                    $output = shell_exec('powershell -Command "(Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average"');
+                    $output = shell_exec('powershell -NoProfile -Command "(Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average"');
                     if ($output) {
                         $val = (float) trim($output);
                     }
@@ -147,7 +149,7 @@ class SystemMonitorService
         $model = Cache::remember('system_monitor_cpu_model', 3600, function () {
             try {
                 if (PHP_OS_FAMILY === 'Windows') {
-                    $output = shell_exec('powershell -Command "(Get-CimInstance Win32_Processor | Select-Object -First 1).Name"');
+                    $output = shell_exec('powershell -NoProfile -Command "(Get-CimInstance Win32_Processor | Select-Object -First 1).Name"');
                     // Clean up oh-my-posh errors if any
                     if ($output) {
                         $lines = explode("\n", trim($output));
@@ -180,7 +182,7 @@ class SystemMonitorService
 
             try {
                 if (PHP_OS_FAMILY === 'Windows') {
-                    $output = shell_exec('powershell -Command "Get-CimInstance Win32_OperatingSystem | Select-Object FreePhysicalMemory, TotalVisibleMemorySize | ConvertTo-Json"');
+                    $output = shell_exec('powershell -NoProfile -Command "Get-CimInstance Win32_OperatingSystem | Select-Object FreePhysicalMemory, TotalVisibleMemorySize | ConvertTo-Json"');
                     if ($output) {
                         // Extract JSON part in case of powershell errors
                         preg_match('/\{[\s\S]*\}/', $output, $matches);
@@ -215,7 +217,7 @@ class SystemMonitorService
         $model = Cache::remember('system_monitor_memory_model', 3600, function () {
             try {
                 if (PHP_OS_FAMILY === 'Windows') {
-                    $output = shell_exec('powershell -Command "(Get-CimInstance Win32_PhysicalMemory | Select-Object -First 1).Manufacturer"');
+                    $output = shell_exec('powershell -NoProfile -Command "(Get-CimInstance Win32_PhysicalMemory | Select-Object -First 1).Manufacturer"');
                     if ($output) {
                         $lines = explode("\n", trim($output));
                         $brand = trim(end($lines));
@@ -261,7 +263,7 @@ class SystemMonitorService
         $model = Cache::remember('system_monitor_disk_model', 3600, function () {
             try {
                 if (PHP_OS_FAMILY === 'Windows') {
-                    $output = shell_exec('powershell -Command "(Get-CimInstance Win32_DiskDrive | Select-Object -First 1).Model"');
+                    $output = shell_exec('powershell -NoProfile -Command "(Get-CimInstance Win32_DiskDrive | Select-Object -First 1).Model"');
                     if ($output) {
                         $lines = explode("\n", trim($output));
                         return trim(end($lines));

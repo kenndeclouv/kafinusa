@@ -37,6 +37,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', \App\Livewire\Warehouses\Index::class)->middleware('can:warehouses:read')->name('index');
     });
 
+    // Teams
+    Route::prefix('teams')->name('teams.')->group(function () {
+        Route::get('/', \App\Livewire\Teams\Index::class)->middleware('can:warehouses:read')->name('index');
+    });
+
     // Stock Mutations
     Route::prefix('stock-mutations')->name('stock-mutations.')->group(function () {
         Route::get('/', \App\Livewire\StockMutations\Index::class)->middleware('can:stock_mutations:read')->name('index');
@@ -47,6 +52,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Productions
     Route::prefix('productions')->name('productions.')->group(function () {
         Route::get('/', \App\Livewire\Productions\Index::class)->middleware('can:productions:read')->name('index');
+        Route::get('/{warehouse}', \App\Livewire\Productions\Show::class)->middleware('can:productions:read')->name('show');
+        Route::get('/{warehouse}/print/{date}/{category}', \App\Livewire\Productions\PrintProduction::class)->middleware('can:productions:read')->name('print');
     });
 
     // Employees & Sales Schedules

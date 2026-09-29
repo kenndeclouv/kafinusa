@@ -11,6 +11,8 @@ class Production extends Model
 
     protected $fillable = [
         'warehouse_id',
+        'item_category_id',
+        'team_name',
         'date',
         'raw_item_id',
         'raw_quantity',

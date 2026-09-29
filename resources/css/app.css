@@ -151,7 +151,8 @@ input:-webkit-autofill:active {
     }
 
     /* Remove padding and margins for main content */
-    body {
+    html, body {
+        color-scheme: light !important;
         padding: 0 !important;
         margin: 0 !important;
         background: white !important;
