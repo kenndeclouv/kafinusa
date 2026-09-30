@@ -148,6 +148,14 @@ class PrintStockCirculation extends Component
         $initialStocks = [];
         $runningBalances = [];
         
+        // Get StockOpnames for this month
+        $opnames = \App\Models\StockOpname::where('warehouse_id', $this->warehouse_id)
+            ->where('month', $this->month)
+            ->where('year', $this->year)
+            ->whereIn('item_id', $itemIds)
+            ->get()
+            ->keyBy('item_id');
+
         foreach ($items as $item) {
             $current = isset($currentStocks[$item->id]) ? $currentStocks[$item->id]->current_stock : 0;
             
@@ -157,7 +165,12 @@ class PrintStockCirculation extends Component
             $out = $itemMuts->where('type', 'out')->sum(fn($m) => $m->quantity * ($itemsMapped[$item->id]->weight ?? 1));
             $net = $in - $out;
             
-            $initialStocks[$item->id] = ($current * ($itemsMapped[$item->id]->weight ?? 1)) - $net;
+            // If Opname exists for this month, use it directly! Otherwise, rollback.
+            if ($opnames->has($item->id)) {
+                $initialStocks[$item->id] = (float) $opnames[$item->id]->actual_stock;
+            } else {
+                $initialStocks[$item->id] = ($current * ($itemsMapped[$item->id]->weight ?? 1)) - $net;
+            }
             $runningBalances[$item->id] = $initialStocks[$item->id];
         }
 

@@ -58,6 +58,13 @@ class CommandMenu extends Component
                 'group' => 'Transaksi',
             ],
             [
+                'label' => 'Stock Opname (Kalibrasi)',
+                'icon' => 'clipboard-document-check',
+                'route' => 'stock-opnames.index',
+                'permission' => ['stock_mutations:read', 'stock_mutations:read-self'],
+                'group' => 'Transaksi',
+            ],
+            [
                 'label' => 'Pegawai',
                 'icon' => 'identification',
                 'route' => 'employees.index',

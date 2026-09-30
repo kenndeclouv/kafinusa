@@ -49,6 +49,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{warehouse}/ledger', \App\Livewire\StockMutations\Ledger::class)->middleware('can:stock_mutations:read')->name('ledger');
     });
 
+    // Stock Opname
+    Route::prefix('stock-opnames')->name('stock-opnames.')->group(function () {
+        Route::get('/', \App\Livewire\Inventory\StockOpname::class)->middleware('can:stock_mutations:read')->name('index');
+    });
+
     // Productions
     Route::prefix('productions')->name('productions.')->group(function () {
         Route::get('/', \App\Livewire\Productions\Index::class)->middleware('can:productions:read')->name('index');

@@ -46,6 +46,10 @@
                         :current="request()->routeIs('stock-mutations.*')" wire:navigate.hover>
                         {{ __('Stok Gudang') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="clipboard-document-check" :href="route('stock-opnames.index')"
+                        :current="request()->routeIs('stock-opnames.*')" wire:navigate.hover>
+                        {{ __('Stock Opname') }}
+                    </flux:sidebar.item>
                 @endcanany
                 @can('productions:read')
                     <flux:sidebar.item icon="wrench-screwdriver" :href="route('productions.index')"
