@@ -99,17 +99,51 @@ class StockCirculation extends Component
     }
 
     #[Computed]
-    public function items()
+    public function isProductionCategory()
+    {
+        if (!$this->item_category_id) return false;
+        $category = ItemCategory::find($this->item_category_id);
+        if (!$category) return false;
+        
+        $name = strtolower($category->name);
+        return str_contains($name, 'tne') || str_contains($name, 'aren');
+    }
+
+    #[Computed]
+    public function rawItems()
     {
         if (!$this->item_category_id) return collect();
-        $items = Item::where('item_category_id', $this->item_category_id)->get();
         $category = ItemCategory::find($this->item_category_id);
-        
+        $catName = strtolower($category->name ?? '');
+
+        $query = Item::with('category')->orderBy('name');
+        if (str_contains($catName, 'tne')) {
+            $query->whereHas('category', fn($q) => $q->where('name', 'LOS'));
+        } elseif (str_contains($catName, 'aren')) {
+            $query->where('item_category_id', $category->id);
+        } else {
+            $query->whereHas('category', fn($q) => $q->where('name', 'LOS'));
+        }
+        return $this->sortItems($query->get(), 'LOS');
+    }
+
+    #[Computed]
+    public function resultItems()
+    {
+        if (!$this->item_category_id) return collect();
+        $category = ItemCategory::find($this->item_category_id);
+        $items = Item::where('item_category_id', $this->item_category_id)->get();
         if ($category) {
             return $this->sortItems($items, $category->name);
         }
-        
         return $items;
+    }
+
+    #[Computed]
+    public function items()
+    {
+        // For non-production, return resultItems
+        return $this->resultItems();
     }
 
     #[Computed]
@@ -121,8 +155,15 @@ class StockCirculation extends Component
 
         $startOfMonth = Carbon::create($this->year, $this->month, 1)->startOfDay();
         $endOfMonth = $startOfMonth->copy()->endOfMonth();
-        $items = $this->items();
+        
+        if ($this->isProductionCategory) {
+            $items = $this->rawItems()->merge($this->resultItems());
+        } else {
+            $items = $this->items();
+        }
+        
         $itemIds = $items->pluck('id')->toArray();
+        $itemsMapped = $items->keyBy('id');
 
         // 1. Get current stock
         $currentStocks = WarehouseStock::where('warehouse_id', $this->warehouse_id)
@@ -144,11 +185,12 @@ class StockCirculation extends Component
             
             // Revert mutations to find stock at 1st of month (00:00)
             $itemMuts = $mutations->where('item_id', $item->id);
-            $in = $itemMuts->where('type', 'in')->sum('quantity');
-            $out = $itemMuts->where('type', 'out')->sum('quantity');
+            $in = $itemMuts->where('type', 'in')->sum(fn($m) => $m->quantity * ($itemsMapped[$item->id]->weight ?? 1));
+            $out = $itemMuts->where('type', 'out')->sum(fn($m) => $m->quantity * ($itemsMapped[$item->id]->weight ?? 1));
             $net = $in - $out;
             
-            $initialStocks[$item->id] = $current - $net;
+            // For current stock, we also need to convert to KG
+            $initialStocks[$item->id] = ($current * ($itemsMapped[$item->id]->weight ?? 1)) - $net;
             $runningBalances[$item->id] = $initialStocks[$item->id];
         }
 
@@ -169,8 +211,33 @@ class StockCirculation extends Component
                     return $m->item_id === $item->id && $m->mutation_date === $currentDate;
                 });
                 
-                $in = $dayMuts->where('type', 'in')->sum('quantity');
-                $out = $dayMuts->where('type', 'out')->sum('quantity');
+                $weight = $itemsMapped[$item->id]->weight ?? 1;
+                
+                if ($this->isProductionCategory) {
+                    // Split logic for production
+                    $inPembelian = $dayMuts->where('type', 'in')->where('transaction_category', '!=', 'Barang Jadi')->sum(fn($m) => $m->quantity * $weight);
+                    $inHasilProduksi = $dayMuts->where('type', 'in')->where('transaction_category', 'Barang Jadi')->sum(fn($m) => $m->quantity * $weight);
+                    $outPenjualan = $dayMuts->where('type', 'out')->where('transaction_category', '!=', 'Bahan Baku')->sum(fn($m) => $m->quantity * $weight);
+                    $outPemakaian = $dayMuts->where('type', 'out')->where('transaction_category', 'Bahan Baku')->sum(fn($m) => $m->quantity * $weight);
+                    
+                    $in = $inPembelian + $inHasilProduksi;
+                    $out = $outPenjualan + $outPemakaian;
+                    
+                    $dailyIn[$item->id] = [
+                        'pembelian' => $inPembelian,
+                        'hasil_produksi' => $inHasilProduksi
+                    ];
+                    $dailyOut[$item->id] = [
+                        'penjualan' => $outPenjualan,
+                        'pemakaian' => $outPemakaian
+                    ];
+                } else {
+                    $in = $dayMuts->where('type', 'in')->sum(fn($m) => $m->quantity * $weight);
+                    $out = $dayMuts->where('type', 'out')->sum(fn($m) => $m->quantity * $weight);
+                    
+                    $dailyIn[$item->id] = $in;
+                    $dailyOut[$item->id] = $out;
+                }
                 
                 // Update running balance
                 $runningBalances[$item->id] += ($in - $out);
