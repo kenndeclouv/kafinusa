@@ -24,7 +24,7 @@
     <!-- Desktop Left Side (hidden on mobile) -->
     <div class="hidden lg:flex w-1/2 relative flex-col p-10 text-white z-10 min-h-dvh">
         <div class="absolute inset-0 bg-zinc-900">
-            <img src="{{ asset('images/auth-bg.png') }}"
+            <img src="{{ asset('images/auth-bg.jpg') }}"
                 class="absolute inset-0 h-full w-full object-cover opacity-50 mix-blend-luminosity"
                 alt="Industrial Background" />
             <div class="absolute inset-0 bg-gradient-to-t from-zinc-900/90 via-zinc-900/10 to-zinc-900/40"></div>
@@ -35,7 +35,7 @@
             </span>
             {{ config('app.name', 'Laravel') }}
         </a>
-        @php
+        {{-- @php
             [$message, $author] = str(Illuminate\Foundation\Inspiring::quotes()->random())->explode('-');
         @endphp
         <div class="relative z-20 mt-auto">
@@ -45,7 +45,7 @@
                     <flux:heading class="text-zinc-300">{{ trim($author) }}</flux:heading>
                 </footer>
             </blockquote>
-        </div>
+        </div> --}}
     </div>
 
     <!-- Right Side (Form Area) -->

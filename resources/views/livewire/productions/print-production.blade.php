@@ -9,7 +9,7 @@
                 this.isDownloading = true;
                 if (typeof html2canvas === 'undefined') {
                     let script = document.createElement('script');
-                    script.src = 'https://cdn.jsdelivr.net/npm/html2canvas-pro@2.3.9/dist/html2canvas-pro.min.js';
+                    script.src = '{{ asset("js/html2canvas-pro.min.js") }}';
                     script.onload = () => this.capture();
                     document.head.appendChild(script);
                 } else {
