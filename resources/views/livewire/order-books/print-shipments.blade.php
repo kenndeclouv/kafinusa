@@ -107,7 +107,7 @@
                         <table class="w-full border-collapse text-[10px]" style="border: 2px solid #000;">
                             <thead>
                                 <tr style="background: #e5e7eb;">
-                                    <th colspan="3"
+                                    <th colspan="2"
                                         style="border: 1px solid #000; padding: 1px 2px; font-weight: bold;">CEK</th>
                                     <th rowspan="2"
                                         style="border: 1px solid #000; padding: 1px 4px; font-weight: bold; font-style: italic;">
@@ -124,36 +124,41 @@
                                 </tr>
                                 <tr style="background: #e5e7eb;">
                                     <th
-                                        style="border: 1px solid #000; padding: 1px; text-align: center; width: 22px; font-size: 8px;">
+                                        style="border: 1px solid #000; padding: 1px; text-align: center; width: 28px; font-size: 9px;">
                                         G</th>
                                     <th
-                                        style="border: 1px solid #000; padding: 1px; text-align: center; width: 22px; font-size: 8px;">
-                                        T</th>
-                                    <th
-                                        style="border: 1px solid #000; padding: 1px; text-align: center; width: 22px; font-size: 8px;">
+                                        style="border: 1px solid #000; padding: 1px; text-align: center; width: 28px; font-size: 9px;">
                                         S</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($items as $item)
+                                @foreach ($items as $id => $item)
+                                    @php
+                                        $muatan = !empty($item['batches'][$currentBatch]) ? $item['batches'][$currentBatch] : 0;
+                                        $ret = (int)($this->returns[$id][$currentBatch] ?? 0);
+                                        $gt = $muatan - $ret;
+                                    @endphp
                                     <tr>
-                                        <td style="border: 1px solid #000; padding: 1px 2px; text-align: center;">
-                                            {{-- <input type="checkbox" class="print:appearance-auto w-3 h-3"> --}}
+                                        <td wire:click="toggleCheck({{ $id }}, {{ $currentBatch }}, 'G')" style="border: 1px solid #000; padding: 1px 2px; text-align: center; cursor: pointer; font-size: 13px; font-weight: 800; user-select: none;" class="hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+                                            {!! !empty($this->checkG[$id][$currentBatch]) ? 'X' : '&nbsp;' !!}
                                         </td>
-                                        <td style="border: 1px solid #000; padding: 1px 2px; text-align: center;">
-                                            {{-- <input type="checkbox" class="print:appearance-auto w-3 h-3"> --}}
+                                        <td wire:click="toggleCheck({{ $id }}, {{ $currentBatch }}, 'S')" style="border: 1px solid #000; padding: 1px 2px; text-align: center; cursor: pointer; font-size: 13px; font-weight: 800; user-select: none;" class="hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+                                            {!! !empty($this->checkS[$id][$currentBatch]) ? 'X' : '&nbsp;' !!}
                                         </td>
-                                        <td style="border: 1px solid #000; padding: 1px 2px; text-align: center;">
-                                            {{-- <input type="checkbox" class="print:appearance-auto w-3 h-3"> --}}
-                                        </td>
-                                        <td style="border: 1px solid #000; padding: 1px 2px; font-weight: 500;">
+                                        <td style="border: 1px solid #000; padding: 1px 4px; font-weight: 500;">
                                             {{ $item['category_name'] }} {{ $item['name'] }}</td>
                                         <td
                                             style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 11px;">
-                                            {{ !empty($item['batches'][$currentBatch]) ? $item['batches'][$currentBatch] : '' }}
+                                            {{ $muatan > 0 ? $muatan : '' }}
                                         </td>
-                                        <td style="border: 1px solid #000; padding: 1px 2px;"></td>
-                                        <td style="border: 1px solid #000; padding: 1px 2px;"></td>
+                                        <td style="border: 1px solid #000; padding: 0; text-align: center;">
+                                            @if($muatan > 0)
+                                                <input type="number" wire:model.live.debounce.500ms="returns.{{ $id }}.{{ $currentBatch }}" class="w-full text-center border-none p-0 m-0 text-[11px] h-full focus:ring-0 bg-transparent print:bg-transparent print:appearance-auto" min="0" max="{{ $muatan }}" />
+                                            @endif
+                                        </td>
+                                        <td style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 11px;">
+                                            {{ $muatan > 0 ? $gt : '' }}
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>

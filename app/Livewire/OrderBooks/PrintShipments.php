@@ -13,6 +13,10 @@ class PrintShipments extends Component
     public OrderBook $orderBook;
     public ?ShipmentPlan $plan;
 
+    public array $returns = [];
+    public array $checkG = [];
+    public array $checkS = [];
+
     public function mount(OrderBook $orderBook)
     {
         abort_unless(
@@ -28,6 +32,74 @@ class PrintShipments extends Component
 
         if (!$this->plan) {
             $this->redirect(route('order-books.shipments', $orderBook), navigate: true);
+            return;
+        }
+
+        // Initialize state
+        foreach ($this->plan->items as $planItem) {
+            $itemId = $planItem->orderItem->item_id;
+            $batch = $planItem->batch_number;
+
+            if (!isset($this->returns[$itemId][$batch])) $this->returns[$itemId][$batch] = 0;
+            if (!isset($this->checkG[$itemId][$batch])) $this->checkG[$itemId][$batch] = false;
+            if (!isset($this->checkS[$itemId][$batch])) $this->checkS[$itemId][$batch] = false;
+
+            $this->returns[$itemId][$batch] += $planItem->return_quantity;
+            $this->checkG[$itemId][$batch] = $this->checkG[$itemId][$batch] || $planItem->is_checked_g;
+            $this->checkS[$itemId][$batch] = $this->checkS[$itemId][$batch] || $planItem->is_checked_s;
+        }
+
+        // Change 0 to empty string for cleaner UI
+        foreach ($this->returns as $itemId => $batches) {
+            foreach ($batches as $batch => $val) {
+                if ($val == 0) $this->returns[$itemId][$batch] = '';
+            }
+        }
+    }
+
+    public function toggleCheck(int $itemId, int $batch, string $type)
+    {
+        $field = $type === 'G' ? 'checkG' : 'checkS';
+        $currentValue = $this->$field[$itemId][$batch] ?? false;
+        
+        $temp = $this->$field;
+        $temp[$itemId][$batch] = !$currentValue;
+        $this->$field = $temp;
+
+        // Update DB
+        $planItems = $this->plan->items()->whereHas('orderItem', function($q) use ($itemId) {
+            $q->where('item_id', $itemId);
+        })->where('batch_number', $batch)->get();
+
+        foreach ($planItems as $pi) {
+            if ($type === 'G') $pi->update(['is_checked_g' => !$currentValue]);
+            else $pi->update(['is_checked_s' => !$currentValue]);
+        }
+    }
+
+    public function updatedReturns($value, $key)
+    {
+        $parts = explode('.', $key);
+        if (count($parts) === 2) {
+            $itemId = (int) $parts[0];
+            $batch = (int) $parts[1];
+            $retValue = (int) ($value ?: 0);
+
+            // Need to distribute the return quantity across ShipmentPlanItems for this itemId and batch
+            $planItems = $this->plan->items()->whereHas('orderItem', function($q) use ($itemId) {
+                $q->where('item_id', $itemId);
+            })->where('batch_number', $batch)->get();
+
+            $remainingRetur = $retValue;
+            foreach ($planItems as $pi) {
+                if ($remainingRetur >= $pi->quantity) {
+                    $pi->update(['return_quantity' => $pi->quantity]);
+                    $remainingRetur -= $pi->quantity;
+                } else {
+                    $pi->update(['return_quantity' => $remainingRetur]);
+                    $remainingRetur = 0;
+                }
+            }
         }
     }
 
@@ -53,6 +125,7 @@ class PrintShipments extends Component
 
             if (!isset($items[$itemId])) {
                 $items[$itemId] = [
+                    'item_id' => $itemId,
                     'name' => $item->name,
                     'category_name' => $item->category->name ?? 'Lain-lain',
                     'batches' => [],
@@ -82,7 +155,7 @@ class PrintShipments extends Component
             'TRASI' => ['A J', 'A W', 'LYR']
         ];
 
-        usort($items, function ($a, $b) use ($categoryOrder, $itemOrder) {
+        uasort($items, function ($a, $b) use ($categoryOrder, $itemOrder) {
             $catIndexA = array_search(strtoupper($a['category_name']), $categoryOrder);
             $catIndexB = array_search(strtoupper($b['category_name']), $categoryOrder);
 

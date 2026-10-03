@@ -11,6 +11,9 @@ class ShipmentPlanItem extends Model
         'order_item_id',
         'batch_number',
         'quantity',
+        'return_quantity',
+        'is_checked_g',
+        'is_checked_s',
     ];
 
     public function shipmentPlan()

@@ -422,12 +422,24 @@ class ManageShipments extends Component
             if ($orderItem) {
                 $itemId = $orderItem->item_id;
                 if (!isset($groupedItems[$itemId])) $groupedItems[$itemId] = 0;
-                $groupedItems[$itemId] += $pi->quantity;
+                $qty = $pi->quantity - $pi->return_quantity;
+                $groupedItems[$itemId] += $qty;
             }
         }
 
         foreach ($groupedItems as $itemId => $qty) {
             if ($qty <= 0) continue;
+
+            $stock = \App\Models\WarehouseStock::firstOrCreate(
+                ['warehouse_id' => $warehouseId, 'item_id' => $itemId],
+                ['current_stock' => 0, 'physical_stock' => 0]
+            );
+            $stock = \App\Models\WarehouseStock::where('id', $stock->id)->lockForUpdate()->first();
+            
+            $stock->update([
+                'current_stock' => $stock->current_stock - $qty,
+                'physical_stock' => $stock->physical_stock - $qty,
+            ]);
 
             // Create stock mutation OUT
             $mutation = new StockMutation([

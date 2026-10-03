@@ -148,7 +148,10 @@ class StockOpname extends Component
                         'warehouse_id' => $this->warehouse_id,
                         'item_id' => $item->id,
                     ],
-                    ['current_stock' => $this->actualStocks[$item->id]] // raw unit
+                    [
+                        'current_stock' => $this->actualStocks[$item->id],
+                        'physical_stock' => $this->actualStocks[$item->id]
+                    ]
                 );
 
                 // Record adjustment mutation

@@ -108,30 +108,33 @@ class Show extends Component
 
                 $oldQuantity = $stock->current_stock;
                 $newQuantity = $oldQuantity;
+                $oldPhysical = $stock->physical_stock;
+                $newPhysical = $oldPhysical;
                 
                 $mutationQuantity = 0;
 
                 if ($this->type === 'in') {
                     $newQuantity += $this->quantity;
+                    $newPhysical += $this->quantity;
                     $mutationQuantity = $this->quantity;
                 } else if ($this->type === 'out') {
                     if ($oldQuantity < $this->quantity) {
                         throw new \Exception('Stok tidak mencukupi untuk dikeluarkan.');
                     }
                     $newQuantity -= $this->quantity;
+                    $newPhysical -= $this->quantity;
                     $mutationQuantity = $this->quantity;
                 } else if ($this->type === 'adjustment') {
                     if ($this->physical_quantity !== null && $this->physical_quantity !== '') {
-                        $stock->physical_stock = $this->physical_quantity;
+                        $newPhysical = $this->physical_quantity;
                     }
                 }
 
                 // Update stock cache
-                $stock->update(['current_stock' => $newQuantity]);
-                if ($this->type === 'adjustment' && $this->physical_quantity !== null && $this->physical_quantity !== '') {
-                    $stock->update(['physical_stock' => $this->physical_quantity]);
-                }
-
+                $stock->update([
+                    'current_stock' => $newQuantity,
+                    'physical_stock' => $newPhysical
+                ]);
                 // Record mutation ledger
                 StockMutation::create([
                     'warehouse_id' => $this->warehouse->id,

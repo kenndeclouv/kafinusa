@@ -6,6 +6,25 @@
         </div>
     </div>
 
+    @if(now()->day == 1)
+    <div class="mb-8 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 p-4 flex items-start gap-4">
+        <div class="rounded-full bg-amber-100 dark:bg-amber-500/20 p-2 mt-0.5">
+            <flux:icon.calendar-days class="w-5 h-5 text-amber-600 dark:text-amber-500" />
+        </div>
+        <div class="flex-1">
+            <h3 class="text-sm font-bold text-amber-800 dark:text-amber-400">Waktunya Kalibrasi Stok!</h3>
+            <p class="text-sm text-amber-700 dark:text-amber-500/80 mt-1">
+                Hari ini tanggal 1, jangan lupa untuk melakukan penginputan Stock Opname agar catatan sistem sesuai dengan stok fisik riil di gudang.
+            </p>
+        </div>
+        <div>
+            <flux:button href="{{ route('stock-opnames.index') }}" wire:navigate variant="danger" size="sm" class="!bg-amber-500 hover:!bg-amber-600 !text-white !border-none">
+                Mulai Opname
+            </flux:button>
+        </div>
+    </div>
+    @endif
+
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
         @forelse($this->warehouses as $warehouse)
             <a wire:key="warehouse-{{ $warehouse->id }}" href="{{ route('stock-mutations.show', $warehouse->id) }}"

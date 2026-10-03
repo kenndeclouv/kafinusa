@@ -63,6 +63,7 @@ class Production extends Model
             );
             $rawStock = WarehouseStock::where('id', $rawStock->id)->lockForUpdate()->first();
             $rawStock->current_stock -= $this->raw_quantity;
+            $rawStock->physical_stock -= $this->raw_quantity;
             $rawStock->save();
 
             StockMutation::create([
@@ -87,6 +88,7 @@ class Production extends Model
                 );
                 $finishedStock = WarehouseStock::where('id', $finishedStock->id)->lockForUpdate()->first();
                 $finishedStock->current_stock += $result->quantity;
+                $finishedStock->physical_stock += $result->quantity;
                 $finishedStock->save();
 
                 StockMutation::create([
