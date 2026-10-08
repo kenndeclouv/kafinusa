@@ -82,13 +82,10 @@
                             <flux:table.cell>
                                 @php
                                     $estimatedPrice = $order->orderItems->sum(function ($orderItem) {
-                                        $price = $orderItem->price;
+                                        $priceTypeKey = $orderItem->price_type ?? 'umum';
+                                        $price = data_get($orderItem->item ?? [], "prices.{$priceTypeKey}", 0);
                                         if ($price == 0) {
-                                            $priceTypeKey = $orderItem->price_type ?? 'umum';
-                                            $price = data_get($orderItem->item ?? [], "prices.{$priceTypeKey}", 0);
-                                            if ($price == 0) {
-                                                $price = data_get($orderItem->item ?? [], 'prices.umum', 0);
-                                            }
+                                            $price = data_get($orderItem->item ?? [], 'prices.umum', 0);
                                         }
                                         return $price * $orderItem->quantity;
                                     });

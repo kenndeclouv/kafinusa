@@ -65,14 +65,10 @@
                         @php $grandTotal = 0; @endphp
                         @foreach ($order->orderItems as $index => $item)
                             @php
-                                // Attempt to get correct price based on customer category
-                                $harga = $item->price;
+                                $priceTypeKey = $item->price_type ?? 'umum';
+                                $harga = data_get($item->item ?? [], "prices.{$priceTypeKey}", 0);
                                 if ($harga == 0) {
-                                    $priceTypeKey = $item->price_type ?? 'umum';
-                                    $harga = data_get($item->item ?? [], "prices.{$priceTypeKey}", 0);
-                                    if ($harga == 0) {
-                                        $harga = data_get($item->item ?? [], 'prices.umum', 0);
-                                    }
+                                    $harga = data_get($item->item ?? [], 'prices.umum', 0);
                                 }
                                 $nilai = $item->quantity * $harga;
                                 $grandTotal += $nilai;

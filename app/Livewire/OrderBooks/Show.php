@@ -102,13 +102,10 @@ class Show extends Component
             foreach ($orders as $order) {
                 foreach ($order->orderItems as $orderItem) {
                     if (!$orderItem->item) continue;
-                    $itemPrice = $orderItem->price;
+                    $priceTypeKey = $orderItem->price_type ?? 'umum';
+                    $itemPrice = data_get($orderItem->item, "prices.{$priceTypeKey}", 0);
                     if ($itemPrice == 0) {
-                        $priceTypeKey = $orderItem->price_type ?? 'umum';
-                        $itemPrice = data_get($orderItem->item, "prices.{$priceTypeKey}", 0);
-                        if ($itemPrice == 0) {
-                            $itemPrice = data_get($orderItem->item, 'prices.umum', 0);
-                        }
+                        $itemPrice = data_get($orderItem->item, 'prices.umum', 0);
                     }
                     
                     $totalEstimatedPrice += $itemPrice * $orderItem->quantity;
