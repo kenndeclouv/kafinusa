@@ -192,7 +192,7 @@
                             <div class="w-[120px] p-1 font-bold italic text-center uppercase"
                                 style="border-right: 1px solid #000;">TONASE</div>
                             <div class="flex-1 p-1 bg-white text-black font-semibold text-center">
-                                {{ number_format($batchTonase / 1000, 2, ',', '.') }} Kg</div>
+                                {{ formatWeight($batchTonase) }}</div>
                         </div>
                         <div class="flex">
                             <div class="w-[120px] p-1 font-bold italic text-center uppercase"

@@ -118,7 +118,7 @@
                                         <div class="flex flex-col items-center gap-0.5">
                                             <span>{{ $item->name }}</span>
                                             <span
-                                                class="font-normal">{{ $item->weight >= 1000 ? $item->weight / 1000 . 'kg' : $item->weight . 'gr' }}</span>
+                                                class="font-normal">{{ ($item->weight ?? 0) / 1000 }} kg</span>
                                         </div>
                                     </th>
                                 @endforeach

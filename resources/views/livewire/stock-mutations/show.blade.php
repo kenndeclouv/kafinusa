@@ -91,7 +91,7 @@
                     <flux:table.column>Stok Tertulis (Sistem)</flux:table.column>
                     <flux:table.column>Stok Opname (Fisik)</flux:table.column>
                     <flux:table.column>Selisih</flux:table.column>
-                    <flux:table.column>Total Tonase (Opname)</flux:table.column>
+                    <flux:table.column>Total Tonase (Kg)</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
                     @forelse ($this->stocks as $stock)
@@ -125,7 +125,7 @@
                                 </span>
                             </flux:table.cell>
                             <flux:table.cell>
-                                {{ number_format($stock->physical_stock * ($stock->item?->weight ?? 0), 2) }}
+                                {{ formatWeight($stock->physical_stock * ($stock->item?->weight ?? 1)) }}
                             </flux:table.cell>
                         </flux:table.row>
                     @empty

@@ -56,7 +56,7 @@
                 <!-- BAL: Initial Stock -->
                 @foreach($this->items as $item)
                     <td class="px-2 py-2 text-center font-bold text-red-600 dark:text-red-400 border-r border-zinc-200 dark:border-white/10 bg-red-50/30 dark:bg-red-900/10">
-                        {{ number_format($this->circulationData['initial'][$item->id]) }}
+                        {{ formatQuantity($this->circulationData['initial'][$item->id]) }}
                     </td>
                 @endforeach
                 <td class="px-4 py-2 text-zinc-500 text-xs italic">
@@ -83,7 +83,7 @@
                             $totalIn[$item->id] += $val;
                         @endphp
                         <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 {{ $val > 0 ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-300 dark:text-zinc-700' }}">
-                            {{ $val > 0 ? number_format($val) : '' }}
+                            {{ $val > 0 ? formatQuantity($val) : '' }}
                         </td>
                     @endforeach
 
@@ -94,14 +94,14 @@
                             $totalOut[$item->id] += $val;
                         @endphp
                         <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 {{ $val > 0 ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-300 dark:text-zinc-700' }}">
-                            {{ $val > 0 ? number_format($val) : '' }}
+                            {{ $val > 0 ? formatQuantity($val) : '' }}
                         </td>
                     @endforeach
 
                     <!-- BAL -->
                     @foreach($this->items as $item)
                         <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-blue-800 dark:text-blue-300 font-medium bg-blue-50/10 dark:bg-blue-900/5">
-                            {{ number_format($data['bal'][$item->id]) }}
+                            {{ formatQuantity($data['bal'][$item->id]) }}
                         </td>
                     @endforeach
                     
@@ -117,13 +117,13 @@
                 <!-- Total IN -->
                 @foreach($this->items as $item)
                     <td class="px-2 py-3 text-center font-bold text-emerald-700 dark:text-emerald-400 border-r border-zinc-200 dark:border-white/10 bg-emerald-50/50 dark:bg-emerald-900/10">
-                        {{ $totalIn[$item->id] > 0 ? number_format($totalIn[$item->id]) : '-' }}
+                        {{ $totalIn[$item->id] > 0 ? formatQuantity($totalIn[$item->id]) : '-' }}
                     </td>
                 @endforeach
                 <!-- Total OUT -->
                 @foreach($this->items as $item)
                     <td class="px-2 py-3 text-center font-bold text-red-700 dark:text-red-400 border-r border-zinc-200 dark:border-white/10 bg-red-50/30 dark:bg-red-900/10">
-                        {{ $totalOut[$item->id] > 0 ? number_format($totalOut[$item->id]) : '-' }}
+                        {{ $totalOut[$item->id] > 0 ? formatQuantity($totalOut[$item->id]) : '-' }}
                     </td>
                 @endforeach
                 <!-- Empty for BAL (or Final Balance) -->
@@ -132,7 +132,7 @@
                         $finalBal = $this->circulationData['daily'][Carbon\Carbon::create($year, $month, 1)->daysInMonth]['bal'][$item->id];
                     @endphp
                     <td class="px-2 py-3 text-center font-bold text-blue-700 dark:text-blue-400 border-r border-zinc-200 dark:border-white/10 bg-blue-50/30 dark:bg-blue-900/10">
-                        {{ number_format($finalBal) }}
+                        {{ formatQuantity($finalBal) }}
                     </td>
                 @endforeach
                 <td class="px-4 py-3"></td>

@@ -296,37 +296,45 @@ class ManageShipments extends Component
         }
 
         DB::transaction(function () {
-            // Hapus plan lama jika ada
             $plan = $this->orderBook->shipmentPlan;
-            if ($plan) {
-                $plan->items()->delete();
-                $plan->batches()->delete();
-                $plan->delete();
+            
+            if (!$plan) {
+                // Buat plan baru
+                $plan = ShipmentPlan::create([
+                    'order_book_id' => $this->orderBook->id,
+                    'created_by'    => auth()->id(),
+                    'total_batches' => $this->totalBatches,
+                ]);
+            } else {
+                $plan->update(['total_batches' => $this->totalBatches]);
             }
 
-            // Buat plan baru
-            $plan = ShipmentPlan::create([
-                'order_book_id' => $this->orderBook->id,
-                'created_by'    => auth()->id(),
-                'total_batches' => $this->totalBatches,
-            ]);
-
             // Simpan semua assignments
+            $validItemIds = [];
             foreach ($this->assignments as $orderItemId => $batches) {
                 foreach ($batches as $batchNumber => $qty) {
                     if ($qty > 0) {
-                        ShipmentPlanItem::create([
+                        $planItem = ShipmentPlanItem::updateOrCreate([
                             'shipment_plan_id' => $plan->id,
                             'order_item_id'    => $orderItemId,
                             'batch_number'     => $batchNumber,
+                        ], [
                             'quantity'         => $qty,
                         ]);
+                        $validItemIds[] = $planItem->id;
                     }
                 }
             }
+            
+            // Hapus assignment yang qty nya di set jadi 0
+            if ($plan) {
+                $plan->items()->whereNotIn('id', $validItemIds)->delete();
+            }
 
             // Simpan metadata batch (hanya yang pending, yang shipped jangan di-overwrite datenya)
+            $validBatchNumbers = [];
             for ($b = 1; $b <= $this->totalBatches; $b++) {
+                $validBatchNumbers[] = $b;
                 $existingBatch = $plan->batches()->where('batch_number', $b)->first();
                 $targetDate = $this->batchDates[$b] ?? $this->orderBook->book_date->format('Y-m-d');
                 if (!$existingBatch) {
@@ -341,6 +349,11 @@ class ManageShipments extends Component
                         $existingBatch->update(['shipment_date' => $targetDate]);
                     }
                 }
+            }
+            
+            // Hapus batch yang sudah tidak ada
+            if ($plan) {
+                $plan->batches()->whereNotIn('batch_number', $validBatchNumbers)->delete();
             }
         });
 
@@ -422,7 +435,7 @@ class ManageShipments extends Component
             if ($orderItem) {
                 $itemId = $orderItem->item_id;
                 if (!isset($groupedItems[$itemId])) $groupedItems[$itemId] = 0;
-                $qty = $pi->quantity - $pi->return_quantity;
+                $qty = max(0, $pi->quantity - $pi->return_quantity);
                 $groupedItems[$itemId] += $qty;
             }
         }
@@ -448,6 +461,7 @@ class ManageShipments extends Component
                 'user_id' => auth()->id(),
                 'type' => 'out',
                 'quantity' => $qty,
+                'mutation_date' => $date,
                 'notes' => "Pengiriman Muatan {$batch->batch_number} (Pasar {$this->orderBook->market->name})"
             ]);
             $mutation->created_at = $date . ' ' . now()->format('H:i:s');

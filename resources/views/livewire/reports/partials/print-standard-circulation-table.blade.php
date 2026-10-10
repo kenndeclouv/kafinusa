@@ -68,7 +68,7 @@
                 @php $initial = $this->circulationData['initial'][$item->id] ?? 0; @endphp
                 <td
                     style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 11px; {{ $initial < 0 ? 'color: #dc2626;' : 'color: #1d4ed8;' }}">
-                    {{ $initial != 0 ? number_format($initial) : '0' }}
+                    {{ $initial != 0 ? formatQuantity($initial) : '0' }}
                 </td>
             @endforeach
             <td style="border: 1px solid #000; padding: 1px 4px;"></td>
@@ -95,7 +95,7 @@
                     @endphp
                     <td
                         style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-size: 11px; {{ $in > 0 ? 'font-weight: bold; color: #047857;' : 'color: transparent;' }}">
-                        {{ $in > 0 ? number_format($in) : '0' }}
+                        {{ $in > 0 ? formatQuantity($in) : '0' }}
                     </td>
                 @endforeach
 
@@ -107,7 +107,7 @@
                     @endphp
                     <td
                         style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-size: 11px; {{ $out > 0 ? 'font-weight: bold; color: #be123c;' : 'color: transparent;' }}">
-                        {{ $out > 0 ? number_format($out) : '0' }}
+                        {{ $out > 0 ? formatQuantity($out) : '0' }}
                     </td>
                 @endforeach
 
@@ -116,7 +116,7 @@
                     @php $bal = $data['bal'][$item->id] ?? 0; @endphp
                     <td
                         style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-size: 11px; font-weight: bold; {{ $bal < 0 ? 'color: #dc2626;' : 'color: #2563eb;' }}">
-                        {{ $bal != 0 ? number_format($bal) : '0' }}
+                        {{ $bal != 0 ? formatQuantity($bal) : '0' }}
                     </td>
                 @endforeach
                 <td style="border: 1px solid #000; padding: 1px 4px;"></td>
@@ -133,14 +133,14 @@
             @foreach ($this->items as $item)
                 <td
                     style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 11px; color: #047857;">
-                    {{ $totalIn[$item->id] > 0 ? number_format($totalIn[$item->id]) : '-' }}
+                    {{ $totalIn[$item->id] > 0 ? formatQuantity($totalIn[$item->id]) : '-' }}
                 </td>
             @endforeach
             {{-- TOTAL OUT --}}
             @foreach ($this->items as $item)
                 <td
                     style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 11px; color: #be123c;">
-                    {{ $totalOut[$item->id] > 0 ? number_format($totalOut[$item->id]) : '-' }}
+                    {{ $totalOut[$item->id] > 0 ? formatQuantity($totalOut[$item->id]) : '-' }}
                 </td>
             @endforeach
             {{-- FINAL BALANCE (last day) --}}
@@ -151,7 +151,7 @@
                 @endphp
                 <td
                     style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 11px; color: #1d4ed8; background: #eff6ff;">
-                    {{ number_format($finalBal) }}
+                    {{ formatQuantity($finalBal) }}
                 </td>
             @endforeach
             <td style="border: 1px solid #000; padding: 1px 4px;"></td>

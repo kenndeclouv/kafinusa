@@ -129,7 +129,7 @@
                                         <th style="border: 1px solid #000; padding: 1px 2px; text-align: center; font-weight: bold; font-size: 9px; width: 35px;">
                                             <div class="flex flex-col items-center gap-0.5">
                                                 <span>{{ $item->name }}</span>
-                                                <span class="font-normal">{{ $item->weight >= 1000 ? $item->weight / 1000 . 'kg' : $item->weight . 'gr' }}</span>
+                                                <span class="font-normal">{{ ($item->weight ?? 0) / 1000 }} kg</span>
                                             </div>
                                         </th>
                                     @endforeach

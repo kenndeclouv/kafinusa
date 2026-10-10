@@ -89,7 +89,7 @@ class PrintStockCirculation extends Component
         if (str_contains($catName, 'tne')) {
             $query->whereHas('category', fn($q) => $q->where('name', 'LOS'));
         } elseif (str_contains($catName, 'aren')) {
-            $query->where('item_category_id', $category->id);
+            $query->where('item_category_id', $category->id)->where('name', 'like', '%LOS%');
         } else {
             $query->whereHas('category', fn($q) => $q->where('name', 'LOS'));
         }
@@ -101,7 +101,13 @@ class PrintStockCirculation extends Component
     {
         if (!$this->item_category_id) return collect();
         $category = ItemCategory::find($this->item_category_id);
-        $items = Item::where('item_category_id', $this->item_category_id)->get();
+        $catName = strtolower($category->name ?? '');
+
+        $query = Item::where('item_category_id', $this->item_category_id);
+        if (str_contains($catName, 'aren')) {
+            $query->where('name', 'not like', '%LOS%');
+        }
+        $items = $query->get();
         if ($category) {
             return $this->sortItems($items, $category->name);
         }
@@ -140,15 +146,14 @@ class PrintStockCirculation extends Component
             ->keyBy('item_id');
 
         // 2. Get mutations from start of month to now
-        $mutations = StockMutation::where('warehouse_id', $this->warehouse_id)
+        $allMutations = StockMutation::where('warehouse_id', $this->warehouse_id)
             ->whereIn('item_id', $itemIds)
-            ->where('mutation_date', '>=', $startOfMonth->format('Y-m-d'))
+            ->whereDate('created_at', '>=', $startOfMonth->format('Y-m-d'))
             ->get();
 
         $initialStocks = [];
         $runningBalances = [];
         
-        // Get StockOpnames for this month
         $opnames = \App\Models\StockOpname::where('warehouse_id', $this->warehouse_id)
             ->where('month', $this->month)
             ->where('year', $this->year)
@@ -158,21 +163,27 @@ class PrintStockCirculation extends Component
 
         foreach ($items as $item) {
             $current = isset($currentStocks[$item->id]) ? $currentStocks[$item->id]->current_stock : 0;
+            $multiplier = $this->isProductionCategory ? (($itemsMapped[$item->id]->weight ?? 0) / 1000) : 1;
             
             // Revert mutations to find stock at 1st of month (00:00)
-            $itemMuts = $mutations->where('item_id', $item->id);
-            $in = $itemMuts->where('type', 'in')->sum(fn($m) => $m->quantity * ($itemsMapped[$item->id]->weight ?? 1));
-            $out = $itemMuts->where('type', 'out')->sum(fn($m) => $m->quantity * ($itemsMapped[$item->id]->weight ?? 1));
+            $itemMuts = $allMutations->where('item_id', $item->id);
+            $in = $itemMuts->where('type', 'in')->sum(fn($m) => $m->quantity * $multiplier);
+            $out = $itemMuts->where('type', 'out')->sum(fn($m) => $m->quantity * $multiplier);
             $net = $in - $out;
             
-            // If Opname exists for this month, use it directly! Otherwise, rollback.
             if ($opnames->has($item->id)) {
-                $initialStocks[$item->id] = (float) $opnames[$item->id]->actual_stock;
+                $pieces = (float) $opnames[$item->id]->actual_stock / ($itemsMapped[$item->id]->weight ?? 1);
+                $initialStocks[$item->id] = $pieces * $multiplier;
             } else {
-                $initialStocks[$item->id] = ($current * ($itemsMapped[$item->id]->weight ?? 1)) - $net;
+                $initialStocks[$item->id] = ($current * $multiplier) - $net;
             }
             $runningBalances[$item->id] = $initialStocks[$item->id];
         }
+
+        // Filter out Opname mutations from daily processing so they don't double count
+        $mutations = $allMutations->filter(function($m) {
+            return $m->reference_type !== \App\Models\StockOpname::class;
+        });
 
         // 3. Process daily data
         $dailyData = [];
@@ -188,16 +199,17 @@ class PrintStockCirculation extends Component
             foreach ($items as $item) {
                 // Filter mutations exactly for this day
                 $dayMuts = $mutations->filter(function($m) use ($item, $currentDate) {
-                    return $m->item_id === $item->id && $m->mutation_date === $currentDate;
+                    return $m->item_id === $item->id && $m->created_at->format('Y-m-d') === $currentDate;
                 });
                 
-                $weight = $itemsMapped[$item->id]->weight ?? 1;
+                $multiplier = $this->isProductionCategory ? (($itemsMapped[$item->id]->weight ?? 0) / 1000) : 1;
                 
                 if ($this->isProductionCategory) {
-                    $inPembelian = $dayMuts->where('type', 'in')->where('transaction_category', '!=', 'Barang Jadi')->sum(fn($m) => $m->quantity * $weight);
-                    $inHasilProduksi = $dayMuts->where('type', 'in')->where('transaction_category', 'Barang Jadi')->sum(fn($m) => $m->quantity * $weight);
-                    $outPenjualan = $dayMuts->where('type', 'out')->where('transaction_category', '!=', 'Bahan Baku')->sum(fn($m) => $m->quantity * $weight);
-                    $outPemakaian = $dayMuts->where('type', 'out')->where('transaction_category', 'Bahan Baku')->sum(fn($m) => $m->quantity * $weight);
+                    // Split logic for production
+                    $inPembelian = $dayMuts->where('type', 'in')->where('transaction_category', '!=', 'Barang Jadi')->sum(fn($m) => $m->quantity * $multiplier);
+                    $inHasilProduksi = $dayMuts->where('type', 'in')->where('transaction_category', 'Barang Jadi')->sum(fn($m) => $m->quantity * $multiplier);
+                    $outPenjualan = $dayMuts->where('type', 'out')->where('transaction_category', '!=', 'Bahan Baku')->sum(fn($m) => $m->quantity * $multiplier);
+                    $outPemakaian = $dayMuts->where('type', 'out')->where('transaction_category', 'Bahan Baku')->sum(fn($m) => $m->quantity * $multiplier);
                     
                     $in = $inPembelian + $inHasilProduksi;
                     $out = $outPenjualan + $outPemakaian;
@@ -211,8 +223,8 @@ class PrintStockCirculation extends Component
                         'pemakaian' => $outPemakaian
                     ];
                 } else {
-                    $in = $dayMuts->where('type', 'in')->sum(fn($m) => $m->quantity * $weight);
-                    $out = $dayMuts->where('type', 'out')->sum(fn($m) => $m->quantity * $weight);
+                    $in = $dayMuts->where('type', 'in')->sum(fn($m) => $m->quantity * $multiplier);
+                    $out = $dayMuts->where('type', 'out')->sum(fn($m) => $m->quantity * $multiplier);
                     
                     $dailyIn[$item->id] = $in;
                     $dailyOut[$item->id] = $out;
@@ -225,6 +237,7 @@ class PrintStockCirculation extends Component
                     $dailyIn[$item->id] = $in;
                     $dailyOut[$item->id] = $out;
                 }
+                
                 $dailyBal[$item->id] = $runningBalances[$item->id];
             }
 

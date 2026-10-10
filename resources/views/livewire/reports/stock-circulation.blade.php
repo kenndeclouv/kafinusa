@@ -30,7 +30,7 @@
 
     <!-- Print Header (Only visible when printing) -->
     <div class="hidden print:block mb-6 text-center">
-        <h1 class="text-2xl font-bold text-black uppercase">SIRKULASI {{ $this->item_category_id ? strtoupper($this->categories[$this->item_category_id] ?? 'STOK') : 'STOK' }} HARIAN</h1>
+        <h1 class="text-2xl font-bold text-black uppercase">SIRKULASI {{ $this->item_category_id ? strtoupper($this->categories[$this->item_category_id] ?? 'STOK') : 'STOK' }} HARIAN {{ $this->isProductionCategory ? '(Kg)' : '' }}</h1>
         <h2 class="text-lg font-bold text-black uppercase mt-1">UD. CITRA MAJU BERSAMA</h2>
         <div class="mt-4 text-right text-black font-medium">
             BULAN : {{ \Carbon\Carbon::create()->month((int)$month)->translatedFormat('F') }} {{ $year }}

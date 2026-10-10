@@ -82,7 +82,7 @@
                 <h1 class="text-xl font-bold uppercase tracking-widest italic text-center flex-1">
                     SIRKULASI
                     {{ $this->item_category_id ? strtoupper($this->categories[$this->item_category_id] ?? 'STOK') : 'STOK' }}
-                    HARIAN
+                    HARIAN {{ $this->isProductionCategory ? '(Kg)' : '' }}
                 </h1>
                 <div class="text-sm font-semibold">
                     Bulan : {{ \Carbon\Carbon::create()->month((int) $month)->translatedFormat('F') }}

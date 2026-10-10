@@ -1,4 +1,4 @@
-<div class="overflow-x-auto">
+<div class="relative overflow-x-auto shadow-sm sm:rounded-2xl border border-zinc-200 dark:border-white/10">
     <table class="w-full text-sm text-left whitespace-nowrap">
         <thead class="text-xs text-zinc-700 uppercase bg-zinc-50 dark:bg-zinc-800/50 dark:text-zinc-300 border-b border-zinc-200 dark:border-white/10">
             <tr>
@@ -17,9 +17,6 @@
                 <th colspan="{{ $this->rawItems->count() + $this->resultItems->count() }}" class="px-4 py-2 font-bold text-center text-teal-700 dark:text-teal-400 border-r border-zinc-200 dark:border-white/10">
                     STOK GUDANG
                 </th>
-                <th rowspan="2" class="px-4 py-3 font-semibold align-middle text-center">
-                    KET
-                </th>
             </tr>
             <tr class="border-t border-zinc-200 dark:border-white/10">
                 <!-- PEMBELIAN (Raw Items) -->
@@ -34,12 +31,13 @@
                         {{ $item->name }}
                     </th>
                 @endforeach
-                <!-- PENJUALAN (All Items) -->
+                <!-- PENJUALAN (Raw Items) -->
                 @foreach($this->rawItems as $item)
                     <th class="px-2 py-2 font-medium border-r border-zinc-200 dark:border-white/10 text-center min-w-[50px] text-[10px]">
                         {{ $item->name }}
                     </th>
                 @endforeach
+                <!-- PENJUALAN (Result Items) -->
                 @foreach($this->resultItems as $item)
                     <th class="px-2 py-2 font-medium border-r border-zinc-200 dark:border-white/10 text-center min-w-[50px] text-[10px]">
                         {{ $item->name }}
@@ -51,12 +49,13 @@
                         {{ $item->name }}
                     </th>
                 @endforeach
-                <!-- STOK (All Items) -->
+                <!-- STOK (Raw Items) -->
                 @foreach($this->rawItems as $item)
                     <th class="px-2 py-2 font-medium border-r border-zinc-200 dark:border-white/10 text-center min-w-[50px] text-[10px]">
                         {{ $item->name }}
                     </th>
                 @endforeach
+                <!-- STOK (Result Items) -->
                 @foreach($this->resultItems as $item)
                     <th class="px-2 py-2 font-medium border-r border-zinc-200 dark:border-white/10 text-center min-w-[50px] text-[10px]">
                         {{ $item->name }}
@@ -70,28 +69,35 @@
                 <td class="px-3 py-2 font-bold text-zinc-900 dark:text-white border-r border-zinc-200 dark:border-white/10 text-center sticky left-0 z-20 bg-zinc-100 dark:bg-zinc-800">
                     STOC
                 </td>
-                <!-- Empty for Pembelian -->
-                @foreach($this->rawItems as $item) <td class="px-2 py-2 border-r border-zinc-200 dark:border-white/10"></td> @endforeach
-                <!-- Empty for Hasil -->
-                @foreach($this->resultItems as $item) <td class="px-2 py-2 border-r border-zinc-200 dark:border-white/10"></td> @endforeach
-                <!-- Empty for Penjualan -->
-                @foreach($this->rawItems as $item) <td class="px-2 py-2 border-r border-zinc-200 dark:border-white/10"></td> @endforeach
-                @foreach($this->resultItems as $item) <td class="px-2 py-2 border-r border-zinc-200 dark:border-white/10"></td> @endforeach
-                <!-- Empty for Pemakaian -->
-                @foreach($this->rawItems as $item) <td class="px-2 py-2 border-r border-zinc-200 dark:border-white/10"></td> @endforeach
+                
+                <!-- MASUK (IN): Initial Stock -->
+                @foreach($this->rawItems as $item)
+                    <td class="px-2 py-2 text-center text-xs font-bold text-emerald-700 dark:text-emerald-400 border-r border-zinc-200 dark:border-white/10 bg-emerald-50/30 dark:bg-emerald-900/10">
+                        {{ formatQuantity($this->circulationData['initial'][$item->id] ?? 0) }}
+                    </td>
+                @endforeach
+                @foreach($this->resultItems as $item)
+                    <td class="px-2 py-2 text-center text-xs font-bold text-emerald-700 dark:text-emerald-400 border-r border-zinc-200 dark:border-white/10 bg-emerald-50/30 dark:bg-emerald-900/10">
+                        {{ formatQuantity($this->circulationData['initial'][$item->id] ?? 0) }}
+                    </td>
+                @endforeach
+
+                <!-- PENJUALAN & PEMAKAIAN: Empty -->
+                @for ($i = 0; $i < ($this->rawItems->count() * 2 + $this->resultItems->count()); $i++)
+                    <td class="px-2 py-2 border-r border-zinc-200 dark:border-white/10"></td>
+                @endfor
                 
                 <!-- BAL: Initial Stock -->
                 @foreach($this->rawItems as $item)
                     <td class="px-2 py-2 text-center text-xs font-bold text-teal-700 dark:text-teal-400 border-r border-zinc-200 dark:border-white/10 bg-teal-50/30 dark:bg-teal-900/10">
-                        {{ number_format($this->circulationData['initial'][$item->id]) }}
+                        {{ formatQuantity($this->circulationData['initial'][$item->id] ?? 0) }}
                     </td>
                 @endforeach
                 @foreach($this->resultItems as $item)
                     <td class="px-2 py-2 text-center text-xs font-bold text-teal-700 dark:text-teal-400 border-r border-zinc-200 dark:border-white/10 bg-teal-50/30 dark:bg-teal-900/10">
-                        {{ number_format($this->circulationData['initial'][$item->id]) }}
+                        {{ formatQuantity($this->circulationData['initial'][$item->id] ?? 0) }}
                     </td>
                 @endforeach
-                <td class="px-2 py-2 border-l border-zinc-200 dark:border-white/10"></td>
             </tr>
 
             <!-- DAILY ROWS -->
@@ -104,8 +110,8 @@
             @endphp
 
             @foreach($this->circulationData['daily'] as $day => $data)
-                <tr class="hover:bg-zinc-50/80 dark:hover:bg-white/[0.04]">
-                    <td class="px-3 py-2 font-medium text-zinc-900 dark:text-white border-r border-zinc-200 dark:border-white/10 text-center sticky left-0 z-20 bg-white dark:bg-zinc-900">
+                <tr class="hover:bg-zinc-50/50 dark:hover:bg-white/[0.02]">
+                    <td class="px-3 py-1 font-medium text-zinc-900 dark:text-white border-r border-zinc-200 dark:border-white/10 text-center sticky left-0 z-20 bg-white dark:bg-zinc-900 group-hover:bg-zinc-50 dark:group-hover:bg-zinc-800">
                         {{ $day }}
                     </td>
                     
@@ -116,7 +122,7 @@
                             $totPembelian[$item->id] = ($totPembelian[$item->id] ?? 0) + $val;
                         @endphp
                         <td class="px-1 py-1 text-xs text-center border-r border-zinc-200 dark:border-white/10 {{ $val > 0 ? 'text-red-700 dark:text-red-400 font-medium' : 'text-zinc-300 dark:text-zinc-700' }}">
-                            {{ $val > 0 ? number_format($val) : '' }}
+                            {{ $val > 0 ? formatQuantity($val) : '' }}
                         </td>
                     @endforeach
 
@@ -127,7 +133,7 @@
                             $totHasil[$item->id] = ($totHasil[$item->id] ?? 0) + $val;
                         @endphp
                         <td class="px-1 py-1 text-xs text-center border-r border-zinc-200 dark:border-white/10 {{ $val > 0 ? 'text-emerald-700 dark:text-emerald-400 font-medium' : 'text-zinc-300 dark:text-zinc-700' }}">
-                            {{ $val > 0 ? number_format($val) : '' }}
+                            {{ $val > 0 ? formatQuantity($val) : '' }}
                         </td>
                     @endforeach
 
@@ -138,7 +144,7 @@
                             $totPenjualanRaw[$item->id] = ($totPenjualanRaw[$item->id] ?? 0) + $val;
                         @endphp
                         <td class="px-1 py-1 text-xs text-center border-r border-zinc-200 dark:border-white/10 {{ $val > 0 ? 'text-blue-700 dark:text-blue-400 font-medium' : 'text-zinc-300 dark:text-zinc-700' }}">
-                            {{ $val > 0 ? number_format($val) : '' }}
+                            {{ $val > 0 ? formatQuantity($val) : '' }}
                         </td>
                     @endforeach
                     <!-- PENJUALAN (Result Items) -->
@@ -148,10 +154,10 @@
                             $totPenjualanRes[$item->id] = ($totPenjualanRes[$item->id] ?? 0) + $val;
                         @endphp
                         <td class="px-1 py-1 text-xs text-center border-r border-zinc-200 dark:border-white/10 {{ $val > 0 ? 'text-blue-700 dark:text-blue-400 font-medium' : 'text-zinc-300 dark:text-zinc-700' }}">
-                            {{ $val > 0 ? number_format($val) : '' }}
+                            {{ $val > 0 ? formatQuantity($val) : '' }}
                         </td>
                     @endforeach
-
+                    
                     <!-- PEMAKAIAN (Raw Items) -->
                     @foreach($this->rawItems as $item)
                         @php 
@@ -159,24 +165,22 @@
                             $totPemakaian[$item->id] = ($totPemakaian[$item->id] ?? 0) + $val;
                         @endphp
                         <td class="px-1 py-1 text-xs text-center border-r border-zinc-200 dark:border-white/10 {{ $val > 0 ? 'text-purple-700 dark:text-purple-400 font-medium' : 'text-zinc-300 dark:text-zinc-700' }}">
-                            {{ $val > 0 ? number_format($val) : '' }}
+                            {{ $val > 0 ? formatQuantity($val) : '' }}
                         </td>
                     @endforeach
 
-                    <!-- BAL (Raw Items) -->
+                    <!-- STOK BAL (Raw Items) -->
                     @foreach($this->rawItems as $item)
-                        <td class="px-1 py-1 text-xs text-center border-r border-zinc-200 dark:border-white/10 text-teal-800 dark:text-teal-300 font-medium bg-teal-50/10 dark:bg-teal-900/5">
-                            {{ number_format($data['bal'][$item->id]) }}
+                        <td class="px-1 py-1 text-xs text-center font-bold text-teal-700 dark:text-teal-400 border-r border-zinc-200 dark:border-white/10 bg-teal-50/10 dark:bg-teal-900/10">
+                            {{ formatQuantity($data['bal'][$item->id] ?? 0) }}
                         </td>
                     @endforeach
-                    <!-- BAL (Result Items) -->
+                    <!-- STOK BAL (Result Items) -->
                     @foreach($this->resultItems as $item)
-                        <td class="px-1 py-1 text-xs text-center border-r border-zinc-200 dark:border-white/10 text-teal-800 dark:text-teal-300 font-medium bg-teal-50/10 dark:bg-teal-900/5">
-                            {{ number_format($data['bal'][$item->id]) }}
+                        <td class="px-1 py-1 text-xs text-center font-bold text-teal-700 dark:text-teal-400 border-r border-zinc-200 dark:border-white/10 bg-teal-50/10 dark:bg-teal-900/10">
+                            {{ formatQuantity($data['bal'][$item->id] ?? 0) }}
                         </td>
                     @endforeach
-                    
-                    <td class="px-2 py-1 border-l border-zinc-200 dark:border-white/10"></td>
                 </tr>
             @endforeach
         </tbody>
@@ -189,51 +193,57 @@
                 <!-- Total Pembelian -->
                 @foreach($this->rawItems as $item)
                     <td class="px-1 py-2 text-xs text-center font-bold text-red-700 dark:text-red-400 border-r border-zinc-200 dark:border-white/10 bg-red-50/50 dark:bg-red-900/10">
-                        {{ ($totPembelian[$item->id] ?? 0) > 0 ? number_format($totPembelian[$item->id]) : '-' }}
+                        {{ ($totPembelian[$item->id] ?? 0) > 0 ? formatQuantity($totPembelian[$item->id]) : '-' }}
                     </td>
                 @endforeach
                 
                 <!-- Total Hasil -->
                 @foreach($this->resultItems as $item)
                     <td class="px-1 py-2 text-xs text-center font-bold text-emerald-700 dark:text-emerald-400 border-r border-zinc-200 dark:border-white/10 bg-emerald-50/50 dark:bg-emerald-900/10">
-                        {{ ($totHasil[$item->id] ?? 0) > 0 ? number_format($totHasil[$item->id]) : '-' }}
+                        {{ ($totHasil[$item->id] ?? 0) > 0 ? formatQuantity($totHasil[$item->id]) : '-' }}
                     </td>
                 @endforeach
                 
                 <!-- Total Penjualan -->
                 @foreach($this->rawItems as $item)
                     <td class="px-1 py-2 text-xs text-center font-bold text-blue-700 dark:text-blue-400 border-r border-zinc-200 dark:border-white/10 bg-blue-50/50 dark:bg-blue-900/10">
-                        {{ ($totPenjualanRaw[$item->id] ?? 0) > 0 ? number_format($totPenjualanRaw[$item->id]) : '-' }}
+                        {{ ($totPenjualanRaw[$item->id] ?? 0) > 0 ? formatQuantity($totPenjualanRaw[$item->id]) : '-' }}
                     </td>
                 @endforeach
                 @foreach($this->resultItems as $item)
                     <td class="px-1 py-2 text-xs text-center font-bold text-blue-700 dark:text-blue-400 border-r border-zinc-200 dark:border-white/10 bg-blue-50/50 dark:bg-blue-900/10">
-                        {{ ($totPenjualanRes[$item->id] ?? 0) > 0 ? number_format($totPenjualanRes[$item->id]) : '-' }}
+                        {{ ($totPenjualanRes[$item->id] ?? 0) > 0 ? formatQuantity($totPenjualanRes[$item->id]) : '-' }}
                     </td>
                 @endforeach
-                
+
                 <!-- Total Pemakaian -->
                 @foreach($this->rawItems as $item)
                     <td class="px-1 py-2 text-xs text-center font-bold text-purple-700 dark:text-purple-400 border-r border-zinc-200 dark:border-white/10 bg-purple-50/50 dark:bg-purple-900/10">
-                        {{ ($totPemakaian[$item->id] ?? 0) > 0 ? number_format($totPemakaian[$item->id]) : '-' }}
+                        {{ ($totPemakaian[$item->id] ?? 0) > 0 ? formatQuantity($totPemakaian[$item->id]) : '-' }}
                     </td>
                 @endforeach
-                
-                <!-- Final BAL -->
+
+                <!-- Final Bal -->
                 @foreach($this->rawItems as $item)
-                    @php $f = $this->circulationData['daily'][Carbon\Carbon::create($year, $month, 1)->daysInMonth]['bal'][$item->id]; @endphp
-                    <td class="px-1 py-2 text-xs text-center font-bold text-teal-700 dark:text-teal-400 border-r border-zinc-200 dark:border-white/10 bg-teal-50/30 dark:bg-teal-900/10">
-                        {{ number_format($f) }}
+                    @php 
+                        $daily = $this->circulationData['daily'] ?? [];
+                        $lastDay = end($daily);
+                        $f = $lastDay['bal'][$item->id] ?? 0; 
+                    @endphp
+                    <td class="px-1 py-2 text-xs text-center font-bold text-teal-700 dark:text-teal-400 border-r border-zinc-200 dark:border-white/10 bg-teal-50/30 dark:bg-teal-900/20">
+                        {{ formatQuantity($f) }}
                     </td>
                 @endforeach
                 @foreach($this->resultItems as $item)
-                    @php $f = $this->circulationData['daily'][Carbon\Carbon::create($year, $month, 1)->daysInMonth]['bal'][$item->id]; @endphp
-                    <td class="px-1 py-2 text-xs text-center font-bold text-teal-700 dark:text-teal-400 border-r border-zinc-200 dark:border-white/10 bg-teal-50/30 dark:bg-teal-900/10">
-                        {{ number_format($f) }}
+                    @php 
+                        $daily = $this->circulationData['daily'] ?? [];
+                        $lastDay = end($daily);
+                        $f = $lastDay['bal'][$item->id] ?? 0; 
+                    @endphp
+                    <td class="px-1 py-2 text-xs text-center font-bold text-teal-700 dark:text-teal-400 border-r border-zinc-200 dark:border-white/10 bg-teal-50/30 dark:bg-teal-900/20">
+                        {{ formatQuantity($f) }}
                     </td>
                 @endforeach
-                
-                <td class="px-4 py-3"></td>
             </tr>
         </tfoot>
     </table>

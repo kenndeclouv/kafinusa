@@ -1,12 +1,12 @@
 <div>
     <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-zinc-900 dark:text-white">Stock Opname</h1>
+            <h1 class="text-2xl font-bold text-zinc-900 dark:text-white">Stok Awal</h1>
             <p class="text-sm text-zinc-500 dark:text-zinc-400">Kalibrasi fisik gudang untuk Saldo Awal laporan sirkulasi bulanan.</p>
         </div>
         <div class="flex gap-2">
             <flux:button wire:click="save" variant="primary" icon="check">
-                Simpan Opname
+                Simpan Stok Awal
             </flux:button>
         </div>
     </div>
@@ -30,7 +30,7 @@
                     <tr>
                         <th class="px-4 py-3 font-semibold">Nama Barang</th>
                         <th class="px-4 py-3 font-semibold text-center w-32">Stok Sistem</th>
-                        <th class="px-4 py-3 font-semibold text-center w-48">Stok Fisik (Opname)</th>
+                        <th class="px-4 py-3 font-semibold text-center w-48">Stok Awal (Fisik)</th>
                         <th class="px-4 py-3 font-semibold text-center w-32">Selisih</th>
                         <th class="px-4 py-3 font-semibold">Keterangan</th>
                     </tr>
