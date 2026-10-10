@@ -221,8 +221,10 @@ class PrintStockCirculation extends Component
                 // Update running balance
                 $runningBalances[$item->id] += ($in - $out);
                 
-                $dailyIn[$item->id] = $in;
-                $dailyOut[$item->id] = $out;
+                if (!$this->isProductionCategory) {
+                    $dailyIn[$item->id] = $in;
+                    $dailyOut[$item->id] = $out;
+                }
                 $dailyBal[$item->id] = $runningBalances[$item->id];
             }
 
