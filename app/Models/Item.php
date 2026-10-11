@@ -18,10 +18,12 @@ class Item extends Model
         'weight',
         'photo',
         'prices',
+        'is_saleable',
     ];
 
     protected $casts = [
         'prices' => 'array',
+        'is_saleable' => 'boolean',
     ];
 
     public function category()
@@ -32,6 +34,11 @@ class Item extends Model
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function scopeSaleable($query)
+    {
+        return $query->where('is_saleable', true);
     }
 
     public function scopeSearch($query, $term)

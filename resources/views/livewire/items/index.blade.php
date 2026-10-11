@@ -27,6 +27,7 @@
                     <flux:table.column>Kategori</flux:table.column>
                     <flux:table.column sortable :sorted="$sortBy === 'weight'" :direction="$sortDirection"
                         wire:click="sort('weight')">Berat</flux:table.column>
+                    <flux:table.column>Dijual</flux:table.column>
                     @canany(['items:update', 'items:delete'])
                         <flux:table.column>Aksi</flux:table.column>
                     @endcanany
@@ -41,6 +42,13 @@
                                 </flux:badge>
                             </flux:table.cell>
                             <flux:table.cell>{{ formatWeight($item->weight) }}</flux:table.cell>
+                            <flux:table.cell>
+                                @if($item->is_saleable)
+                                    <flux:badge color="green" size="sm" icon="check-circle">Dijual</flux:badge>
+                                @else
+                                    <flux:badge color="zinc" size="sm" icon="x-circle">Tidak Dijual</flux:badge>
+                                @endif
+                            </flux:table.cell>
 
                             <flux:table.cell>
                                 <flux:dropdown>
@@ -250,6 +258,16 @@
                 </div>
                 <x-error-ios name="photo" />
 
+                {{-- Toggle is_saleable --}}
+                <div class="mt-4 bg-white dark:bg-white/5 rounded-3xl border border-zinc-200 dark:border-white/10 shadow-xs overflow-hidden">
+                    <label class="flex flex-row items-center px-4 py-3 cursor-pointer select-none">
+                        <div class="flex-1">
+                            <div class="text-[15px] font-medium text-zinc-900 dark:text-white">Dijual ke Pelanggan</div>
+                            <div class="text-[13px] text-zinc-500 dark:text-zinc-400 mt-0.5">Jika dimatikan, barang ini tidak muncul di form order pelanggan</div>
+                        </div>
+                        <x-switch wire:model="is_saleable" />
+                    </label>
+                </div>
             </div>
             <!-- Harga -->
             <div>

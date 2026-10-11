@@ -30,6 +30,8 @@ class Index extends Component
     
     public $prices = [];
 
+    public $is_saleable = true;
+
     public $showItem = null;
 
     public function rules()
@@ -43,6 +45,7 @@ class Index extends Component
             'prices' => 'array',
             'prices.*.name' => 'required|string|max:50',
             'prices.*.value' => 'required|integer|min:0',
+            'is_saleable' => 'boolean',
         ];
     }
 
@@ -64,6 +67,7 @@ class Index extends Component
     public function openCreateModal()
     {
         $this->reset(['itemId', 'item_category_id', 'code', 'name', 'weight', 'photo', 'existingPhoto']);
+        $this->is_saleable = true;
         $this->prices = [
             ['name' => 'normal', 'value' => ''],
         ];
@@ -80,6 +84,7 @@ class Index extends Component
         $this->code = $item->code;
         $this->name = $item->name;
         $this->weight = $item->weight;
+        $this->is_saleable = (bool) $item->is_saleable;
         $this->reset('photo');
         $this->existingPhoto = $item->photo;
         $this->prices = [];
@@ -110,6 +115,7 @@ class Index extends Component
             'name' => $this->name,
             'weight' => $this->weight,
             'prices' => $pricesJson,
+            'is_saleable' => (bool) $this->is_saleable,
         ];
 
         if ($this->photo) {

@@ -57,6 +57,18 @@
                         {{ __('Produksi Harian') }}
                     </flux:sidebar.item>
                 @endcan
+                @can('petis_productions:read')
+                    <flux:sidebar.group expandable :expanded="request()->routeIs('petis.*')" icon="fire" :heading="__('Produksi Petis')">
+                        <flux:sidebar.item icon="cube" :href="route('petis.raw-materials.index')"
+                            :current="request()->routeIs('petis.raw-materials.*')" wire:navigate.hover>
+                            {{ __('Bahan Baku') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="fire" :href="route('petis.cookings.index')"
+                            :current="request()->routeIs('petis.cookings.*')" wire:navigate.hover>
+                            {{ __('Proses Masakan') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+                @endcan
             @endcanany
 
             <div class="px-3 mt-2 mb-1 text-xs font-medium text-zinc-500 dark:text-zinc-400 in-data-flux-sidebar-collapsed-desktop:hidden"
@@ -88,7 +100,7 @@
                         </flux:sidebar.item>
                         <flux:sidebar.item icon="user-group" :href="route('teams.index')"
                             :current="request()->routeIs('teams.*')" wire:navigate.hover>
-                            {{ __('Master Tim') }}
+                            {{ __('Master Tim & Koki') }}
                         </flux:sidebar.item>
                     @endcan
                     @can('employees:read')
@@ -145,7 +157,7 @@
                 </flux:sidebar.group>
             @endcanany
 
-            @canany(['reports:daily-recap', 'reports:stock-circulation', 'reports:daily-production'])
+            @canany(['reports:daily-recap', 'reports:stock-circulation', 'reports:daily-production', 'petis_productions:read'])
                 <flux:sidebar.group expandable :expanded="request()->routeIs('reports.*')" icon="document-chart-bar"
                     :heading="__('Laporan')">
                     @can('reports:daily-recap')
@@ -164,6 +176,12 @@
                         <flux:sidebar.item icon="clipboard-document-check" :href="route('reports.daily-production')"
                             :current="request()->routeIs('reports.daily-production')" wire:navigate.hover>
                             {{ __('Daftar Produksi') }}
+                        </flux:sidebar.item>
+                    @endcan
+                    @can('petis_productions:read')
+                        <flux:sidebar.item icon="fire" :href="route('reports.petis-recap')"
+                            :current="request()->routeIs('reports.petis-recap')" wire:navigate.hover>
+                            {{ __('Rekap Petis') }}
                         </flux:sidebar.item>
                     @endcan
                 </flux:sidebar.group>

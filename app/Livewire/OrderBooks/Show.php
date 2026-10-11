@@ -71,7 +71,7 @@ class Show extends Component
     #[Computed]
     public function items()
     {
-        return Item::with('category')->get();
+        return Item::with('category')->saleable()->get();
     }
 
     #[Computed]

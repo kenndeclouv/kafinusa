@@ -61,6 +61,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{warehouse}/print/{date}/{category}', \App\Livewire\Productions\PrintProduction::class)->middleware('can:productions:read')->name('print');
     });
 
+    // Produksi Petis
+    Route::prefix('petis')->name('petis.')->group(function () {
+        Route::get('raw-materials', \App\Livewire\Petis\RawMaterials::class)
+            ->middleware('can:petis_productions:read')
+            ->name('raw-materials.index');
+        Route::get('raw-materials/print', \App\Livewire\Petis\PrintRawMaterials::class)
+            ->middleware('can:petis_productions:read')
+            ->name('raw-materials.print');
+
+        Route::get('cookings', \App\Livewire\Petis\Cookings::class)
+            ->middleware('can:petis_productions:read')
+            ->name('cookings.index');
+        Route::get('cookings/print', \App\Livewire\Petis\PrintCookings::class)
+            ->middleware('can:petis_productions:read')
+            ->name('cookings.print');
+    });
+
     // Employees & Sales Schedules
     Route::prefix('employees')->name('employees.')->group(function () {
         Route::get('/', \App\Livewire\Employees\Index::class)->middleware('can:employees:read')->name('index');
@@ -122,6 +139,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('print-stock-circulation', \App\Livewire\Reports\PrintStockCirculation::class)->middleware('can:reports:stock-circulation')->name('print-stock-circulation');
         Route::get('daily-production', \App\Livewire\Reports\DailyProduction::class)->middleware('can:reports:daily-production')->name('daily-production');
         Route::get('print-daily-production', \App\Livewire\Reports\PrintDailyProduction::class)->middleware('can:reports:daily-production')->name('print-daily-production');
+        Route::get('petis-recap', \App\Livewire\Reports\PetisRecap::class)->middleware('can:reports:stock-circulation')->name('petis-recap');
+        Route::get('print-petis-recap', \App\Livewire\Petis\PrintCirculation::class)->middleware('can:reports:stock-circulation')->name('print-petis-recap');
     });
 
     // Logs & System Monitor
