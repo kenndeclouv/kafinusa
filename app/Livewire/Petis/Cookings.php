@@ -21,6 +21,8 @@ class Cookings extends Component
 {
     public $warehouse_id;
     public $month; // 'Y-m', misal '2026-10'
+    public $viewMode = 'daily'; // 'daily' | 'monthly'
+    public $selectedDate; // 'Y-m-d', misal '2026-10-13'
 
     // Grid data untuk inline editing: [day => ['sessions' => [cName => val], 'result_kaleng' => x, ...]]
     public $grid = [];
@@ -35,7 +37,9 @@ class Cookings extends Component
             ?? Warehouse::orderBy('id')->first();
         $this->warehouse_id = $petisWarehouse?->id;
 
-        $this->month = Carbon::today()->format('Y-m');
+        $today = Carbon::today();
+        $this->month = $today->format('Y-m');
+        $this->selectedDate = $today->format('Y-m-d');
         $this->loadGrid();
     }
 
@@ -43,6 +47,24 @@ class Cookings extends Component
     {
         if ($property === 'month') {
             $this->loadGrid();
+            if ($this->selectedDate) {
+                $parsed = Carbon::parse($this->selectedDate);
+                if ($parsed->format('Y-m') !== $this->month) {
+                    $this->selectedDate = $this->month . '-01';
+                }
+            }
+            return;
+        }
+
+        if ($property === 'selectedDate') {
+            if ($this->selectedDate) {
+                $parsed = Carbon::parse($this->selectedDate);
+                $newMonth = $parsed->format('Y-m');
+                if ($newMonth !== $this->month) {
+                    $this->month = $newMonth;
+                    $this->loadGrid();
+                }
+            }
             return;
         }
 
@@ -53,6 +75,177 @@ class Cookings extends Component
                 $this->saveDay($day);
             }
         }
+    }
+
+    public function prevDay()
+    {
+        $prev = Carbon::parse($this->selectedDate)->subDay();
+        $newMonth = $prev->format('Y-m');
+        $this->selectedDate = $prev->format('Y-m-d');
+        if ($newMonth !== $this->month) {
+            $this->month = $newMonth;
+            $this->loadGrid();
+        }
+    }
+
+    public function nextDay()
+    {
+        $next = Carbon::parse($this->selectedDate)->addDay();
+        $newMonth = $next->format('Y-m');
+        $this->selectedDate = $next->format('Y-m-d');
+        if ($newMonth !== $this->month) {
+            $this->month = $newMonth;
+            $this->loadGrid();
+        }
+    }
+
+    public function setToday()
+    {
+        $today = Carbon::today();
+        $this->selectedDate = $today->format('Y-m-d');
+        if ($today->format('Y-m') !== $this->month) {
+            $this->month = $today->format('Y-m');
+            $this->loadGrid();
+        }
+    }
+
+    public function selectDay(int $day)
+    {
+        $date = Carbon::parse($this->month . '-01')->day($day)->format('Y-m-d');
+        $this->selectedDate = $date;
+        $this->viewMode = 'daily';
+    }
+
+    public function adjustCookerSession(string $cookerName, float $delta)
+    {
+        $day = $this->selectedDay;
+        if (!isset($this->grid[$day])) return;
+
+        $current = (float) ($this->grid[$day]['sessions'][$cookerName] ?? 0);
+        $new = max(0, $current + $delta);
+        $this->grid[$day]['sessions'][$cookerName] = $new > 0 ? (string) $new : '';
+        $this->saveDay($day);
+    }
+
+    public function adjustResult(string $field, int $delta)
+    {
+        $day = $this->selectedDay;
+        if (!isset($this->grid[$day])) return;
+
+        $current = (int) ($this->grid[$day][$field] ?? 0);
+        $new = max(0, $current + $delta);
+        $this->grid[$day][$field] = $new > 0 ? (string) $new : '';
+        $this->saveDay($day);
+    }
+
+    public function copyYesterdayCookers()
+    {
+        $day = $this->selectedDay;
+        $yesterday = $day - 1;
+        if ($yesterday < 1 || !isset($this->grid[$yesterday])) {
+            Flux::toast(heading: 'Tidak ada data', text: 'Tidak ada data koki kemarin untuk disalin.', variant: 'warning');
+            return;
+        }
+
+        $yesterdaySessions = $this->grid[$yesterday]['sessions'] ?? [];
+        $hasYesterdayData = false;
+        foreach ($yesterdaySessions as $cName => $val) {
+            $this->grid[$day]['sessions'][$cName] = $val;
+            if ((float) $val > 0) $hasYesterdayData = true;
+        }
+
+        if (!$hasYesterdayData) {
+            Flux::toast(heading: 'Koki Kemarin Kosong', text: 'Hari kemarin tidak memiliki data sesi koki.', variant: 'warning');
+            return;
+        }
+
+        $this->saveDay($day);
+        Flux::toast(heading: 'Koki Disalin', text: "Data sesi juru masak tanggal {$yesterday} berhasil disalin ke hari ini.", variant: 'success');
+    }
+
+    #[Computed]
+    public function selectedDay(): int
+    {
+        return (int) Carbon::parse($this->selectedDate)->format('j');
+    }
+
+    #[Computed]
+    public function selectedDateFormatted(): string
+    {
+        return Carbon::parse($this->selectedDate)->locale('id')->translatedFormat('l, d F Y');
+    }
+
+    #[Computed]
+    public function currentWarehouseStocks(): array
+    {
+        $kalengStock = 0;
+        $refillStock = 0;
+
+        if ($this->warehouse_id && $this->itemKaleng) {
+            $kalengStock = WarehouseStock::where('warehouse_id', $this->warehouse_id)
+                ->where('item_id', $this->itemKaleng->id)
+                ->value('current_stock') ?? 0;
+        }
+
+        if ($this->warehouse_id && $this->itemRefill) {
+            $refillStock = WarehouseStock::where('warehouse_id', $this->warehouse_id)
+                ->where('item_id', $this->itemRefill->id)
+                ->value('current_stock') ?? 0;
+        }
+
+        return [
+            'kaleng' => (float) $kalengStock,
+            'refill' => (float) $refillStock,
+        ];
+    }
+
+    #[Computed]
+    public function dailyMetrics(): array
+    {
+        $day = $this->selectedDay;
+        $row = $this->grid[$day] ?? null;
+
+        if (!$row) {
+            return [
+                'total_sessions' => 0,
+                'result_kaleng' => 0,
+                'result_refill' => 0,
+                'result_sisa_kg' => 0,
+                'kg_kaleng' => 0,
+                'kg_refill' => 0,
+                'total_kg' => 0,
+                'avg_kg_per_session' => 0,
+                'opname_kaleng' => null,
+                'opname_refill' => null,
+            ];
+        }
+
+        $totalSessions = 0;
+        foreach ($row['sessions'] as $sess) {
+            $totalSessions += (float) ($sess ?: 0);
+        }
+
+        $kaleng = (int) ($row['result_kaleng'] ?: 0);
+        $refill = (int) ($row['result_refill'] ?: 0);
+        $sisaKg = (float) ($row['result_sisa_kg'] ?: 0);
+
+        $kgKaleng = $kaleng * PetisProduction::WEIGHT_KALENG_KG; // 9.3
+        $kgRefill = $refill * PetisProduction::WEIGHT_REFILL_KG; // 5.0
+        $totalKg = $kgKaleng + $kgRefill + $sisaKg;
+        $avgKg = $totalSessions > 0 ? round($totalKg / $totalSessions, 2) : 0;
+
+        return [
+            'total_sessions' => $totalSessions,
+            'result_kaleng' => $kaleng,
+            'result_refill' => $refill,
+            'result_sisa_kg' => $sisaKg,
+            'kg_kaleng' => $kgKaleng,
+            'kg_refill' => $kgRefill,
+            'total_kg' => $totalKg,
+            'avg_kg_per_session' => $avgKg,
+            'opname_kaleng' => $row['opname_kaleng'] !== '' ? (float) $row['opname_kaleng'] : null,
+            'opname_refill' => $row['opname_refill'] !== '' ? (float) $row['opname_refill'] : null,
+        ];
     }
 
     #[Computed]
@@ -409,6 +602,17 @@ class Cookings extends Component
 
     public function render()
     {
-        return view('livewire.petis.cookings');
+        return view('livewire.petis.cookings', [
+            'warehouse_id' => $this->warehouse_id,
+            'month' => $this->month,
+            'viewMode' => $this->viewMode,
+            'selectedDate' => $this->selectedDate,
+            'grid' => $this->grid,
+            'cookers' => $this->cookers,
+            'selectedDay' => $this->selectedDay,
+            'selectedDateFormatted' => $this->selectedDateFormatted,
+            'metrics' => $this->dailyMetrics,
+            'whStocks' => $this->currentWarehouseStocks,
+        ]);
     }
 }
