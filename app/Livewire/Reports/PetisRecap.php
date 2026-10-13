@@ -37,7 +37,7 @@ class PetisRecap extends Component
             $this->warehouse_id = $user->warehouse_id;
         } else {
             if (!$this->warehouse_id) {
-                $this->warehouse_id = Warehouse::first()?->id;
+                $this->warehouse_id = Warehouse::where('name', 'Gudang Petis')->first()?->id ?? Warehouse::first()?->id;
             }
         }
     }

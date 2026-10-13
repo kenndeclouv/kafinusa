@@ -43,8 +43,8 @@
         </div>
 
         <div class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-            <flux:icon name="building-office-2" class="w-4 h-4 text-zinc-400" />
-            <span>Lokasi Dapur: <strong class="text-zinc-800 dark:text-zinc-200">Dapur Sentral (Gudang Utama)</strong></span>
+            <flux:icon name="building-office-2" class="w-4 h-4 text-amber-500" />
+            <span>Lokasi: <strong class="text-zinc-800 dark:text-zinc-200">Gudang Petis (Independen)</strong></span>
         </div>
     </div>
 

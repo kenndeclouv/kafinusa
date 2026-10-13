@@ -8,6 +8,8 @@ use App\Models\PetisOpname;
 use App\Models\PetisProduction;
 use App\Models\PetisProductionCooker;
 use App\Models\Warehouse;
+use App\Models\WarehouseStock;
+use App\Models\StockMutation;
 use Carbon\Carbon;
 use Flux\Flux;
 use Illuminate\Support\Facades\DB;
@@ -27,9 +29,11 @@ class Cookings extends Component
     {
         abort_unless(auth()->user()->can('petis_productions:read'), 403);
 
-        // Dapur masak petis bersifat sentral (1 dapur utama)
-        $defaultWarehouse = Warehouse::where('name', 'like', '%Utama%')->first() ?? Warehouse::orderBy('id')->first();
-        $this->warehouse_id = $defaultWarehouse?->id;
+        // Produksi petis bersifat mandiri (Gudang Petis)
+        $petisWarehouse = Warehouse::where('name', 'Gudang Petis')->first()
+            ?? Warehouse::where('name', 'like', '%Petis%')->first()
+            ?? Warehouse::orderBy('id')->first();
+        $this->warehouse_id = $petisWarehouse?->id;
 
         $this->month = Carbon::today()->format('Y-m');
         $this->loadGrid();
@@ -189,6 +193,7 @@ class Cookings extends Component
             if ($kaleng <= 0 && $refill <= 0 && $sisaKg <= 0 && $totalSessions <= 0) {
                 $prod = PetisProduction::where('warehouse_id', $this->warehouse_id)->where('date', $date)->first();
                 if ($prod) {
+                    $this->syncProductionStockMutations($prod, $date, 0, 0);
                     $prod->cookers()->delete();
                     $prod->delete();
                 }
@@ -206,9 +211,13 @@ class Cookings extends Component
                     ]
                 );
 
+                // Sync mutasi masuk barang jadi di Gudang Petis
+                $this->syncProductionStockMutations($prod, $date, $kaleng, $refill);
+
                 foreach ($row['sessions'] as $cName => $sessVal) {
                     $sess = (float) ($sessVal ?: 0);
-                    $cookerObj = PetisCooker::withTrashed()->where('warehouse_id', $this->warehouse_id)->where('name', $cName)->first();
+                    $cookerObj = PetisCooker::withTrashed()->where('warehouse_id', $this->warehouse_id)->where('name', $cName)->first()
+                        ?? PetisCooker::withTrashed()->where('name', $cName)->first();
 
                     if ($sess > 0) {
                         PetisProductionCooker::updateOrCreate(
@@ -244,6 +253,13 @@ class Cookings extends Component
                             'user_id' => auth()->id(),
                         ]
                     );
+
+                    // Sync physical_stock di Gudang Petis
+                    $stockK = WarehouseStock::firstOrCreate(
+                        ['warehouse_id' => $this->warehouse_id, 'item_id' => $this->itemKaleng->id],
+                        ['current_stock' => 0, 'physical_stock' => 0]
+                    );
+                    $stockK->update(['physical_stock' => (float) $valK]);
                 } else {
                     PetisOpname::where([
                         'warehouse_id' => $this->warehouse_id,
@@ -268,6 +284,13 @@ class Cookings extends Component
                             'user_id' => auth()->id(),
                         ]
                     );
+
+                    // Sync physical_stock di Gudang Petis
+                    $stockR = WarehouseStock::firstOrCreate(
+                        ['warehouse_id' => $this->warehouse_id, 'item_id' => $this->itemRefill->id],
+                        ['current_stock' => 0, 'physical_stock' => 0]
+                    );
+                    $stockR->update(['physical_stock' => (float) $valR]);
                 } else {
                     PetisOpname::where([
                         'warehouse_id' => $this->warehouse_id,
@@ -277,6 +300,111 @@ class Cookings extends Component
                 }
             }
         });
+    }
+
+    protected function syncProductionStockMutations($prod, $date, $kaleng, $refill)
+    {
+        // 1. Kaleng (KI)
+        if ($this->itemKaleng) {
+            $itemId = $this->itemKaleng->id;
+            $mutation = StockMutation::where([
+                'warehouse_id' => $this->warehouse_id,
+                'item_id' => $itemId,
+                'reference_type' => PetisProduction::class,
+                'reference_id' => $prod->id,
+                'type' => 'in',
+            ])->first();
+
+            $oldQty = $mutation ? (int) $mutation->quantity : 0;
+            $delta = $kaleng - $oldQty;
+
+            if ($delta != 0) {
+                $stock = WarehouseStock::firstOrCreate(
+                    ['warehouse_id' => $this->warehouse_id, 'item_id' => $itemId],
+                    ['current_stock' => 0, 'physical_stock' => 0]
+                );
+                $stock = WarehouseStock::where('id', $stock->id)->lockForUpdate()->first();
+                $stock->current_stock += $delta;
+                $stock->physical_stock += $delta;
+                $stock->save();
+            }
+
+            if ($kaleng > 0) {
+                if ($mutation) {
+                    $mutation->update([
+                        'quantity' => $kaleng,
+                        'mutation_date' => $date,
+                    ]);
+                } else {
+                    StockMutation::create([
+                        'warehouse_id' => $this->warehouse_id,
+                        'item_id' => $itemId,
+                        'type' => 'in',
+                        'quantity' => $kaleng,
+                        'reference_type' => PetisProduction::class,
+                        'reference_id' => $prod->id,
+                        'user_id' => auth()->id(),
+                        'mutation_date' => $date,
+                        'sender_name' => 'Dapur Petis',
+                        'transaction_category' => 'Hasil Masak',
+                        'notes' => 'Hasil masak petis kaleng (KI)',
+                    ]);
+                }
+            } elseif ($mutation) {
+                $mutation->delete();
+            }
+        }
+
+        // 2. Refill (Rf)
+        if ($this->itemRefill) {
+            $itemId = $this->itemRefill->id;
+            $mutation = StockMutation::where([
+                'warehouse_id' => $this->warehouse_id,
+                'item_id' => $itemId,
+                'reference_type' => PetisProduction::class,
+                'reference_id' => $prod->id,
+                'type' => 'in',
+            ])->first();
+
+            $oldQty = $mutation ? (int) $mutation->quantity : 0;
+            $delta = $refill - $oldQty;
+
+            if ($delta != 0) {
+                $stock = WarehouseStock::firstOrCreate(
+                    ['warehouse_id' => $this->warehouse_id, 'item_id' => $itemId],
+                    ['current_stock' => 0, 'physical_stock' => 0]
+                );
+                $stock = WarehouseStock::where('id', $stock->id)->lockForUpdate()->first();
+                $stock->current_stock += $delta;
+                $stock->physical_stock += $delta;
+                $stock->save();
+            }
+
+            if ($refill > 0) {
+                if ($mutation) {
+                    $mutation->update([
+                        'quantity' => $refill,
+                        'mutation_date' => $date,
+                    ]);
+                } else {
+                    StockMutation::create([
+                        'warehouse_id' => $this->warehouse_id,
+                        'item_id' => $itemId,
+                        'type' => 'in',
+                        'quantity' => $refill,
+                        'reference_type' => PetisProduction::class,
+                        'reference_id' => $prod->id,
+                        'user_id' => auth()->id(),
+                        'mutation_date' => $date,
+                        'sender_name' => 'Dapur Petis',
+                        'transaction_category' => 'Hasil Masak',
+                        'notes' => 'Hasil masak petis refill (Rf)',
+                    ]);
+                }
+            } elseif ($mutation) {
+                $mutation->delete();
+            }
+        }
     }
 
     public function render()

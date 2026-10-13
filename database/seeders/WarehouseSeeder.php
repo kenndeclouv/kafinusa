@@ -16,6 +16,7 @@ class WarehouseSeeder extends Seeder
             ['name' => 'Gudang Utama', 'description' => 'Gudang Utama'],
             ['name' => 'Gudang Saos', 'description' => 'Gudang Saos'],
             ['name' => 'Gudang Njambon', 'description' => 'Gudang Njambon'],
+            ['name' => 'Gudang Petis', 'description' => 'Dapur & Gudang Produksi Petis'],
         ];
 
         foreach ($warehouses as $warehouse) {

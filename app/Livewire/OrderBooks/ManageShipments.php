@@ -11,6 +11,7 @@ use App\Models\ShipmentBatch;
 use App\Models\Item;
 use App\Models\Warehouse;
 use App\Models\StockMutation;
+use App\Models\PetisSale;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
@@ -141,7 +142,7 @@ class ManageShipments extends Component
     #[Computed]
     public function warehouses()
     {
-        return Warehouse::all()->pluck('name', 'id');
+        return Warehouse::where('name', '!=', 'Gudang Petis')->pluck('name', 'id');
     }
 
     #[Computed]
@@ -427,8 +428,21 @@ class ManageShipments extends Component
 
     protected function processShipmentBatch($plan, $batch, $warehouseId, $date)
     {
+        $petisWarehouse = Warehouse::where('name', 'Gudang Petis')->first();
+        $petisWarehouseId = $petisWarehouse?->id;
+
+        $petisKalengItem = Item::where('item_category_id', 5)->where('name', 'KI')->first()
+            ?? Item::where('code', 'like', '%032%')->first();
+        $petisRefillItem = Item::where('item_category_id', 5)->where('name', 'Rf')->first()
+            ?? Item::where('code', 'like', '%033%')->first();
+
         $itemsInBatch = $plan->items->where('batch_number', $batch->batch_number);
         $groupedItems = [];
+
+        $kalengMuatan = 0;
+        $kalengRetur = 0;
+        $refillMuatan = 0;
+        $refillRetur = 0;
 
         foreach ($itemsInBatch as $pi) {
             $orderItem = OrderItem::find($pi->order_item_id);
@@ -437,14 +451,29 @@ class ManageShipments extends Component
                 if (!isset($groupedItems[$itemId])) $groupedItems[$itemId] = 0;
                 $qty = max(0, $pi->quantity - $pi->return_quantity);
                 $groupedItems[$itemId] += $qty;
+
+                // Hitung muatan dan retur untuk pencatatan PetisSale
+                if ($petisKalengItem && $itemId == $petisKalengItem->id) {
+                    $kalengMuatan += (int) $pi->quantity;
+                    $kalengRetur += (int) $pi->return_quantity;
+                } elseif ($petisRefillItem && $itemId == $petisRefillItem->id) {
+                    $refillMuatan += (int) $pi->quantity;
+                    $refillRetur += (int) $pi->return_quantity;
+                }
             }
         }
 
         foreach ($groupedItems as $itemId => $qty) {
             if ($qty <= 0) continue;
 
+            $item = Item::with('category')->find($itemId);
+            $isPetis = ($item && ($item->item_category_id == 5 || strtolower($item->category?->name ?? '') === 'petis'));
+
+            // Jika petis, otomatis potong dari Gudang Petis secara independen
+            $effectiveWarehouseId = ($isPetis && $petisWarehouseId) ? $petisWarehouseId : $warehouseId;
+
             $stock = \App\Models\WarehouseStock::firstOrCreate(
-                ['warehouse_id' => $warehouseId, 'item_id' => $itemId],
+                ['warehouse_id' => $effectiveWarehouseId, 'item_id' => $itemId],
                 ['current_stock' => 0, 'physical_stock' => 0]
             );
             $stock = \App\Models\WarehouseStock::where('id', $stock->id)->lockForUpdate()->first();
@@ -457,15 +486,36 @@ class ManageShipments extends Component
             // Create stock mutation OUT
             $mutation = new StockMutation([
                 'item_id' => $itemId,
-                'warehouse_id' => $warehouseId,
+                'warehouse_id' => $effectiveWarehouseId,
                 'user_id' => auth()->id(),
                 'type' => 'out',
                 'quantity' => $qty,
                 'mutation_date' => $date,
+                'sender_name' => $isPetis ? 'Gudang Petis' : null,
+                'transaction_category' => 'Pengiriman',
                 'notes' => "Pengiriman Muatan {$batch->batch_number} (Pasar {$this->orderBook->market->name})"
             ]);
             $mutation->created_at = $date . ' ' . now()->format('H:i:s');
             $mutation->save();
+        }
+
+        // Catat penjualan petis harian per salesman jika ada petis di muatan ini
+        if ($petisWarehouseId && ($kalengMuatan > 0 || $refillMuatan > 0 || $kalengRetur > 0 || $refillRetur > 0)) {
+            $salesmanName = $this->orderBook->employee?->name ?? 'Sales';
+            $petisSale = PetisSale::firstOrNew([
+                'warehouse_id' => $petisWarehouseId,
+                'date' => $date,
+                'salesman_name' => $salesmanName,
+            ]);
+            $petisSale->muatan_kaleng = ($petisSale->muatan_kaleng ?? 0) + $kalengMuatan;
+            $petisSale->retur_kaleng = ($petisSale->retur_kaleng ?? 0) + $kalengRetur;
+            $petisSale->muatan_refill = ($petisSale->muatan_refill ?? 0) + $refillMuatan;
+            $petisSale->retur_refill = ($petisSale->retur_refill ?? 0) + $refillRetur;
+            $petisSale->notes = $petisSale->notes 
+                ? ($petisSale->notes . ', Muatan ' . $batch->batch_number)
+                : "Muatan {$batch->batch_number} (Pasar {$this->orderBook->market->name})";
+            $petisSale->user_id = auth()->id();
+            $petisSale->save();
         }
 
         $batch->update([

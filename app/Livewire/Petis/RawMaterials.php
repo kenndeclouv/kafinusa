@@ -35,16 +35,8 @@ class RawMaterials extends Component
     {
         abort_unless(auth()->user()->can('petis_productions:read'), 403);
 
-        $defaultWarehouse = Warehouse::orderBy('name')->first();
-        if (
-            auth()->user()->hasRole('checker') &&
-            !auth()->user()->hasRole('kepala_checker') &&
-            !auth()->user()->hasRole('superadmin')
-        ) {
-            $this->warehouse_id = auth()->user()->warehouse_id ?? $defaultWarehouse?->id;
-        } else {
-            $this->warehouse_id = $defaultWarehouse?->id;
-        }
+        $petisWarehouse = Warehouse::where('name', 'Gudang Petis')->first() ?? Warehouse::first();
+        $this->warehouse_id = $petisWarehouse?->id;
 
         $this->month = Carbon::today()->format('Y-m');
 

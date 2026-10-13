@@ -36,20 +36,15 @@
     <div class="flex flex-wrap items-center justify-between gap-4 bg-zinc-50 dark:bg-zinc-900/60 p-3.5 rounded-2xl border border-zinc-200 dark:border-white/10">
         <div class="flex flex-wrap items-center gap-4">
             <div class="flex items-center gap-2">
-                <span class="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Gudang:</span>
-                <div class="w-48">
-                    <flux:select wire:model.live="warehouse_id" size="sm">
-                        @foreach ($this->warehouses as $wh)
-                            <flux:select.option value="{{ $wh->id }}">{{ $wh->name }}</flux:select.option>
-                        @endforeach
-                    </flux:select>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-2">
-                <span class="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Bulan:</span>
+                <span class="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Periode:</span>
                 <flux:input type="month" wire:model.live="month" size="sm" class="w-40" />
             </div>
+
+            <div class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                <flux:icon name="building-office-2" class="w-4 h-4 text-amber-500" />
+                <span>Lokasi: <strong class="text-zinc-800 dark:text-zinc-200">Gudang Petis (Independen)</strong></span>
+            </div>
+        </div>
 
             {{-- Mobile Auto-save indicator --}}
             <div class="sm:hidden flex items-center">

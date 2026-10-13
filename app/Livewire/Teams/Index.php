@@ -120,7 +120,8 @@ class Index extends Component
     {
         Gate::authorize('petis_cookers:create');
         $this->reset(['cooker_id', 'cooker_name']);
-        $this->cooker_warehouse_id = $this->filter_warehouse_id ?: Warehouse::first()?->id;
+        $petisWh = Warehouse::where('name', 'Gudang Petis')->first() ?? Warehouse::first();
+        $this->cooker_warehouse_id = $this->filter_warehouse_id ?: $petisWh?->id;
         $maxOrder = PetisCooker::where('warehouse_id', $this->cooker_warehouse_id)->max('sort_order') ?? 0;
         $this->cooker_sort_order = $maxOrder + 1;
         $this->cooker_is_active = true;
