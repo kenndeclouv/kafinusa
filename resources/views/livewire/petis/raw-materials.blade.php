@@ -70,7 +70,6 @@
                 <button type="button" class="x-tabs-btn" data-tab="selisih" @click="select('selisih', $el)">Opname & Selisih</button>
             </x-tabs>
         </div>
-    </div>
 
     @php
         $m = $this->monthlyData;

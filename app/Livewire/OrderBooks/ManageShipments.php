@@ -487,7 +487,7 @@ class ManageShipments extends Component
             $mutation = new StockMutation([
                 'item_id' => $itemId,
                 'warehouse_id' => $effectiveWarehouseId,
-                'user_id' => auth()->id(),
+                'user_id' => auth()->id() ?? 1,
                 'type' => 'out',
                 'quantity' => $qty,
                 'mutation_date' => $date,
@@ -514,7 +514,7 @@ class ManageShipments extends Component
             $petisSale->notes = $petisSale->notes 
                 ? ($petisSale->notes . ', Muatan ' . $batch->batch_number)
                 : "Muatan {$batch->batch_number} (Pasar {$this->orderBook->market->name})";
-            $petisSale->user_id = auth()->id();
+            $petisSale->user_id = auth()->id() ?? 1;
             $petisSale->save();
         }
 

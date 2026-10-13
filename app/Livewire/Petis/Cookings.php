@@ -207,7 +207,7 @@ class Cookings extends Component
                         'result_kaleng' => $kaleng,
                         'result_refill' => $refill,
                         'result_sisa_kg' => $sisaKg,
-                        'user_id' => auth()->id(),
+                        'user_id' => auth()->id() ?? 1,
                     ]
                 );
 
@@ -250,7 +250,7 @@ class Cookings extends Component
                         ],
                         [
                             'actual_stock' => (float) $valK,
-                            'user_id' => auth()->id(),
+                            'user_id' => auth()->id() ?? 1,
                         ]
                     );
 
@@ -281,7 +281,7 @@ class Cookings extends Component
                         ],
                         [
                             'actual_stock' => (float) $valR,
-                            'user_id' => auth()->id(),
+                            'user_id' => auth()->id() ?? 1,
                         ]
                     );
 
@@ -343,7 +343,7 @@ class Cookings extends Component
                         'quantity' => $kaleng,
                         'reference_type' => PetisProduction::class,
                         'reference_id' => $prod->id,
-                        'user_id' => auth()->id(),
+                        'user_id' => auth()->id() ?? 1,
                         'mutation_date' => $date,
                         'sender_name' => 'Dapur Petis',
                         'transaction_category' => 'Hasil Masak',
@@ -394,7 +394,7 @@ class Cookings extends Component
                         'quantity' => $refill,
                         'reference_type' => PetisProduction::class,
                         'reference_id' => $prod->id,
-                        'user_id' => auth()->id(),
+                        'user_id' => auth()->id() ?? 1,
                         'mutation_date' => $date,
                         'sender_name' => 'Dapur Petis',
                         'transaction_category' => 'Hasil Masak',
