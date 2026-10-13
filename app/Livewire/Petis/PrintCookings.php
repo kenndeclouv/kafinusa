@@ -58,15 +58,23 @@ class PrintCookings extends Component
         $startOfMonth = Carbon::parse($this->month . '-01')->startOfMonth()->format('Y-m-d');
         $endOfMonth = Carbon::parse($this->month . '-01')->endOfMonth()->format('Y-m-d');
 
-        $activeCookers = PetisCooker::where('warehouse_id', $this->warehouse)
-            ->where('is_active', true)
+        $activeCookers = PetisCooker::where('is_active', true)
+            ->where(function ($q) {
+                if ($this->warehouse) {
+                    $q->where('warehouse_id', $this->warehouse)->orWhereNull('warehouse_id');
+                }
+            })
             ->orderBy('sort_order')
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->unique('name')
+            ->values();
 
         $historicalCookerNames = PetisProductionCooker::whereHas('production', function ($q) use ($startOfMonth, $endOfMonth) {
-            $q->where('warehouse_id', $this->warehouse)
-              ->whereBetween('date', [$startOfMonth, $endOfMonth]);
+            $q->whereBetween('date', [$startOfMonth, $endOfMonth]);
+            if ($this->warehouse) {
+                $q->where('warehouse_id', $this->warehouse);
+            }
         })->distinct()->pluck('cooker_name')->toArray();
 
         $activeNames = $activeCookers->pluck('name')->toArray();
@@ -74,12 +82,12 @@ class PrintCookings extends Component
 
         foreach ($historicalCookerNames as $hName) {
             if (!in_array($hName, $activeNames)) {
-                $cookerObj = PetisCooker::withTrashed()->where('warehouse_id', $this->warehouse)->where('name', $hName)->first();
+                $cookerObj = PetisCooker::withTrashed()->where('name', $hName)->first();
                 $extraCookers->push($cookerObj ?? (object) ['id' => null, 'name' => $hName, 'is_active' => false]);
             }
         }
 
-        return $activeCookers->concat($extraCookers);
+        return $activeCookers->concat($extraCookers)->unique('name')->values();
     }
 
     #[Computed]

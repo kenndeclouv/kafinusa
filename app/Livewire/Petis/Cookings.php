@@ -27,16 +27,9 @@ class Cookings extends Component
     {
         abort_unless(auth()->user()->can('petis_productions:read'), 403);
 
-        $defaultWarehouse = Warehouse::orderBy('name')->first();
-        if (
-            auth()->user()->hasRole('checker') &&
-            !auth()->user()->hasRole('kepala_checker') &&
-            !auth()->user()->hasRole('superadmin')
-        ) {
-            $this->warehouse_id = auth()->user()->warehouse_id ?? $defaultWarehouse?->id;
-        } else {
-            $this->warehouse_id = $defaultWarehouse?->id;
-        }
+        // Dapur masak petis bersifat sentral (1 dapur utama)
+        $defaultWarehouse = Warehouse::where('name', 'like', '%Utama%')->first() ?? Warehouse::orderBy('id')->first();
+        $this->warehouse_id = $defaultWarehouse?->id;
 
         $this->month = Carbon::today()->format('Y-m');
         $this->loadGrid();
@@ -44,7 +37,7 @@ class Cookings extends Component
 
     public function updated($property)
     {
-        if (in_array($property, ['warehouse_id', 'month'])) {
+        if ($property === 'month') {
             $this->loadGrid();
             return;
         }
@@ -56,20 +49,6 @@ class Cookings extends Component
                 $this->saveDay($day);
             }
         }
-    }
-
-    #[Computed]
-    public function warehouses()
-    {
-        $query = Warehouse::query()->orderBy('name');
-        if (
-            auth()->user()->hasRole('checker') &&
-            !auth()->user()->hasRole('kepala_checker') &&
-            !auth()->user()->hasRole('superadmin')
-        ) {
-            $query->where('id', auth()->user()->warehouse_id);
-        }
-        return $query->get();
     }
 
     #[Computed]
@@ -89,22 +68,27 @@ class Cookings extends Component
     #[Computed]
     public function cookers()
     {
-        if (!$this->warehouse_id) {
-            return collect();
-        }
-
         $startOfMonth = Carbon::parse($this->month . '-01')->startOfMonth()->format('Y-m-d');
         $endOfMonth = Carbon::parse($this->month . '-01')->endOfMonth()->format('Y-m-d');
 
-        $activeCookers = PetisCooker::where('warehouse_id', $this->warehouse_id)
-            ->where('is_active', true)
+        // Seluruh koki dapur masak petis aktif (dapur sentral)
+        $activeCookers = PetisCooker::where('is_active', true)
+            ->where(function ($q) {
+                if ($this->warehouse_id) {
+                    $q->where('warehouse_id', $this->warehouse_id)->orWhereNull('warehouse_id');
+                }
+            })
             ->orderBy('sort_order')
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->unique('name')
+            ->values();
 
         $historicalCookerNames = PetisProductionCooker::whereHas('production', function ($q) use ($startOfMonth, $endOfMonth) {
-            $q->where('warehouse_id', $this->warehouse_id)
-              ->whereBetween('date', [$startOfMonth, $endOfMonth]);
+            $q->whereBetween('date', [$startOfMonth, $endOfMonth]);
+            if ($this->warehouse_id) {
+                $q->where('warehouse_id', $this->warehouse_id);
+            }
         })->distinct()->pluck('cooker_name')->toArray();
 
         $activeNames = $activeCookers->pluck('name')->toArray();
@@ -112,12 +96,12 @@ class Cookings extends Component
 
         foreach ($historicalCookerNames as $hName) {
             if (!in_array($hName, $activeNames)) {
-                $cookerObj = PetisCooker::withTrashed()->where('warehouse_id', $this->warehouse_id)->where('name', $hName)->first();
+                $cookerObj = PetisCooker::withTrashed()->where('name', $hName)->first();
                 $extraCookers->push($cookerObj ?? (object) ['id' => null, 'name' => $hName, 'is_active' => false]);
             }
         }
 
-        return $activeCookers->concat($extraCookers);
+        return $activeCookers->concat($extraCookers)->unique('name')->values();
     }
 
     public function loadGrid()

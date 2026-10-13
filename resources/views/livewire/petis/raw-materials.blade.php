@@ -172,7 +172,7 @@
                                 {{-- 3 section kosong untuk beli, pakai, jual --}}
                                 @for ($s = 0; $s < 3; $s++)
                                     @foreach ($items as $item)
-                                        <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400">-</td>
+                                        <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400"></td>
                                     @endforeach
                                 @endfor
 
@@ -181,15 +181,15 @@
                                     <td class="p-1 text-center border-r border-zinc-200 dark:border-white/10 bg-teal-50/30 dark:bg-teal-950/20">
                                         <input type="text" inputmode="decimal"
                                             wire:model.live.debounce.500ms="initial_stocks.{{ $item->id }}"
-                                            class="w-full text-center bg-transparent border-transparent hover:border-teal-300 dark:hover:border-teal-700 focus:bg-white dark:focus:bg-zinc-800 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 rounded-md transition-all py-1 text-xs font-mono font-bold text-teal-800 dark:text-teal-300"
-                                            placeholder="0" />
+                                            class="w-full text-center bg-transparent border-transparent hover:border-teal-300 dark:hover:border-teal-700 focus:bg-white dark:focus:bg-zinc-800 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 rounded-md transition-all py-1 text-xs font-mono font-bold text-teal-800 dark:text-teal-300 placeholder-transparent"
+                                            placeholder="" />
                                     </td>
                                 @endforeach
 
                                 {{-- Opname & Selisih Awal --}}
                                 @for ($s = 0; $s < 2; $s++)
                                     @foreach ($items as $item)
-                                        <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400">-</td>
+                                        <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400"></td>
                                     @endforeach
                                 @endfor
                             @else
@@ -200,12 +200,12 @@
                                     <td class="p-1 text-center border-r border-zinc-200 dark:border-white/10 bg-amber-50/50 dark:bg-amber-950/20">
                                         <input type="text" inputmode="decimal"
                                             wire:model.live.debounce.500ms="initial_stocks.{{ $item->id }}"
-                                            class="w-full text-center bg-transparent border-transparent hover:border-amber-400 dark:hover:border-amber-600 focus:bg-white dark:focus:bg-zinc-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-md transition-all py-1 text-xs font-mono font-bold text-amber-900 dark:text-amber-300"
-                                            placeholder="0" />
+                                            class="w-full text-center bg-transparent border-transparent hover:border-amber-400 dark:hover:border-amber-600 focus:bg-white dark:focus:bg-zinc-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-md transition-all py-1 text-xs font-mono font-bold text-amber-900 dark:text-amber-300 placeholder-transparent"
+                                            placeholder="" />
                                     </td>
                                 @endforeach
                                 <td class="px-3 py-2 text-center font-bold text-amber-900 dark:text-amber-300">
-                                    {{ number_format($totalInitial, 0, ',', '.') }}
+                                    {{ $totalInitial > 0 ? number_format($totalInitial, 0, ',', '.') : '' }}
                                 </td>
                             @endif
                         </tr>
@@ -229,8 +229,8 @@
                                     <td class="p-0.5 text-center border-r border-zinc-200 dark:border-white/10">
                                         <input type="text" inputmode="decimal"
                                             wire:model.live.debounce.500ms="grid.purchase.{{ $dayData['day'] }}.{{ $item->id }}"
-                                            class="w-full text-center bg-transparent border-transparent hover:border-emerald-300 dark:hover:border-emerald-700 focus:bg-white dark:focus:bg-zinc-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-md transition-all py-1 text-xs font-mono {{ ($grid['purchase'][$dayData['day']][$item->id] ?? 0) > 0 ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-zinc-400' }}"
-                                            placeholder="-" />
+                                            class="w-full text-center bg-transparent border-transparent hover:border-emerald-300 dark:hover:border-emerald-700 focus:bg-white dark:focus:bg-zinc-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-md transition-all py-1 text-xs font-mono {{ ($grid['purchase'][$dayData['day']][$item->id] ?? 0) > 0 ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-zinc-400' }} placeholder-transparent"
+                                            placeholder="" />
                                     </td>
                                 @endforeach
 
@@ -239,8 +239,8 @@
                                     <td class="p-0.5 text-center border-r border-zinc-200 dark:border-white/10">
                                         <input type="text" inputmode="decimal"
                                             wire:model.live.debounce.500ms="grid.usage.{{ $dayData['day'] }}.{{ $item->id }}"
-                                            class="w-full text-center bg-transparent border-transparent hover:border-purple-300 dark:hover:border-purple-700 focus:bg-white dark:focus:bg-zinc-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-md transition-all py-1 text-xs font-mono {{ ($grid['usage'][$dayData['day']][$item->id] ?? 0) > 0 ? 'text-purple-700 dark:text-purple-400 font-bold' : 'text-zinc-400' }}"
-                                            placeholder="-" />
+                                            class="w-full text-center bg-transparent border-transparent hover:border-purple-300 dark:hover:border-purple-700 focus:bg-white dark:focus:bg-zinc-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-md transition-all py-1 text-xs font-mono {{ ($grid['usage'][$dayData['day']][$item->id] ?? 0) > 0 ? 'text-purple-700 dark:text-purple-400 font-bold' : 'text-zinc-400' }} placeholder-transparent"
+                                            placeholder="" />
                                     </td>
                                 @endforeach
 
@@ -249,8 +249,8 @@
                                     <td class="p-0.5 text-center border-r border-zinc-200 dark:border-white/10">
                                         <input type="text" inputmode="decimal"
                                             wire:model.live.debounce.500ms="grid.sale.{{ $dayData['day'] }}.{{ $item->id }}"
-                                            class="w-full text-center bg-transparent border-transparent hover:border-blue-300 dark:hover:border-blue-700 focus:bg-white dark:focus:bg-zinc-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-md transition-all py-1 text-xs font-mono {{ ($grid['sale'][$dayData['day']][$item->id] ?? 0) > 0 ? 'text-blue-700 dark:text-blue-400 font-bold' : 'text-zinc-400' }}"
-                                            placeholder="-" />
+                                            class="w-full text-center bg-transparent border-transparent hover:border-blue-300 dark:hover:border-blue-700 focus:bg-white dark:focus:bg-zinc-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-md transition-all py-1 text-xs font-mono {{ ($grid['sale'][$dayData['day']][$item->id] ?? 0) > 0 ? 'text-blue-700 dark:text-blue-400 font-bold' : 'text-zinc-400' }} placeholder-transparent"
+                                            placeholder="" />
                                     </td>
                                 @endforeach
 
@@ -258,7 +258,7 @@
                                 @foreach ($items as $item)
                                     @php $val = $dayData['book_stock'][$item->id] ?? 0; @endphp
                                     <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10 font-semibold text-zinc-900 dark:text-white">
-                                        {{ number_format($val, 0, ',', '.') }}
+                                        {{ $val != 0 ? number_format($val, 0, ',', '.') : '' }}
                                     </td>
                                 @endforeach
 
@@ -267,8 +267,8 @@
                                     <td class="p-0.5 text-center border-r border-zinc-200 dark:border-white/10">
                                         <input type="text" inputmode="decimal"
                                             wire:model.live.debounce.500ms="grid.opname.{{ $dayData['day'] }}.{{ $item->id }}"
-                                            class="w-full text-center bg-transparent border-transparent hover:border-amber-300 dark:hover:border-amber-700 focus:bg-white dark:focus:bg-zinc-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-md transition-all py-1 text-xs font-mono {{ ($grid['opname'][$dayData['day']][$item->id] ?? '') !== '' ? 'text-amber-700 dark:text-amber-400 font-bold' : 'text-zinc-400' }}"
-                                            placeholder="-" />
+                                            class="w-full text-center bg-transparent border-transparent hover:border-amber-300 dark:hover:border-amber-700 focus:bg-white dark:focus:bg-zinc-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-md transition-all py-1 text-xs font-mono {{ ($grid['opname'][$dayData['day']][$item->id] ?? '') !== '' ? 'text-amber-700 dark:text-amber-400 font-bold' : 'text-zinc-400' }} placeholder-transparent"
+                                            placeholder="" />
                                     </td>
                                 @endforeach
 
@@ -276,7 +276,7 @@
                                 @foreach ($items as $item)
                                     @php $val = $dayData['diff'][$item->id]; @endphp
                                     <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10 {{ $val !== null && $val != 0 ? 'text-rose-600 dark:text-rose-400 font-bold bg-rose-50/30' : 'text-zinc-400' }}">
-                                        {{ $val !== null ? number_format($val, 0, ',', '.') : '-' }}
+                                        {{ $val !== null && $val != 0 ? number_format($val, 0, ',', '.') : '' }}
                                     </td>
                                 @endforeach
 
@@ -287,12 +287,12 @@
                                     <td class="p-1 text-center border-r border-zinc-200 dark:border-white/10">
                                         <input type="text" inputmode="decimal"
                                             wire:model.live.debounce.500ms="grid.purchase.{{ $dayData['day'] }}.{{ $item->id }}"
-                                            class="w-full text-center bg-transparent border-transparent hover:border-emerald-300 dark:hover:border-emerald-700 focus:bg-white dark:focus:bg-zinc-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-md transition-all py-1.5 text-xs font-mono font-medium {{ $val > 0 ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-zinc-600 dark:text-zinc-400' }}"
-                                            placeholder="-" />
+                                            class="w-full text-center bg-transparent border-transparent hover:border-emerald-300 dark:hover:border-emerald-700 focus:bg-white dark:focus:bg-zinc-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-md transition-all py-1.5 text-xs font-mono font-medium {{ $val > 0 ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-zinc-600 dark:text-zinc-400' }} placeholder-transparent"
+                                            placeholder="" />
                                     </td>
                                 @endforeach
                                 <td class="px-3 py-2 text-center font-bold text-emerald-800 dark:text-emerald-400">
-                                    {{ $dayTotal > 0 ? number_format($dayTotal, 0, ',', '.') : '-' }}
+                                    {{ $dayTotal > 0 ? number_format($dayTotal, 0, ',', '.') : '' }}
                                 </td>
 
                             @elseif ($activeTab === 'usage')
@@ -302,12 +302,12 @@
                                     <td class="p-1 text-center border-r border-zinc-200 dark:border-white/10">
                                         <input type="text" inputmode="decimal"
                                             wire:model.live.debounce.500ms="grid.usage.{{ $dayData['day'] }}.{{ $item->id }}"
-                                            class="w-full text-center bg-transparent border-transparent hover:border-purple-300 dark:hover:border-purple-700 focus:bg-white dark:focus:bg-zinc-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-md transition-all py-1.5 text-xs font-mono font-medium {{ $val > 0 ? 'text-purple-700 dark:text-purple-400 font-bold' : 'text-zinc-600 dark:text-zinc-400' }}"
-                                            placeholder="-" />
+                                            class="w-full text-center bg-transparent border-transparent hover:border-purple-300 dark:hover:border-purple-700 focus:bg-white dark:focus:bg-zinc-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-md transition-all py-1.5 text-xs font-mono font-medium {{ $val > 0 ? 'text-purple-700 dark:text-purple-400 font-bold' : 'text-zinc-600 dark:text-zinc-400' }} placeholder-transparent"
+                                            placeholder="" />
                                     </td>
                                 @endforeach
                                 <td class="px-3 py-2 text-center font-bold text-purple-800 dark:text-purple-400">
-                                    {{ $dayTotal > 0 ? number_format($dayTotal, 0, ',', '.') : '-' }}
+                                    {{ $dayTotal > 0 ? number_format($dayTotal, 0, ',', '.') : '' }}
                                 </td>
 
                             @elseif ($activeTab === 'sale')
@@ -317,12 +317,12 @@
                                     <td class="p-1 text-center border-r border-zinc-200 dark:border-white/10">
                                         <input type="text" inputmode="decimal"
                                             wire:model.live.debounce.500ms="grid.sale.{{ $dayData['day'] }}.{{ $item->id }}"
-                                            class="w-full text-center bg-transparent border-transparent hover:border-blue-300 dark:hover:border-blue-700 focus:bg-white dark:focus:bg-zinc-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-md transition-all py-1.5 text-xs font-mono font-medium {{ $val > 0 ? 'text-blue-700 dark:text-blue-400 font-bold' : 'text-zinc-600 dark:text-zinc-400' }}"
-                                            placeholder="-" />
+                                            class="w-full text-center bg-transparent border-transparent hover:border-blue-300 dark:hover:border-blue-700 focus:bg-white dark:focus:bg-zinc-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-md transition-all py-1.5 text-xs font-mono font-medium {{ $val > 0 ? 'text-blue-700 dark:text-blue-400 font-bold' : 'text-zinc-600 dark:text-zinc-400' }} placeholder-transparent"
+                                            placeholder="" />
                                     </td>
                                 @endforeach
                                 <td class="px-3 py-2 text-center font-bold text-blue-800 dark:text-blue-400">
-                                    {{ $dayTotal > 0 ? number_format($dayTotal, 0, ',', '.') : '-' }}
+                                    {{ $dayTotal > 0 ? number_format($dayTotal, 0, ',', '.') : '' }}
                                 </td>
 
                             @elseif ($activeTab === 'stock')
@@ -330,11 +330,11 @@
                                 @foreach ($items as $item)
                                     @php $val = $dayData['book_stock'][$item->id] ?? 0; $dayTotal += $val; @endphp
                                     <td class="px-3 py-2 text-center border-r border-zinc-200 dark:border-white/10 font-semibold text-zinc-900 dark:text-white">
-                                        {{ number_format($val, 0, ',', '.') }}
+                                        {{ $val != 0 ? number_format($val, 0, ',', '.') : '' }}
                                     </td>
                                 @endforeach
                                 <td class="px-3 py-2 text-center font-bold text-zinc-900 dark:text-white">
-                                    {{ number_format($dayTotal, 0, ',', '.') }}
+                                    {{ $dayTotal != 0 ? number_format($dayTotal, 0, ',', '.') : '' }}
                                 </td>
 
                             @elseif ($activeTab === 'selisih')
@@ -348,10 +348,10 @@
                                         <div class="flex flex-col items-center gap-0.5">
                                             <input type="text" inputmode="decimal"
                                                 wire:model.live.debounce.500ms="grid.opname.{{ $dayData['day'] }}.{{ $item->id }}"
-                                                class="w-full text-center bg-transparent border-transparent hover:border-amber-300 dark:hover:border-amber-700 focus:bg-white dark:focus:bg-zinc-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-md transition-all py-1 text-xs font-mono font-bold {{ ($grid['opname'][$dayData['day']][$item->id] ?? '') !== '' ? 'text-amber-700 dark:text-amber-400' : 'text-zinc-400' }}"
-                                                placeholder="-" />
-                                            @if ($diff !== null)
-                                                <span class="text-[10px] font-mono {{ $diff != 0 ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-zinc-400' }}">
+                                                class="w-full text-center bg-transparent border-transparent hover:border-amber-300 dark:hover:border-amber-700 focus:bg-white dark:focus:bg-zinc-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-md transition-all py-1 text-xs font-mono font-bold {{ ($grid['opname'][$dayData['day']][$item->id] ?? '') !== '' ? 'text-amber-700 dark:text-amber-400' : 'text-zinc-400' }} placeholder-transparent"
+                                                placeholder="" />
+                                            @if ($diff !== null && $diff != 0)
+                                                <span class="text-[10px] font-mono text-rose-600 dark:text-rose-400 font-bold">
                                                     Sel: {{ number_format($diff, 0, ',', '.') }}
                                                 </span>
                                             @endif
@@ -359,7 +359,7 @@
                                     </td>
                                 @endforeach
                                 <td class="px-3 py-2 text-center font-bold {{ $hasAnyDiff && $dayTotalDiff != 0 ? 'text-rose-600' : 'text-zinc-400' }}">
-                                    {{ $hasAnyDiff ? number_format($dayTotalDiff, 0, ',', '.') : '-' }}
+                                    {{ $hasAnyDiff && $dayTotalDiff != 0 ? number_format($dayTotalDiff, 0, ',', '.') : '' }}
                                 </td>
                             @endif
                         </tr>
@@ -401,7 +401,7 @@
                             {{-- Opname & Selisih Kosong di baris total --}}
                             @for ($s = 0; $s < 2; $s++)
                                 @foreach ($items as $item)
-                                    <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400">-</td>
+                                    <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10"></td>
                                 @endforeach
                             @endfor
                         </tr>
@@ -413,22 +413,22 @@
                             </td>
                             @foreach ($items as $item)
                                 <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10">
-                                    {{ $totals['count_purchase'][$item->id] ?? 0 }}x
+                                    {{ ($totals['count_purchase'][$item->id] ?? 0) > 0 ? ($totals['count_purchase'][$item->id] . 'x') : '' }}
                                 </td>
                             @endforeach
                             @foreach ($items as $item)
                                 <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10">
-                                    {{ $totals['count_usage'][$item->id] ?? 0 }}x
+                                    {{ ($totals['count_usage'][$item->id] ?? 0) > 0 ? ($totals['count_usage'][$item->id] . 'x') : '' }}
                                 </td>
                             @endforeach
                             @foreach ($items as $item)
                                 <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10">
-                                    {{ $totals['count_sale'][$item->id] ?? 0 }}x
+                                    {{ ($totals['count_sale'][$item->id] ?? 0) > 0 ? ($totals['count_sale'][$item->id] . 'x') : '' }}
                                 </td>
                             @endforeach
                             @for ($s = 0; $s < 3; $s++)
                                 @foreach ($items as $item)
-                                    <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400">-</td>
+                                    <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10"></td>
                                 @endforeach
                             @endfor
                         </tr>

@@ -101,10 +101,10 @@
                             <td class="px-3 py-2 text-center sticky left-0 z-10 bg-amber-100 dark:bg-zinc-800 border-r border-zinc-200 dark:border-white/10 text-amber-900 dark:text-amber-300">
                                 S AWAL
                             </td>
-                            <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400">-</td>
-                            <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400">-</td>
-                            <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400">-</td>
-                            <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400">-</td>
+                            <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400"></td>
+                            <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400"></td>
+                            <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400"></td>
+                            <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400"></td>
 
                             <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-teal-800 dark:text-teal-300 font-bold">
                                 {{ number_format($c['initial_kaleng'] ?? 0, 0, ',', '.') }}
@@ -113,14 +113,14 @@
                                 {{ number_format($c['initial_refill'] ?? 0, 0, ',', '.') }}
                             </td>
 
-                            <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400">-</td>
-                            <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400">-</td>
+                            <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400"></td>
+                            <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400"></td>
 
-                            <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400">-</td>
-                            <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400">-</td>
-                            <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400">-</td>
-                            <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400">-</td>
-                            <td class="px-2 py-2 text-center text-zinc-400">-</td>
+                            <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400"></td>
+                            <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400"></td>
+                            <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400"></td>
+                            <td class="px-2 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400"></td>
+                            <td class="px-2 py-2 text-center text-zinc-400"></td>
                         </tr>
 
                         {{-- Loop Hari --}}
@@ -136,17 +136,17 @@
                                 </td>
 
                                 <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10 {{ $d['in_kaleng'] > 0 ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-zinc-300 dark:text-zinc-700' }}">
-                                    {{ $d['in_kaleng'] > 0 ? number_format($d['in_kaleng'], 0, ',', '.') : '-' }}
+                                    {{ $d['in_kaleng'] > 0 ? number_format($d['in_kaleng'], 0, ',', '.') : '' }}
                                 </td>
                                 <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10 {{ $d['in_refill'] > 0 ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-zinc-300 dark:text-zinc-700' }}">
-                                    {{ $d['in_refill'] > 0 ? number_format($d['in_refill'], 0, ',', '.') : '-' }}
+                                    {{ $d['in_refill'] > 0 ? number_format($d['in_refill'], 0, ',', '.') : '' }}
                                 </td>
 
                                 <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10 {{ $d['out_kaleng'] > 0 ? 'text-blue-700 dark:text-blue-400 font-bold' : 'text-zinc-300 dark:text-zinc-700' }}">
-                                    {{ $d['out_kaleng'] > 0 ? number_format($d['out_kaleng'], 0, ',', '.') : '-' }}
+                                    {{ $d['out_kaleng'] > 0 ? number_format($d['out_kaleng'], 0, ',', '.') : '' }}
                                 </td>
                                 <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10 {{ $d['out_refill'] > 0 ? 'text-blue-700 dark:text-blue-400 font-bold' : 'text-zinc-300 dark:text-zinc-700' }}">
-                                    {{ $d['out_refill'] > 0 ? number_format($d['out_refill'], 0, ',', '.') : '-' }}
+                                    {{ $d['out_refill'] > 0 ? number_format($d['out_refill'], 0, ',', '.') : '' }}
                                 </td>
 
                                 <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10 font-semibold text-zinc-900 dark:text-white">
@@ -157,26 +157,26 @@
                                 </td>
 
                                 <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10 {{ $d['opname_kaleng'] !== null ? 'text-purple-700 dark:text-purple-400 font-bold' : 'text-zinc-300 dark:text-zinc-700' }}">
-                                    {{ $d['opname_kaleng'] !== null ? number_format($d['opname_kaleng'], 0, ',', '.') : '-' }}
+                                    {{ $d['opname_kaleng'] !== null ? number_format($d['opname_kaleng'], 0, ',', '.') : '' }}
                                 </td>
                                 <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10 {{ $d['opname_refill'] !== null ? 'text-purple-700 dark:text-purple-400 font-bold' : 'text-zinc-300 dark:text-zinc-700' }}">
-                                    {{ $d['opname_refill'] !== null ? number_format($d['opname_refill'], 0, ',', '.') : '-' }}
+                                    {{ $d['opname_refill'] !== null ? number_format($d['opname_refill'], 0, ',', '.') : '' }}
                                 </td>
 
                                 <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10 {{ $d['diff_kaleng'] !== null && $d['diff_kaleng'] != 0 ? 'text-rose-600 font-bold bg-rose-50/20' : 'text-zinc-400' }}">
-                                    {{ $d['diff_kaleng'] !== null ? number_format($d['diff_kaleng'], 0, ',', '.') : '-' }}
+                                    {{ $d['diff_kaleng'] !== null && $d['diff_kaleng'] != 0 ? number_format($d['diff_kaleng'], 0, ',', '.') : '' }}
                                 </td>
                                 <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10 {{ $d['diff_refill'] !== null && $d['diff_refill'] != 0 ? 'text-rose-600 font-bold bg-rose-50/20' : 'text-zinc-400' }}">
-                                    {{ $d['diff_refill'] !== null ? number_format($d['diff_refill'], 0, ',', '.') : '-' }}
+                                    {{ $d['diff_refill'] !== null && $d['diff_refill'] != 0 ? number_format($d['diff_refill'], 0, ',', '.') : '' }}
                                 </td>
                                 <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-400">
-                                    {{ $d['diff_kaleng_kg'] !== null ? number_format($d['diff_kaleng_kg'], 1, ',', '.') : '-' }}
+                                    {{ $d['diff_kaleng_kg'] !== null && $d['diff_kaleng_kg'] != 0 ? number_format($d['diff_kaleng_kg'], 1, ',', '.') : '' }}
                                 </td>
                                 <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-400">
-                                    {{ $d['diff_refill_kg'] !== null ? number_format($d['diff_refill_kg'], 1, ',', '.') : '-' }}
+                                    {{ $d['diff_refill_kg'] !== null && $d['diff_refill_kg'] != 0 ? number_format($d['diff_refill_kg'], 1, ',', '.') : '' }}
                                 </td>
                                 <td class="px-2 py-1.5 text-center {{ $d['total_diff_kg'] !== null && $d['total_diff_kg'] != 0 ? 'text-rose-600 dark:text-rose-400 font-bold bg-rose-50/30' : 'text-zinc-400' }}">
-                                    {{ $d['total_diff_kg'] !== null ? number_format($d['total_diff_kg'], 1, ',', '.') : '-' }}
+                                    {{ $d['total_diff_kg'] !== null && $d['total_diff_kg'] != 0 ? number_format($d['total_diff_kg'], 1, ',', '.') : '' }}
                                 </td>
                             </tr>
                         @endforeach
@@ -278,18 +278,18 @@
                                         $daySoldRf += $soldRf;
                                     @endphp
                                     <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10 {{ $soldKl > 0 ? 'text-blue-700 dark:text-blue-400 font-bold' : 'text-zinc-300 dark:text-zinc-700' }}">
-                                        {{ $soldKl > 0 ? $soldKl : '-' }}
+                                        {{ $soldKl > 0 ? $soldKl : '' }}
                                     </td>
                                     <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10 {{ $soldRf > 0 ? 'text-blue-700 dark:text-blue-400 font-bold' : 'text-zinc-300 dark:text-zinc-700' }}">
-                                        {{ $soldRf > 0 ? $soldRf : '-' }}
+                                        {{ $soldRf > 0 ? $soldRf : '' }}
                                     </td>
                                 @endforeach
 
                                 <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10 font-bold text-blue-900 dark:text-blue-300 bg-blue-50/30">
-                                    {{ $daySoldKl > 0 ? $daySoldKl : '-' }}
+                                    {{ $daySoldKl > 0 ? $daySoldKl : '' }}
                                 </td>
                                 <td class="px-2 py-1.5 text-center font-bold text-blue-900 dark:text-blue-300 bg-blue-50/30">
-                                    {{ $daySoldRf > 0 ? $daySoldRf : '-' }}
+                                    {{ $daySoldRf > 0 ? $daySoldRf : '' }}
                                 </td>
                             </tr>
                         @endfor

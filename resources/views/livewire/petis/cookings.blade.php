@@ -34,6 +34,20 @@
         </div>
     </div>
 
+    {{-- Filter Toolbar: Periode Bulan & Tahun (Dapur Sentral Tunggal) --}}
+    <div class="flex flex-wrap items-center justify-between gap-4 bg-zinc-50 dark:bg-zinc-900/60 p-3 rounded-2xl border border-zinc-200 dark:border-white/10">
+        <div class="flex items-center gap-3">
+            <span class="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Periode:</span>
+            <input type="month" wire:model.live="month"
+                class="text-xs font-medium rounded-lg border-zinc-200 dark:border-white/10 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 py-1.5 px-3 focus:ring-1 focus:ring-amber-500 shadow-2xs" />
+        </div>
+
+        <div class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+            <flux:icon name="building-office-2" class="w-4 h-4 text-zinc-400" />
+            <span>Lokasi Dapur: <strong class="text-zinc-800 dark:text-zinc-200">Dapur Sentral (Gudang Utama)</strong></span>
+        </div>
+    </div>
+
     @php
         $cookers = $this->cookers;
         
@@ -154,17 +168,6 @@
     <div class="flex flex-wrap items-center justify-between gap-4 bg-zinc-50 dark:bg-zinc-900/60 p-3.5 rounded-2xl border border-zinc-200 dark:border-white/10">
         <div class="flex flex-wrap items-center gap-4">
             <div class="flex items-center gap-2">
-                <span class="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Gudang:</span>
-                <div class="w-48">
-                    <flux:select wire:model.live="warehouse_id" size="sm">
-                        @foreach ($this->warehouses as $wh)
-                            <flux:select.option value="{{ $wh->id }}">{{ $wh->name }}</flux:select.option>
-                        @endforeach
-                    </flux:select>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-2">
                 <span class="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Bulan:</span>
                 <flux:input type="month" wire:model.live="month" size="sm" class="w-40" />
             </div>
@@ -262,14 +265,14 @@
                                     <input type="number" step="0.5" min="0"
                                         wire:key="sess-{{ $day }}-{{ $c->name }}"
                                         wire:model.live.debounce.500ms="grid.{{ $day }}.sessions.{{ $c->name }}"
-                                        class="w-full text-center bg-transparent border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 focus:bg-white dark:focus:bg-zinc-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-md transition-all py-1 px-1 text-xs font-mono font-medium text-amber-900 dark:text-amber-200 placeholder-zinc-300"
-                                        placeholder="-" />
+                                        class="w-full text-center bg-transparent border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 focus:bg-white dark:focus:bg-zinc-800 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-md transition-all py-1 px-1 text-xs font-mono font-medium text-amber-900 dark:text-amber-200 placeholder-transparent"
+                                        placeholder="" />
                                 </td>
                             @endforeach
 
                             {{-- Total Sesi (Computed Live) --}}
                             <td class="px-2 py-1 text-center border-r border-zinc-200 dark:border-white/10 font-bold text-amber-900 dark:text-amber-400 bg-amber-50/40 dark:bg-amber-950/20">
-                                {{ $rowDaySessions > 0 ? number_format($rowDaySessions, 0, ',', '.') : '-' }}
+                                {{ $rowDaySessions > 0 ? number_format($rowDaySessions, 0, ',', '.') : '' }}
                             </td>
 
                             {{-- Input Hasil Jadi: Kaleng --}}
@@ -277,8 +280,8 @@
                                 <input type="number" min="0"
                                     wire:key="res-kl-{{ $day }}"
                                     wire:model.live.debounce.500ms="grid.{{ $day }}.result_kaleng"
-                                    class="w-full text-center bg-transparent border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 focus:bg-white dark:focus:bg-zinc-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-md transition-all py-1 px-1 text-xs font-mono font-bold text-blue-700 dark:text-blue-300 placeholder-zinc-300"
-                                    placeholder="-" />
+                                    class="w-full text-center bg-transparent border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 focus:bg-white dark:focus:bg-zinc-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-md transition-all py-1 px-1 text-xs font-mono font-bold text-blue-700 dark:text-blue-300 placeholder-transparent"
+                                    placeholder="" />
                             </td>
 
                             {{-- Input Hasil Jadi: Refill --}}
@@ -286,8 +289,8 @@
                                 <input type="number" min="0"
                                     wire:key="res-rf-{{ $day }}"
                                     wire:model.live.debounce.500ms="grid.{{ $day }}.result_refill"
-                                    class="w-full text-center bg-transparent border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 focus:bg-white dark:focus:bg-zinc-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-md transition-all py-1 px-1 text-xs font-mono font-bold text-blue-700 dark:text-blue-300 placeholder-zinc-300"
-                                    placeholder="-" />
+                                    class="w-full text-center bg-transparent border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 focus:bg-white dark:focus:bg-zinc-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-md transition-all py-1 px-1 text-xs font-mono font-bold text-blue-700 dark:text-blue-300 placeholder-transparent"
+                                    placeholder="" />
                             </td>
 
                             {{-- Input Hasil Jadi: Sisa Kg --}}
@@ -295,22 +298,22 @@
                                 <input type="number" step="0.1" min="0"
                                     wire:key="res-sisa-{{ $day }}"
                                     wire:model.live.debounce.500ms="grid.{{ $day }}.result_sisa_kg"
-                                    class="w-full text-center bg-transparent border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 focus:bg-white dark:focus:bg-zinc-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-md transition-all py-1 px-1 text-xs font-mono text-zinc-700 dark:text-zinc-300 placeholder-zinc-300"
-                                    placeholder="-" />
+                                    class="w-full text-center bg-transparent border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 focus:bg-white dark:focus:bg-zinc-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-md transition-all py-1 px-1 text-xs font-mono text-zinc-700 dark:text-zinc-300 placeholder-transparent"
+                                    placeholder="" />
                             </td>
 
                             {{-- Konversi (Computed Live) --}}
                             <td class="px-2 py-1 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-400">
-                                {{ $rowKgKl > 0 ? number_format($rowKgKl, 1, ',', '.') : '-' }}
+                                {{ $rowKgKl > 0 ? number_format($rowKgKl, 1, ',', '.') : '' }}
                             </td>
                             <td class="px-2 py-1 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-400">
-                                {{ $rowKgRf > 0 ? number_format($rowKgRf, 1, ',', '.') : '-' }}
+                                {{ $rowKgRf > 0 ? number_format($rowKgRf, 1, ',', '.') : '' }}
                             </td>
                             <td class="px-2 py-1 text-center border-r border-zinc-200 dark:border-white/10 font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50/20">
-                                {{ $rowTotalKg > 0 ? number_format($rowTotalKg, 1, ',', '.') : '-' }}
+                                {{ $rowTotalKg > 0 ? number_format($rowTotalKg, 1, ',', '.') : '' }}
                             </td>
                             <td class="px-2 py-1 text-center border-r border-zinc-200 dark:border-white/10 {{ $rowAvg > 0 ? 'text-purple-700 dark:text-purple-400 font-bold' : 'text-zinc-400' }}">
-                                {{ $rowAvg > 0 ? number_format($rowAvg, 1, ',', '.') : '-' }}
+                                {{ $rowAvg > 0 ? number_format($rowAvg, 1, ',', '.') : '' }}
                             </td>
 
                             {{-- Input Opname Fisik: Kaleng --}}
@@ -318,8 +321,8 @@
                                 <input type="number" step="0.5" min="0"
                                     wire:key="op-kl-{{ $day }}"
                                     wire:model.live.debounce.500ms="grid.{{ $day }}.opname_kaleng"
-                                    class="w-full text-center bg-transparent border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 focus:bg-white dark:focus:bg-zinc-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-md transition-all py-1 px-1 text-xs font-mono font-medium text-purple-700 dark:text-purple-300 placeholder-zinc-300"
-                                    placeholder="-" />
+                                    class="w-full text-center bg-transparent border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 focus:bg-white dark:focus:bg-zinc-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-md transition-all py-1 px-1 text-xs font-mono font-medium text-purple-700 dark:text-purple-300 placeholder-transparent"
+                                    placeholder="" />
                             </td>
 
                             {{-- Input Opname Fisik: Refill --}}
@@ -327,8 +330,8 @@
                                 <input type="number" step="0.5" min="0"
                                     wire:key="op-rf-{{ $day }}"
                                     wire:model.live.debounce.500ms="grid.{{ $day }}.opname_refill"
-                                    class="w-full text-center bg-transparent border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 focus:bg-white dark:focus:bg-zinc-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-md transition-all py-1 px-1 text-xs font-mono font-medium text-purple-700 dark:text-purple-300 placeholder-zinc-300"
-                                    placeholder="-" />
+                                    class="w-full text-center bg-transparent border-transparent hover:border-zinc-300 dark:hover:border-zinc-600 focus:bg-white dark:focus:bg-zinc-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-md transition-all py-1 px-1 text-xs font-mono font-medium text-purple-700 dark:text-purple-300 placeholder-transparent"
+                                    placeholder="" />
                             </td>
                         </tr>
                     @endforeach
@@ -374,8 +377,8 @@
                             {{ number_format($overallAvg, 1, ',', '.') }}
                         </td>
 
-                        <td class="px-1 py-2 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400">-</td>
-                        <td class="px-1 py-2 text-center text-zinc-400">-</td>
+                        <td class="px-1 py-2 text-center border-r border-zinc-200 dark:border-white/10"></td>
+                        <td class="px-1 py-2 text-center"></td>
                     </tr>
 
                     <tr class="text-[10px] text-zinc-500 bg-zinc-100 dark:bg-zinc-900 font-sans">
@@ -384,14 +387,14 @@
                         </td>
                         @foreach ($cookers as $c)
                             <td class="px-1 py-1.5 text-center border-r border-zinc-200 dark:border-white/10">
-                                {{ $totalCookerDays[$c->name] ?? 0 }} Hari
+                                {{ ($totalCookerDays[$c->name] ?? 0) > 0 ? ($totalCookerDays[$c->name] . ' Hari') : '' }}
                             </td>
                         @endforeach
                         <td class="px-2 py-1.5 text-center border-r border-zinc-200 dark:border-white/10 font-bold">
-                            {{ $totalDaysCooking }} Hari
+                            {{ $totalDaysCooking > 0 ? ($totalDaysCooking . ' Hari') : '' }}
                         </td>
                         @for ($s = 0; $s < 9; $s++)
-                            <td class="px-1 py-1.5 text-center border-r border-zinc-200 dark:border-white/10 text-zinc-400">-</td>
+                            <td class="px-1 py-1.5 text-center border-r border-zinc-200 dark:border-white/10"></td>
                         @endfor
                     </tr>
                 </tfoot>
