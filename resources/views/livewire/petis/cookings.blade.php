@@ -1,9 +1,9 @@
-<div class="space-y-6">
+<div class="space-y-6 pb-28 sm:pb-8">
     {{-- Header --}}
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <div class="flex items-center gap-2">
-                <flux:badge color="amber" size="sm" icon="fire">Produksi Petis</flux:badge>
+                {{-- <flux:badge color="amber" size="sm" icon="fire">Produksi Petis</flux:badge> --}}
                 <flux:heading size="xl" class="font-bold">Proses Masakan Petis</flux:heading>
             </div>
             <flux:subheading size="sm" class="mt-1">
@@ -20,17 +20,17 @@
                 <span>Menyimpan otomatis...</span>
             </div>
 
-            <flux:button variant="ghost" icon="printer"
+            {{-- <flux:button variant="ghost" icon="printer"
                 :href="route('petis.cookings.print', ['warehouse' => $warehouse_id, 'month' => $month])"
                 target="_blank">
                 Cetak Laporan
-            </flux:button>
+            </flux:button> --}}
 
-            @can('warehouses:read')
+            {{-- @can('warehouses:read')
                 <flux:button variant="subtle" icon="users" :href="route('teams.index')" wire:navigate>
                     Master Tim & Koki
                 </flux:button>
-            @endcan
+            @endcan --}}
         </div>
     </div>
 
@@ -109,40 +109,42 @@
         @endphp
 
         {{-- Date Navigator & Day Strip --}}
-        <div class="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-white/10 p-4 shadow-xs space-y-4">
+        <div class="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-white/10 p-3.5 sm:p-4 shadow-xs space-y-3 sm:space-y-4">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div class="flex flex-wrap items-center gap-2">
+                <div class="flex items-center gap-2 w-full sm:w-auto">
                     <button type="button" wire:click="prevDay" title="Hari Sebelumnya"
-                        class="p-2 rounded-xl border border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-600 dark:text-zinc-300 active:scale-95 shadow-2xs cursor-pointer">
+                        class="p-2.5 rounded-xl border border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-600 dark:text-zinc-300 active:scale-95 shadow-2xs cursor-pointer shrink-0">
                         <flux:icon.chevron-left class="w-4 h-4" />
                     </button>
 
-                    {{-- Date Picker Utama --}}
-                    <div class="w-52 sm:w-60">
+                    <div class="flex-1 sm:w-60 sm:flex-initial min-w-0">
                         <x-date-picker wire:model.live="selectedDate" type="date" variant="ios" :clearable="false" />
                     </div>
 
                     <button type="button" wire:click="nextDay" title="Hari Berikutnya"
-                        class="p-2 rounded-xl border border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-600 dark:text-zinc-300 active:scale-95 shadow-2xs cursor-pointer">
+                        class="p-2.5 rounded-xl border border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-600 dark:text-zinc-300 active:scale-95 shadow-2xs cursor-pointer shrink-0">
                         <flux:icon.chevron-right class="w-4 h-4" />
                     </button>
-
-                    @if ($isSunday)
-                        <flux:badge color="rose" size="sm">Minggu</flux:badge>
-                    @endif
-                    @if ($isToday)
-                        <flux:badge color="amber" size="sm">Hari Ini</flux:badge>
-                    @else
-                        <flux:button size="sm" variant="subtle" wire:click="setToday" class="text-xs">
-                            Ke Hari Ini
-                        </flux:button>
-                    @endif
                 </div>
 
-                {{-- Keterangan Hari & Tanggal Lengkap --}}
-                <div class="flex items-center gap-2 text-xs text-zinc-500">
-                    <flux:icon.clock class="w-3.5 h-3.5 text-zinc-400" />
-                    <span class="font-medium text-zinc-700 dark:text-zinc-300">{{ $selectedDateFormatted }}</span>
+                <div class="flex items-center justify-between sm:justify-end gap-2 text-xs text-zinc-500 pt-2 border-t border-zinc-100 dark:border-white/5 sm:border-t-0 sm:pt-0">
+                    <div class="flex items-center gap-1.5">
+                        @if ($isSunday)
+                            <flux:badge color="rose" size="sm">Minggu</flux:badge>
+                        @endif
+                        @if ($isToday)
+                            <flux:badge color="amber" size="sm">Hari Ini</flux:badge>
+                        @else
+                            <flux:button size="sm" variant="subtle" wire:click="setToday" class="text-xs">
+                                Ke Hari Ini
+                            </flux:button>
+                        @endif
+                    </div>
+
+                    <div class="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300 font-medium">
+                        <flux:icon.clock class="w-3.5 h-3.5 text-zinc-400" />
+                        <span>{{ $selectedDateFormatted }}</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -154,23 +156,23 @@
             <div class="lg:col-span-7 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-white/10 p-5 shadow-xs space-y-4">
                 <div class="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-white/5">
                     <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                        <div class="w-8 h-8 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
                             <flux:icon.fire class="w-4 h-4" />
                         </div>
-                        <div>
-                            <flux:heading size="base" class="font-bold">1. Sesi Juru Masak</flux:heading>
-                            <flux:subheading size="xs">Atur sesi juru masak menggunakan stepper</flux:subheading>
+                        <div class="min-w-0">
+                            <flux:heading size="base" class="font-bold truncate">1. Sesi Juru Masak</flux:heading>
+                            <flux:subheading size="xs" class="hidden sm:block">Atur sesi juru masak menggunakan stepper</flux:subheading>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 shrink-0">
                         <button type="button" wire:click="copyYesterdayCookers" title="Salin daftar koki hari kemarin"
                             class="px-2.5 py-1 text-xs font-medium rounded-xl border border-zinc-200 dark:border-white/10 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 flex items-center gap-1.5 transition-colors active:scale-95 cursor-pointer">
                             <flux:icon.document-duplicate class="w-3.5 h-3.5 text-zinc-400" />
                             <span class="hidden sm:inline">Salin Kemarin</span>
                         </button>
 
-                        <flux:badge color="amber" size="sm" class="font-mono font-bold">
+                        <flux:badge color="amber" size="sm" class="font-mono font-bold shrink-0">
                             Total: {{ $metrics['total_sessions'] }} Sesi
                         </flux:badge>
                     </div>
@@ -232,12 +234,12 @@
                 <div class="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-white/10 p-5 shadow-xs space-y-4">
                     <div class="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-white/5">
                         <div class="flex items-center gap-2.5">
-                            <div class="w-8 h-8 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                            <div class="w-8 h-8 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                                 <flux:icon.cube class="w-4 h-4" />
                             </div>
-                            <div>
-                                <flux:heading size="base" class="font-bold">2. Hasil Masakan Jadi</flux:heading>
-                                <flux:subheading size="xs">Input kemasan jadi dan sisa wajan</flux:subheading>
+                            <div class="min-w-0">
+                                <flux:heading size="base" class="font-bold truncate">2. Hasil Masakan Jadi</flux:heading>
+                                <flux:subheading size="xs" class="hidden sm:block">Input kemasan jadi dan sisa wajan</flux:subheading>
                             </div>
                         </div>
                     </div>
@@ -307,12 +309,12 @@
                         </div>
 
                         {{-- 3. Sisa Wajan (Kg) --}}
-                        <div class="p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-white/5 flex items-center justify-between gap-3">
+                        <div class="p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
                             <div>
                                 <span class="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block">Sisa Adonan Wajan</span>
                                 <span class="text-[11px] text-zinc-400">Di dasar wajan (Kg)</span>
                             </div>
-                            <div class="w-40 bg-white dark:bg-zinc-800/90 rounded-xl px-2.5 py-0.5 border border-zinc-200 dark:border-white/10 shadow-2xs">
+                            <div class="w-full sm:w-40 bg-white dark:bg-zinc-800/90 rounded-xl px-2.5 py-0.5 border border-zinc-200 dark:border-white/10 shadow-2xs">
                                 <x-stepper
                                     step="0.1"
                                     min="0"
@@ -356,12 +358,12 @@
                 <div class="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-white/10 p-5 shadow-xs space-y-4">
                     <div class="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-white/5">
                         <div class="flex items-center gap-2.5">
-                            <div class="w-8 h-8 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                            <div class="w-8 h-8 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
                                 <flux:icon.clipboard-document-check class="w-4 h-4" />
                             </div>
-                            <div>
-                                <flux:heading size="base" class="font-bold">3. Stock Nyata (Opname Gudang)</flux:heading>
-                                <flux:subheading size="xs">Pengecekan fisik barang jadi di Gudang Petis</flux:subheading>
+                            <div class="min-w-0">
+                                <flux:heading size="base" class="font-bold truncate">3. Stock Nyata (Opname Gudang)</flux:heading>
+                                <flux:subheading size="xs" class="hidden sm:block">Pengecekan fisik barang jadi di Gudang Petis</flux:subheading>
                             </div>
                         </div>
                     </div>
@@ -512,23 +514,27 @@
         </div>
 
         {{-- Filter Toolbar Periode Bulan --}}
-        <div class="flex flex-wrap items-center justify-between gap-4 bg-zinc-50 dark:bg-zinc-900/60 p-3.5 rounded-2xl border border-zinc-200 dark:border-white/10">
-            <div class="flex flex-wrap items-center gap-4">
-                <div class="flex items-center gap-2">
-                    <span class="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Bulan:</span>
-                    <flux:input type="month" wire:model.live="month" size="sm" class="w-40" />
-                </div>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-50 dark:bg-zinc-900/60 p-3.5 rounded-2xl border border-zinc-200 dark:border-white/10">
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-zinc-500 uppercase tracking-wider shrink-0">Bulan:</span>
+                <flux:input type="month" wire:model.live="month" size="sm" class="w-40" />
             </div>
 
-            <div class="flex items-center gap-2 text-xs text-zinc-500">
-                <flux:icon.check-circle class="w-4 h-4 text-emerald-500" />
-                <span>Klik angka tanggal untuk membuka input harian, atau ketik langsung di kolom spreadsheet.</span>
+            <div class="flex items-center gap-2 text-[11px] sm:text-xs text-zinc-500">
+                <flux:icon.check-circle class="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>Klik angka tanggal untuk buka harian, atau ketik langsung di spreadsheet.</span>
             </div>
         </div>
 
         {{-- Main Inline Spreadsheet Table --}}
-        <div class="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-white/10 overflow-hidden shadow-xs">
-            <div class="overflow-x-auto">
+        <div class="space-y-2">
+            <div class="flex items-center gap-1.5 text-[11px] text-zinc-500 bg-zinc-100/80 dark:bg-zinc-800/80 px-3 py-1.5 rounded-xl sm:hidden">
+                <flux:icon.arrows-right-left class="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <span>Geser tabel ke samping untuk melihat koki & hasil</span>
+            </div>
+
+            <div class="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-white/10 overflow-hidden shadow-xs">
+                <div class="overflow-x-auto">
                 <table class="w-full text-xs text-left whitespace-nowrap">
                     <thead class="text-[11px] text-zinc-700 dark:text-zinc-300 uppercase bg-zinc-100/80 dark:bg-zinc-800/80 border-b border-zinc-200 dark:border-white/10">
                         <tr>
@@ -748,6 +754,7 @@
                     </tfoot>
                 </table>
             </div>
+        </div>
         </div>
     @endif
 </div>

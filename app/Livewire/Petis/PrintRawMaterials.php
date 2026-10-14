@@ -6,6 +6,7 @@ use App\Models\Item;
 use App\Models\ItemCategory;
 use App\Models\PetisOpname;
 use App\Models\PetisRawMaterialEntry;
+use App\Models\PetisRawMaterialInitialStock;
 use App\Models\Warehouse;
 use Carbon\Carbon;
 use Livewire\Attributes\Computed;
@@ -63,20 +64,36 @@ class PrintRawMaterials extends Component
             ->whereBetween('date', [$startOfMonth->format('Y-m-d'), $endOfMonth->format('Y-m-d')])
             ->get();
 
-        $lastMonthEnd = $startOfMonth->copy()->subDay()->format('Y-m-d');
-        $prevOpnames = PetisOpname::where('warehouse_id', $this->warehouse)
-            ->where('date', '<=', $lastMonthEnd)
-            ->orderBy('date', 'desc')
+        // Stok Awal (Saldo Awal Buku)
+        $explicitInitials = PetisRawMaterialInitialStock::where('warehouse_id', $this->warehouse)
+            ->where('month', $this->month)
             ->get()
-            ->groupBy('item_id');
+            ->keyBy('item_id');
+
+        $prevMonth = $startOfMonth->copy()->subMonth()->format('Y-m');
+        $prevInitials = PetisRawMaterialInitialStock::where('warehouse_id', $this->warehouse)
+            ->where('month', $prevMonth)
+            ->get()
+            ->keyBy('item_id');
+
+        $prevEntries = PetisRawMaterialEntry::where('warehouse_id', $this->warehouse)
+            ->whereBetween('date', [
+                $startOfMonth->copy()->subMonth()->startOfMonth()->format('Y-m-d'),
+                $startOfMonth->copy()->subDay()->format('Y-m-d')
+            ])->get();
 
         $initialStocks = [];
         foreach ($items as $item) {
-            if (isset($prevOpnames[$item->id])) {
-                $initialStocks[$item->id] = (float) $prevOpnames[$item->id]->first()->actual_stock;
+            if (isset($explicitInitials[$item->id])) {
+                $initialStocks[$item->id] = (float) $explicitInitials[$item->id]->initial_stock;
+            } elseif (isset($prevInitials[$item->id]) || $prevEntries->where('item_id', $item->id)->isNotEmpty()) {
+                $initPrev = (float) ($prevInitials[$item->id]?->initial_stock ?? 0);
+                $purPrev = (float) $prevEntries->where('item_id', $item->id)->where('type', 'purchase')->sum('quantity');
+                $usePrev = (float) $prevEntries->where('item_id', $item->id)->where('type', 'usage')->sum('quantity');
+                $salPrev = (float) $prevEntries->where('item_id', $item->id)->where('type', 'sale')->sum('quantity');
+                $initialStocks[$item->id] = $initPrev + $purPrev - ($usePrev + $salPrev);
             } else {
-                $opDay1 = $opnames->where('item_id', $item->id)->where('date', $startOfMonth->format('Y-m-d'))->first();
-                $initialStocks[$item->id] = $opDay1 ? (float) $opDay1->actual_stock : 0;
+                $initialStocks[$item->id] = 0;
             }
         }
 

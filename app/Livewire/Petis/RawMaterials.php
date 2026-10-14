@@ -6,6 +6,7 @@ use App\Models\Item;
 use App\Models\ItemCategory;
 use App\Models\PetisOpname;
 use App\Models\PetisRawMaterialEntry;
+use App\Models\PetisRawMaterialInitialStock;
 use App\Models\Warehouse;
 use Carbon\Carbon;
 use Flux\Flux;
@@ -18,7 +19,10 @@ class RawMaterials extends Component
 {
     public $warehouse_id;
     public $month; // Format: 'Y-m', misal '2026-10'
-    public $activeTab = 'rekap'; // rekap | purchase | usage | sale | stock | selisih
+    public $viewMode = 'daily'; // 'daily' | 'monthly'
+    public $selectedDate; // 'Y-m-d', misal '2026-10-13'
+    public $dailyTab = 'usage'; // usage | purchase | sale | opname
+    public $activeTab = 'rekap'; // rekap | purchase | usage | sale | stock | selisih (untuk tab bulanan)
 
     // Inline grid state: grid.{type}.{day}.{item_id}
     public $grid = [
@@ -38,7 +42,9 @@ class RawMaterials extends Component
         $petisWarehouse = Warehouse::where('name', 'Gudang Petis')->first() ?? Warehouse::first();
         $this->warehouse_id = $petisWarehouse?->id;
 
-        $this->month = Carbon::today()->format('Y-m');
+        $today = Carbon::today();
+        $this->month = $today->format('Y-m');
+        $this->selectedDate = $today->format('Y-m-d');
 
         $this->loadGrid();
     }
@@ -47,6 +53,25 @@ class RawMaterials extends Component
     {
         if (in_array($property, ['month', 'warehouse_id'])) {
             $this->loadGrid();
+            if ($this->selectedDate) {
+                $parsed = Carbon::parse($this->selectedDate);
+                if ($parsed->format('Y-m') !== $this->month) {
+                    $this->selectedDate = $this->month . '-01';
+                }
+            }
+            unset($this->monthlyData);
+            return;
+        }
+
+        if ($property === 'selectedDate') {
+            if ($this->selectedDate) {
+                $parsed = Carbon::parse($this->selectedDate);
+                $newMonth = $parsed->format('Y-m');
+                if ($newMonth !== $this->month) {
+                    $this->month = $newMonth;
+                    $this->loadGrid();
+                }
+            }
             unset($this->monthlyData);
             return;
         }
@@ -79,6 +104,100 @@ class RawMaterials extends Component
                 unset($this->monthlyData);
             }
         }
+    }
+
+    public function prevDay()
+    {
+        $prev = Carbon::parse($this->selectedDate)->subDay();
+        $newMonth = $prev->format('Y-m');
+        $this->selectedDate = $prev->format('Y-m-d');
+        if ($newMonth !== $this->month) {
+            $this->month = $newMonth;
+            $this->loadGrid();
+        }
+        unset($this->monthlyData);
+    }
+
+    public function nextDay()
+    {
+        $next = Carbon::parse($this->selectedDate)->addDay();
+        $newMonth = $next->format('Y-m');
+        $this->selectedDate = $next->format('Y-m-d');
+        if ($newMonth !== $this->month) {
+            $this->month = $newMonth;
+            $this->loadGrid();
+        }
+        unset($this->monthlyData);
+    }
+
+    public function setToday()
+    {
+        $today = Carbon::today();
+        $this->selectedDate = $today->format('Y-m-d');
+        if ($today->format('Y-m') !== $this->month) {
+            $this->month = $today->format('Y-m');
+            $this->loadGrid();
+        }
+        unset($this->monthlyData);
+    }
+
+    public function selectDay(int $day)
+    {
+        $date = Carbon::parse($this->month . '-01')->day($day)->format('Y-m-d');
+        $this->selectedDate = $date;
+        $this->viewMode = 'daily';
+        unset($this->monthlyData);
+    }
+
+    public function setDailyTab(string $tab)
+    {
+        $this->dailyTab = $tab;
+    }
+
+    public function adjustDailyQty(string $type, int $itemId, float $delta)
+    {
+        $day = $this->selectedDay;
+        $current = (float) ($this->grid[$type][$day][$itemId] ?? 0);
+        $new = max(0, $current + $delta);
+        $this->grid[$type][$day][$itemId] = $new > 0 ? (string) $new : '';
+
+        if ($type === 'opname') {
+            $this->saveOpnameCell($day, $itemId, $this->grid[$type][$day][$itemId]);
+        } else {
+            $this->saveCell($type, $day, $itemId, $this->grid[$type][$day][$itemId]);
+        }
+        unset($this->monthlyData);
+    }
+
+    #[Computed]
+    public function selectedDay(): int
+    {
+        return (int) Carbon::parse($this->selectedDate)->format('j');
+    }
+
+    #[Computed]
+    public function selectedDateFormatted(): string
+    {
+        return Carbon::parse($this->selectedDate)->locale('id')->translatedFormat('l, d F Y');
+    }
+
+    #[Computed]
+    public function todayCookingSessions(): float
+    {
+        if (!$this->warehouse_id) return 0;
+        return (float) \App\Models\PetisProductionCooker::whereHas('production', function ($q) {
+            $q->where('warehouse_id', $this->warehouse_id)->where('date', $this->selectedDate);
+        })->sum('sessions');
+    }
+
+    #[Computed]
+    public function currentWarehouseStocks(): array
+    {
+        if (!$this->warehouse_id) return [];
+        return \App\Models\WarehouseStock::where('warehouse_id', $this->warehouse_id)
+            ->whereIn('item_id', $this->rawItems->pluck('id'))
+            ->pluck('current_stock', 'item_id')
+            ->toArray();
     }
 
     public function loadGrid()
@@ -114,20 +233,35 @@ class RawMaterials extends Component
             ->whereBetween('date', [$startOfMonth->format('Y-m-d'), $endOfMonth->format('Y-m-d')])
             ->get();
 
-        // 3. Stok Awal
-        $lastMonthEnd = $startOfMonth->copy()->subDay()->format('Y-m-d');
-        $prevOpnames = PetisOpname::where('warehouse_id', $this->warehouse_id)
-            ->where('date', '<=', $lastMonthEnd)
-            ->orderBy('date', 'desc')
+        // 3. Stok Awal (Saldo Awal Buku)
+        $explicitInitials = PetisRawMaterialInitialStock::where('warehouse_id', $this->warehouse_id)
+            ->where('month', $this->month)
             ->get()
-            ->groupBy('item_id');
+            ->keyBy('item_id');
+
+        $prevMonth = $startOfMonth->copy()->subMonth()->format('Y-m');
+        $prevInitials = PetisRawMaterialInitialStock::where('warehouse_id', $this->warehouse_id)
+            ->where('month', $prevMonth)
+            ->get()
+            ->keyBy('item_id');
+
+        $prevEntries = PetisRawMaterialEntry::where('warehouse_id', $this->warehouse_id)
+            ->whereBetween('date', [
+                $startOfMonth->copy()->subMonth()->startOfMonth()->format('Y-m-d'),
+                $startOfMonth->copy()->subDay()->format('Y-m-d')
+            ])->get();
 
         foreach ($items as $item) {
-            $opnameDay1 = $opnames->where('item_id', $item->id)->where('date', $startOfMonth->format('Y-m-d'))->first();
-            if ($opnameDay1 !== null) {
-                $this->initial_stocks[$item->id] = (float) $opnameDay1->actual_stock;
-            } elseif (isset($prevOpnames[$item->id])) {
-                $this->initial_stocks[$item->id] = (float) $prevOpnames[$item->id]->first()->actual_stock;
+            if (isset($explicitInitials[$item->id])) {
+                $this->initial_stocks[$item->id] = (float) $explicitInitials[$item->id]->initial_stock;
+            } elseif (isset($prevInitials[$item->id]) || $prevEntries->where('item_id', $item->id)->isNotEmpty()) {
+                // Roll-forward saldo akhir buku bulan sebelumnya
+                $initPrev = (float) ($prevInitials[$item->id]?->initial_stock ?? 0);
+                $purPrev = (float) $prevEntries->where('item_id', $item->id)->where('type', 'purchase')->sum('quantity');
+                $usePrev = (float) $prevEntries->where('item_id', $item->id)->where('type', 'usage')->sum('quantity');
+                $salPrev = (float) $prevEntries->where('item_id', $item->id)->where('type', 'sale')->sum('quantity');
+                $endingPrev = $initPrev + $purPrev - ($usePrev + $salPrev);
+                $this->initial_stocks[$item->id] = $endingPrev;
             } else {
                 $this->initial_stocks[$item->id] = '';
             }
@@ -214,27 +348,23 @@ class RawMaterials extends Component
     {
         abort_unless(auth()->user()->can('petis_productions:create'), 403);
 
-        $startOfMonth = Carbon::parse($this->month . '-01')->startOfMonth();
-        $date = $startOfMonth->format('Y-m-d');
-
         if ($value !== '' && $value !== null) {
-            PetisOpname::updateOrCreate(
+            PetisRawMaterialInitialStock::updateOrCreate(
                 [
                     'warehouse_id' => $this->warehouse_id,
                     'item_id' => $itemId,
-                    'date' => $date,
+                    'month' => $this->month,
                 ],
                 [
-                    'actual_stock' => (float) $value,
-                    'notes' => 'Stok Awal Bulan',
+                    'initial_stock' => (float) $value,
                     'user_id' => auth()->id(),
                 ]
             );
         } else {
-            PetisOpname::where([
+            PetisRawMaterialInitialStock::where([
                 'warehouse_id' => $this->warehouse_id,
                 'item_id' => $itemId,
-                'date' => $date,
+                'month' => $this->month,
             ])->delete();
         }
     }
@@ -300,24 +430,11 @@ class RawMaterials extends Component
             ->whereBetween('date', [$startOfMonth->format('Y-m-d'), $endOfMonth->format('Y-m-d')])
             ->get();
 
-        // 3. Tentukan Stok Awal per item untuk tanggal 1
+        // 3. Tentukan Stok Awal per item untuk tanggal 1 (Saldo Awal Buku)
         $initialStocks = [];
-        $lastMonthEnd = $startOfMonth->copy()->subDay()->format('Y-m-d');
-        $prevOpnames = PetisOpname::where('warehouse_id', $this->warehouse_id)
-            ->where('date', '<=', $lastMonthEnd)
-            ->orderBy('date', 'desc')
-            ->get()
-            ->groupBy('item_id');
-
         foreach ($items as $item) {
-            $opnameDay1 = $opnames->where('item_id', $item->id)->where('date', $startOfMonth->format('Y-m-d'))->first();
-            if ($opnameDay1 !== null) {
-                $initialStocks[$item->id] = (float) $opnameDay1->actual_stock;
-            } elseif (isset($prevOpnames[$item->id])) {
-                $initialStocks[$item->id] = (float) $prevOpnames[$item->id]->first()->actual_stock;
-            } else {
-                $initialStocks[$item->id] = 0;
-            }
+            $v = $this->initial_stocks[$item->id] ?? 0;
+            $initialStocks[$item->id] = (float) ($v ?: 0);
         }
 
         // 4. Struktur data per hari
@@ -375,13 +492,13 @@ class RawMaterials extends Component
                 $runningStock[$itemId] = $bookStock;
                 $dayData['book_stock'][$itemId] = $bookStock;
 
-                // Stok Opname
+                // Stok Opname (Fisik)
                 $op = $opnames->first(fn($o) => $o->item_id == $itemId && $o->date->format('Y-m-d') == $currentDate);
                 $dayData['opname'][$itemId] = $op ? (float) $op->actual_stock : null;
 
-                // Selisih = Stok Nyata - Stok Buku
+                // Selisih = Stok Buku - Stok Fisik (sesuai rumus Excel =C18-N18)
                 if ($op !== null) {
-                    $dayData['diff'][$itemId] = (float) $op->actual_stock - $bookStock;
+                    $dayData['diff'][$itemId] = $bookStock - (float) $op->actual_stock;
                 } else {
                     $dayData['diff'][$itemId] = null;
                 }
@@ -400,6 +517,21 @@ class RawMaterials extends Component
 
     public function render()
     {
-        return view('livewire.petis.raw-materials');
+        return view('livewire.petis.raw-materials', [
+            'warehouse_id' => $this->warehouse_id,
+            'month' => $this->month,
+            'viewMode' => $this->viewMode,
+            'selectedDate' => $this->selectedDate,
+            'dailyTab' => $this->dailyTab,
+            'activeTab' => $this->activeTab,
+            'grid' => $this->grid,
+            'initial_stocks' => $this->initial_stocks,
+            'rawItems' => $this->rawItems,
+            'selectedDay' => $this->selectedDay,
+            'selectedDateFormatted' => $this->selectedDateFormatted,
+            'todayCookingSessions' => $this->todayCookingSessions,
+            'currentWarehouseStocks' => $this->currentWarehouseStocks,
+            'monthlyData' => $this->monthlyData,
+        ]);
     }
 }
