@@ -27,7 +27,12 @@ class PermissionSeeder extends Seeder
             'warehouses',
             'stock_mutations',
             'warehouse_stocks',
-            'productions'
+            'productions',
+            // Modul Khusus Petis
+            'petis_productions',
+            'petis_cookings',
+            'petis_raw_materials',
+            'petis_cookers',
         ];
 
         // Aksi standar CRUD
@@ -35,8 +40,8 @@ class PermissionSeeder extends Seeder
 
         foreach ($features as $feature) {
             foreach ($actions as $action) {
-                // Untuk master data mungkin read-self tidak relevan, tapi kita daftarkan saja agar konsisten
-                Permission::updateOrCreate(['name' => "{$feature}:{$action}"]);
+                // Daftarkan aksi agar konsisten dan granular
+                Permission::firstOrCreate(['name' => "{$feature}:{$action}"]);
             }
         }
 
@@ -55,11 +60,12 @@ class PermissionSeeder extends Seeder
             'order_books:print-deliveries',
             'reports:daily-recap',
             'reports:stock-circulation',
-            'reports:daily-production'
+            'reports:daily-production',
+            'reports:petis-recap',
         ];
 
         foreach ($customPermissions as $permission) {
-            Permission::updateOrCreate(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission]);
         }
     }
 }

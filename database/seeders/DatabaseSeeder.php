@@ -33,6 +33,16 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('kenndeclouv'),
             ]
         );
-        $superadmin->assignRole('superadmin');
+        $superadmin->syncRoles(['superadmin']);
+
+        // Akun Checker Petis khusus untuk verifikasi hak akses petis
+        $checkerPetis = User::firstOrCreate(
+            ['email' => 'checkerpetis@kafinusa.com'],
+            [
+                'name' => 'Checker Petis',
+                'password' => Hash::make('password'),
+            ]
+        );
+        $checkerPetis->syncRoles(['checker_petis']);
     }
 }

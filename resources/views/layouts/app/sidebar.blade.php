@@ -35,40 +35,48 @@
                     :current="request()->routeIs('order-books.*')" wire:navigate.hover>
                     {{ __('Buku Order') }}
                 </flux:sidebar.item>
-                @can('sales_schedules:read')
-                    <flux:sidebar.item icon="calendar-days" :href="route('sales-schedules.index')"
-                        :current="request()->routeIs('sales-schedules.*')" wire:navigate.hover>
-                        {{ __('Jadwal Mingguan') }}
-                    </flux:sidebar.item>
-                @endcan
-                @canany(['stock_mutations:read', 'stock_mutations:read-self'])
-                    <flux:sidebar.item icon="clipboard-document-list" :href="route('stock-mutations.index')"
-                        :current="request()->routeIs('stock-mutations.*')" wire:navigate.hover>
-                        {{ __('Stok Gudang') }}
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="clipboard-document-check" :href="route('stock-opnames.index')"
-                        :current="request()->routeIs('stock-opnames.*')" wire:navigate.hover>
-                        {{ __('Stock Opname') }}
-                    </flux:sidebar.item>
-                @endcanany
-                @can('productions:read')
-                    <flux:sidebar.item icon="wrench-screwdriver" :href="route('productions.index')"
-                        :current="request()->routeIs('productions.*')" wire:navigate.hover>
-                        {{ __('Produksi Harian') }}
-                    </flux:sidebar.item>
-                @endcan
-                @can('petis_productions:read')
-                    <flux:sidebar.group expandable :expanded="request()->routeIs('petis.*')" icon="fire" :heading="__('Produksi Petis')">
+            @endcanany
+
+            @can('sales_schedules:read')
+                <flux:sidebar.item icon="calendar-days" :href="route('sales-schedules.index')"
+                    :current="request()->routeIs('sales-schedules.*')" wire:navigate.hover>
+                    {{ __('Jadwal Mingguan') }}
+                </flux:sidebar.item>
+            @endcan
+
+            @canany(['stock_mutations:read', 'stock_mutations:read-self'])
+                <flux:sidebar.item icon="clipboard-document-list" :href="route('stock-mutations.index')"
+                    :current="request()->routeIs('stock-mutations.*')" wire:navigate.hover>
+                    {{ __('Stok Gudang') }}
+                </flux:sidebar.item>
+                <flux:sidebar.item icon="clipboard-document-check" :href="route('stock-opnames.index')"
+                    :current="request()->routeIs('stock-opnames.*')" wire:navigate.hover>
+                    {{ __('Stock Opname') }}
+                </flux:sidebar.item>
+            @endcanany
+
+            @can('productions:read')
+                <flux:sidebar.item icon="wrench-screwdriver" :href="route('productions.index')"
+                    :current="request()->routeIs('productions.*')" wire:navigate.hover>
+                    {{ __('Produksi Harian') }}
+                </flux:sidebar.item>
+            @endcan
+
+            @canany(['petis_productions:read', 'petis_cookings:read', 'petis_raw_materials:read'])
+                <flux:sidebar.group expandable :expanded="request()->routeIs('petis.*')" icon="fire" :heading="__('Produksi Petis')">
+                    @canany(['petis_raw_materials:read', 'petis_productions:read'])
                         <flux:sidebar.item icon="cube" :href="route('petis.raw-materials.index')"
                             :current="request()->routeIs('petis.raw-materials.*')" wire:navigate.hover>
                             {{ __('Bahan Baku') }}
                         </flux:sidebar.item>
+                    @endcanany
+                    @canany(['petis_cookings:read', 'petis_productions:read'])
                         <flux:sidebar.item icon="fire" :href="route('petis.cookings.index')"
                             :current="request()->routeIs('petis.cookings.*')" wire:navigate.hover>
                             {{ __('Proses Masakan') }}
                         </flux:sidebar.item>
-                    </flux:sidebar.group>
-                @endcan
+                    @endcanany
+                </flux:sidebar.group>
             @endcanany
 
             <div class="px-3 mt-2 mb-1 text-xs font-medium text-zinc-500 dark:text-zinc-400 in-data-flux-sidebar-collapsed-desktop:hidden"
@@ -76,8 +84,8 @@
                 Advanced
             </div>
 
-            @canany(['markets:read', 'customers:read', 'employees:read', 'items:read', 'customer-categories:read',
-                'item-categories:read'])
+            @canany(['markets:read', 'customers:read', 'warehouses:read', 'petis_cookers:read', 'employees:read', 'items:read', 'customer_categories:read',
+                'item_categories:read'])
                 <flux:sidebar.group expandable
                     :expanded="request()->routeIs('markets.*', 'customers.*', 'employees.*', 'items.*', 'customer-categories.*', 'item-categories.*', 'warehouses.*', 'teams.*')"
                     icon="circle-stack" :heading="__('Database')">
@@ -98,11 +106,13 @@
                             :current="request()->routeIs('warehouses.*')" wire:navigate.hover>
                             {{ __('Gudang') }}
                         </flux:sidebar.item>
+                    @endcan
+                    @canany(['warehouses:read', 'petis_cookers:read'])
                         <flux:sidebar.item icon="user-group" :href="route('teams.index')"
                             :current="request()->routeIs('teams.*')" wire:navigate.hover>
                             {{ __('Master Tim & Koki') }}
                         </flux:sidebar.item>
-                    @endcan
+                    @endcanany
                     @can('employees:read')
                         <flux:sidebar.item icon="identification" :href="route('employees.index')"
                             :current="request()->routeIs('employees.*')" wire:navigate.hover>
@@ -157,7 +167,7 @@
                 </flux:sidebar.group>
             @endcanany
 
-            @canany(['reports:daily-recap', 'reports:stock-circulation', 'reports:daily-production', 'petis_productions:read'])
+            @canany(['reports:daily-recap', 'reports:stock-circulation', 'reports:daily-production', 'reports:petis-recap', 'petis_productions:read'])
                 <flux:sidebar.group expandable :expanded="request()->routeIs('reports.*')" icon="document-chart-bar"
                     :heading="__('Laporan')">
                     @can('reports:daily-recap')
@@ -178,12 +188,12 @@
                             {{ __('Daftar Produksi') }}
                         </flux:sidebar.item>
                     @endcan
-                    @can('petis_productions:read')
+                    @canany(['reports:petis-recap', 'petis_productions:read'])
                         <flux:sidebar.item icon="fire" :href="route('reports.petis-recap')"
                             :current="request()->routeIs('reports.petis-recap')" wire:navigate.hover>
                             {{ __('Rekap Petis') }}
                         </flux:sidebar.item>
-                    @endcan
+                    @endcanany
                 </flux:sidebar.group>
             @endcanany
 

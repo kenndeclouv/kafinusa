@@ -27,7 +27,7 @@ class PetisRecap extends Component
 
     public function mount()
     {
-        abort_unless(auth()->user()->can('reports:stock-circulation') || auth()->user()->can('petis_productions:read'), 403);
+        abort_unless(auth()->user()->can('reports:petis-recap') || auth()->user()->can('reports:stock-circulation') || auth()->user()->can('petis_productions:read'), 403);
 
         $this->month = $this->month ?: date('m');
         $this->year = $this->year ?: date('Y');

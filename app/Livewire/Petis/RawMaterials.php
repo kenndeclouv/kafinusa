@@ -37,7 +37,7 @@ class RawMaterials extends Component
 
     public function mount()
     {
-        abort_unless(auth()->user()->can('petis_productions:read'), 403);
+        abort_unless(auth()->user()->can('petis_raw_materials:read') || auth()->user()->can('petis_productions:read'), 403);
 
         $petisWarehouse = Warehouse::where('name', 'Gudang Petis')->first() ?? Warehouse::first();
         $this->warehouse_id = $petisWarehouse?->id;
@@ -156,6 +156,7 @@ class RawMaterials extends Component
 
     public function adjustDailyQty(string $type, int $itemId, float $delta)
     {
+        abort_unless(auth()->user()->can('petis_raw_materials:create') || auth()->user()->can('petis_raw_materials:update') || auth()->user()->can('petis_productions:create'), 403);
         $day = $this->selectedDay;
         $current = (float) ($this->grid[$type][$day][$itemId] ?? 0);
         $new = max(0, $current + $delta);
@@ -287,7 +288,7 @@ class RawMaterials extends Component
 
     public function saveCell($type, $day, $itemId, $value)
     {
-        abort_unless(auth()->user()->can('petis_productions:create'), 403);
+        abort_unless(auth()->user()->can('petis_raw_materials:create') || auth()->user()->can('petis_raw_materials:update') || auth()->user()->can('petis_productions:create'), 403);
 
         $startOfMonth = Carbon::parse($this->month . '-01')->startOfMonth();
         $date = $startOfMonth->copy()->day((int) $day)->format('Y-m-d');
@@ -318,7 +319,7 @@ class RawMaterials extends Component
 
     public function saveOpnameCell($day, $itemId, $value)
     {
-        abort_unless(auth()->user()->can('petis_productions:create'), 403);
+        abort_unless(auth()->user()->can('petis_raw_materials:create') || auth()->user()->can('petis_raw_materials:update') || auth()->user()->can('petis_productions:create'), 403);
 
         $startOfMonth = Carbon::parse($this->month . '-01')->startOfMonth();
         $date = $startOfMonth->copy()->day((int) $day)->format('Y-m-d');
@@ -346,7 +347,7 @@ class RawMaterials extends Component
 
     public function saveInitialStockCell($itemId, $value)
     {
-        abort_unless(auth()->user()->can('petis_productions:create'), 403);
+        abort_unless(auth()->user()->can('petis_raw_materials:create') || auth()->user()->can('petis_raw_materials:update') || auth()->user()->can('petis_productions:create'), 403);
 
         if ($value !== '' && $value !== null) {
             PetisRawMaterialInitialStock::updateOrCreate(

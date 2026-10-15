@@ -59,6 +59,25 @@ class RoleSeeder extends Seeder
             'users:create',
             'users:update',
             'users:delete',
+            'warehouses:read',
+            // Petis
+            'petis_productions:create',
+            'petis_productions:read',
+            'petis_productions:update',
+            'petis_productions:delete',
+            'petis_cookings:create',
+            'petis_cookings:read',
+            'petis_cookings:update',
+            'petis_cookings:delete',
+            'petis_raw_materials:create',
+            'petis_raw_materials:read',
+            'petis_raw_materials:update',
+            'petis_raw_materials:delete',
+            'petis_cookers:create',
+            'petis_cookers:read',
+            'petis_cookers:update',
+            'petis_cookers:delete',
+            'reports:petis-recap',
         ]);
 
         $sales = Role::firstOrCreate(['name' => 'sales']);
@@ -89,6 +108,8 @@ class RoleSeeder extends Seeder
             'reports:daily-recap',
             'reports:stock-circulation',
             'reports:daily-production',
+            'warehouses:read',
+            'items:read',
         ]);
 
         // Kepala Checker: bisa akses semua gudang, semua laporan
@@ -102,7 +123,35 @@ class RoleSeeder extends Seeder
             'reports:daily-recap',
             'reports:stock-circulation',
             'reports:daily-production',
+            'reports:petis-recap',
             'warehouses:read',
+            'items:read',
+            'petis_productions:read',
+            'petis_cookings:read',
+            'petis_raw_materials:read',
+        ]);
+
+        // Role Khusus: Checker Petis (Hanya mengurus modul petis: bahan baku, proses masakan, koki, dan laporannya)
+        $checkerPetis = Role::firstOrCreate(['name' => 'checker_petis']);
+        $checkerPetis->syncPermissions([
+            'petis_productions:read',
+            'petis_productions:create',
+            'petis_productions:update',
+            'petis_productions:delete',
+            'petis_cookings:read',
+            'petis_cookings:create',
+            'petis_cookings:update',
+            'petis_cookings:delete',
+            'petis_raw_materials:read',
+            'petis_raw_materials:create',
+            'petis_raw_materials:update',
+            'petis_raw_materials:delete',
+            'petis_cookers:read',
+            'petis_cookers:create',
+            'petis_cookers:update',
+            'reports:petis-recap',
+            'warehouses:read',
+            'items:read',
         ]);
     }
 }

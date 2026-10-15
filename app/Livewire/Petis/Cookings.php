@@ -29,7 +29,7 @@ class Cookings extends Component
 
     public function mount()
     {
-        abort_unless(auth()->user()->can('petis_productions:read'), 403);
+        abort_unless(auth()->user()->can('petis_cookings:read') || auth()->user()->can('petis_productions:read'), 403);
 
         // Produksi petis bersifat mandiri (Gudang Petis)
         $petisWarehouse = Warehouse::where('name', 'Gudang Petis')->first()
@@ -118,6 +118,7 @@ class Cookings extends Component
 
     public function adjustCookerSession(string $cookerName, float $delta)
     {
+        abort_unless(auth()->user()->can('petis_cookings:create') || auth()->user()->can('petis_cookings:update') || auth()->user()->can('petis_productions:create'), 403);
         $day = $this->selectedDay;
         if (!isset($this->grid[$day])) return;
 
@@ -129,6 +130,7 @@ class Cookings extends Component
 
     public function adjustResult(string $field, int $delta)
     {
+        abort_unless(auth()->user()->can('petis_cookings:create') || auth()->user()->can('petis_cookings:update') || auth()->user()->can('petis_productions:create'), 403);
         $day = $this->selectedDay;
         if (!isset($this->grid[$day])) return;
 
@@ -140,6 +142,7 @@ class Cookings extends Component
 
     public function copyYesterdayCookers()
     {
+        abort_unless(auth()->user()->can('petis_cookings:create') || auth()->user()->can('petis_productions:create'), 403);
         $day = $this->selectedDay;
         $yesterday = $day - 1;
         if ($yesterday < 1 || !isset($this->grid[$yesterday])) {
@@ -368,7 +371,7 @@ class Cookings extends Component
 
     public function saveDay($day)
     {
-        abort_unless(auth()->user()->can('petis_productions:create'), 403);
+        abort_unless(auth()->user()->can('petis_cookings:create') || auth()->user()->can('petis_cookings:update') || auth()->user()->can('petis_productions:create'), 403);
         if (!isset($this->grid[$day])) return;
 
         $row = $this->grid[$day];

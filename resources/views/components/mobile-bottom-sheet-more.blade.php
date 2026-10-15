@@ -40,26 +40,30 @@
                     </a>
                 @endcan
 
-                @can('petis_productions:read')
+                @canany(['petis_cookings:read', 'petis_raw_materials:read', 'petis_productions:read'])
                     <div class="px-5 py-2 mt-2 bg-zinc-100/50 dark:bg-zinc-800/50 border-y border-black/5 dark:border-white/5">
                         <span class="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Produksi Petis</span>
                     </div>
 
-                    <a href="{{ route('petis.raw-materials.index') }}" wire:navigate
-                        class="flex items-center px-5 py-3.5 active:bg-black/5 dark:active:bg-white/5 transition-colors border-b border-black/5 dark:border-white/5">
-                        <flux:icon.cube class="w-5 h-5 text-zinc-700 dark:text-zinc-300 mr-4" />
-                        <span class="text-[17px] font-normal text-zinc-900 dark:text-white flex-1">Bahan Baku Petis</span>
-                    </a>
+                    @canany(['petis_raw_materials:read', 'petis_productions:read'])
+                        <a href="{{ route('petis.raw-materials.index') }}" wire:navigate
+                            class="flex items-center px-5 py-3.5 active:bg-black/5 dark:active:bg-white/5 transition-colors border-b border-black/5 dark:border-white/5">
+                            <flux:icon.cube class="w-5 h-5 text-zinc-700 dark:text-zinc-300 mr-4" />
+                            <span class="text-[17px] font-normal text-zinc-900 dark:text-white flex-1">Bahan Baku Petis</span>
+                        </a>
+                    @endcanany
 
-                    <a href="{{ route('petis.cookings.index') }}" wire:navigate
-                        class="flex items-center px-5 py-3.5 active:bg-black/5 dark:active:bg-white/5 transition-colors border-b border-black/5 dark:border-white/5">
-                        <flux:icon.fire class="w-5 h-5 text-zinc-700 dark:text-zinc-300 mr-4" />
-                        <span class="text-[17px] font-normal text-zinc-900 dark:text-white flex-1">Proses Masakan</span>
-                    </a>
-                @endcan
+                    @canany(['petis_cookings:read', 'petis_productions:read'])
+                        <a href="{{ route('petis.cookings.index') }}" wire:navigate
+                            class="flex items-center px-5 py-3.5 active:bg-black/5 dark:active:bg-white/5 transition-colors border-b border-black/5 dark:border-white/5">
+                            <flux:icon.fire class="w-5 h-5 text-zinc-700 dark:text-zinc-300 mr-4" />
+                            <span class="text-[17px] font-normal text-zinc-900 dark:text-white flex-1">Proses Masakan</span>
+                        </a>
+                    @endcanany
+                @endcanany
 
                 <!-- Laporan -->
-                @canany(['order_books:read', 'stock_mutations:read', 'petis_productions:read'])
+                @canany(['order_books:read', 'stock_mutations:read', 'productions:read', 'reports:petis-recap', 'petis_productions:read'])
                     <div class="px-5 py-2 mt-2 bg-zinc-100/50 dark:bg-zinc-800/50 border-y border-black/5 dark:border-white/5">
                         <span class="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Laporan</span>
                     </div>
@@ -89,13 +93,13 @@
                     </a>
                 @endcan
 
-                @can('petis_productions:read')
+                @canany(['reports:petis-recap', 'petis_productions:read'])
                     <a href="{{ route('reports.petis-recap') }}" wire:navigate
                         class="flex items-center px-5 py-3.5 active:bg-black/5 dark:active:bg-white/5 transition-colors border-b border-black/5 dark:border-white/5">
                         <flux:icon.fire class="w-5 h-5 text-zinc-700 dark:text-zinc-300 mr-4" />
                         <span class="text-[17px] font-normal text-zinc-900 dark:text-white flex-1">Rekap Petis</span>
                     </a>
-                @endcan
+                @endcanany
 
                 @can('sales_schedules:read')
                     <a href="{{ route('sales-schedules.index') }}" wire:navigate

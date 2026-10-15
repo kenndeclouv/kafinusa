@@ -22,7 +22,7 @@ class PrintCirculation extends Component
 
     public function mount()
     {
-        abort_unless(auth()->user()->can('petis_productions:read'), 403);
+        abort_unless(auth()->user()->can('reports:petis-recap') || auth()->user()->can('petis_productions:read'), 403);
         $this->month = $this->month ?: Carbon::today()->format('Y-m');
         if (!$this->warehouse) {
             $this->warehouse = Warehouse::where('name', 'Gudang Petis')->first()?->id ?? Warehouse::first()?->id;

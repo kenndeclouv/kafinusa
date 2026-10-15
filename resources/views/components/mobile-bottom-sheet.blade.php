@@ -40,6 +40,22 @@
                     </a>
                 @endcan
 
+                @can('warehouses:read')
+                    <a href="{{ route('warehouses.index') }}" wire:navigate
+                        class="flex items-center px-5 py-3.5 active:bg-black/5 dark:active:bg-white/5 transition-colors border-b border-black/5 dark:border-white/5">
+                        <flux:icon.building-office class="w-5 h-5 text-zinc-700 dark:text-zinc-300 mr-4" />
+                        <span class="text-[17px] font-normal text-zinc-900 dark:text-white flex-1">Gudang</span>
+                    </a>
+                @endcan
+
+                @canany(['warehouses:read', 'petis_cookers:read'])
+                    <a href="{{ route('teams.index') }}" wire:navigate
+                        class="flex items-center px-5 py-3.5 active:bg-black/5 dark:active:bg-white/5 transition-colors border-b border-black/5 dark:border-white/5">
+                        <flux:icon.user-group class="w-5 h-5 text-zinc-700 dark:text-zinc-300 mr-4" />
+                        <span class="text-[17px] font-normal text-zinc-900 dark:text-white flex-1">Master Tim & Koki</span>
+                    </a>
+                @endcanany
+
                 @can('employees:read')
                     <a href="{{ route('employees.index') }}" wire:navigate
                         class="flex items-center px-5 py-3.5 active:bg-black/5 dark:active:bg-white/5 transition-colors border-b border-black/5 dark:border-white/5">
