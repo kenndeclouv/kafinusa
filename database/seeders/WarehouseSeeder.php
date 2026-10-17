@@ -49,5 +49,32 @@ class WarehouseSeeder extends Seeder
                 );
             }
         }
+
+        // Seed Personel / Koki Masak untuk Gudang Petis (sesuai data Excel Sirkulasi Petis)
+        $petis = \App\Models\Warehouse::where('name', 'Gudang Petis')->first();
+        if ($petis) {
+            $petisCookers = [
+                'Samsul',
+                "Yasfa'u",
+                'Amin',
+                'Mahmud',
+                'Riyan',
+                'Khoirul',
+                'Arif',
+            ];
+
+            foreach ($petisCookers as $index => $cookerName) {
+                \App\Models\PetisCooker::updateOrCreate(
+                    [
+                        'name' => $cookerName,
+                        'warehouse_id' => $petis->id,
+                    ],
+                    [
+                        'is_active' => true,
+                        'sort_order' => $index + 1,
+                    ]
+                );
+            }
+        }
     }
 }

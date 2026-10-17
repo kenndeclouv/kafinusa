@@ -22,6 +22,7 @@ class ItemCategorySeeder extends Seeder
             ['name' => 'SOHUN'],
             ['name' => 'AREN'],
             ['name' => 'TRASI'],
+            ['name' => 'Bahan Baku Petis'],
         ];
 
         foreach ($categories as $category) {

@@ -38,5 +38,56 @@ class ItemSeeder extends Seeder
                 ]
             );
         }
+
+        // Seed 9 Bahan Baku Petis (sesuai lembar kerja Sirkulasi Petis)
+        $bbCategory = \App\Models\ItemCategory::where('name', 'Bahan Baku Petis')->first();
+        if ($bbCategory) {
+            $rawMaterials = [
+                ['code' => 'BB-001', 'name' => 'Pewarna'],
+                ['code' => 'BB-002', 'name' => 'Sakarin'],
+                ['code' => 'BB-003', 'name' => 'Gaplek'],
+                ['code' => 'BB-004', 'name' => 'Gemblong'],
+                ['code' => 'BB-005', 'name' => 'Gula'],
+                ['code' => 'BB-006', 'name' => 'Garam'],
+                ['code' => 'BB-007', 'name' => 'Sorbat'],
+                ['code' => 'BB-008', 'name' => 'Kaleng'],
+                ['code' => 'BB-009', 'name' => 'Tutup'],
+            ];
+
+            foreach ($rawMaterials as $rm) {
+                Item::updateOrCreate(
+                    ['code' => $rm['code']],
+                    [
+                        'name' => $rm['name'],
+                        'item_category_id' => $bbCategory->id,
+                        'weight' => 1000,
+                        'prices' => ['umum' => 0],
+                        'is_saleable' => true,
+                    ]
+                );
+            }
+        }
+
+        // Seed Produk Jadi Petis (Petis Kaleng & Petis Refill)
+        $petisCategory = \App\Models\ItemCategory::where('name', 'PETIS')->first();
+        if ($petisCategory) {
+            $petisItems = [
+                ['code' => 'PETIS-KL', 'name' => 'Petis Kaleng (KI)', 'weight' => 9300],
+                ['code' => 'PETIS-RF', 'name' => 'Petis Refill (Bal)', 'weight' => 5000],
+            ];
+
+            foreach ($petisItems as $pItem) {
+                Item::updateOrCreate(
+                    ['code' => $pItem['code']],
+                    [
+                        'name' => $pItem['name'],
+                        'item_category_id' => $petisCategory->id,
+                        'weight' => $pItem['weight'],
+                        'prices' => ['umum' => 0],
+                        'is_saleable' => true,
+                    ]
+                );
+            }
+        }
     }
 }
