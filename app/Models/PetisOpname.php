@@ -16,9 +16,18 @@ class PetisOpname extends Model
     ];
 
     protected $casts = [
-        'date' => 'date',
         'actual_stock' => 'decimal:3',
     ];
+
+    public function setDateAttribute($value)
+    {
+        $this->attributes['date'] = $value ? \Carbon\Carbon::parse($value)->format('Y-m-d') : null;
+    }
+
+    public function getDateAttribute($value)
+    {
+        return $value ? \Carbon\Carbon::parse($value) : null;
+    }
 
     public function warehouse()
     {

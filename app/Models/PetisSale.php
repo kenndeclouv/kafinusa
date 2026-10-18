@@ -19,12 +19,21 @@ class PetisSale extends Model
     ];
 
     protected $casts = [
-        'date' => 'date',
         'muatan_kaleng' => 'integer',
         'muatan_refill' => 'integer',
         'retur_kaleng' => 'integer',
         'retur_refill' => 'integer',
     ];
+
+    public function setDateAttribute($value)
+    {
+        $this->attributes['date'] = $value ? \Carbon\Carbon::parse($value)->format('Y-m-d') : null;
+    }
+
+    public function getDateAttribute($value)
+    {
+        return $value ? \Carbon\Carbon::parse($value) : null;
+    }
 
     public function warehouse()
     {

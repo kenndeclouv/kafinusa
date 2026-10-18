@@ -17,9 +17,18 @@ class PetisRawMaterialEntry extends Model
     ];
 
     protected $casts = [
-        'date' => 'date',
         'quantity' => 'decimal:3',
     ];
+
+    public function setDateAttribute($value)
+    {
+        $this->attributes['date'] = $value ? \Carbon\Carbon::parse($value)->format('Y-m-d') : null;
+    }
+
+    public function getDateAttribute($value)
+    {
+        return $value ? \Carbon\Carbon::parse($value) : null;
+    }
 
     // Type labels
     public const TYPE_PURCHASE = 'purchase'; // Pembelian (IN)

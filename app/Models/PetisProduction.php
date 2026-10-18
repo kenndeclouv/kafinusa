@@ -17,11 +17,20 @@ class PetisProduction extends Model
     ];
 
     protected $casts = [
-        'date' => 'date',
         'result_kaleng' => 'integer',
         'result_refill' => 'integer',
         'result_sisa_kg' => 'decimal:3',
     ];
+
+    public function setDateAttribute($value)
+    {
+        $this->attributes['date'] = $value ? \Carbon\Carbon::parse($value)->format('Y-m-d') : null;
+    }
+
+    public function getDateAttribute($value)
+    {
+        return $value ? \Carbon\Carbon::parse($value) : null;
+    }
 
     /**
      * Berat 1 kaleng petis dalam kg (1 KI = 9.3 kg)
