@@ -100,3 +100,22 @@ Dokumen ini berisi standar dan aturan yang **wajib** diikuti oleh setiap AI Agen
      });
      ```
   5. **Parent Touching:** Jika membuat *Model* turunan (seperti `OrderItem`), selalu pasang properti `protected $touches = ['order'];` agar setiap perubahan data anak akan merambat ke waktu *update* induknya dan berhasil memicu *cache busting*.
+
+## 11. Integritas Data Stok & Transaksi Pergudangan (Banking-Grade ACID)
+- **Prinsip Utama:** Data stok persediaan gudang diperlakukan setara dengan pencatatan saldo uang di rekening bank. Setiap mutasi fisik (barang masuk, muat ke truk, retur, produksi, opname) wajib memiliki audit trail yang lengkap dan tidak boleh ada data stok yang terpotong/bertambah sebagian (*zero partial update*).
+- **Aturan Transaksi Database (`DB::transaction`):**
+  1. **Wajib Atomik:** Setiap proses yang mengubah persediaan di `WarehouseStock` dan mencatat `StockMutation` **wajib** berada di dalam `DB::transaction(function () { ... })`. Operasi harus berhasil secara utuh atau tidak tersimpan sama sekali (*all-or-nothing* / *auto-rollback* jika terjadi kesalahan).
+  2. **Pessimistic Locking (`lockForUpdate`):** Saat membaca record `WarehouseStock` sebelum penambahan atau pengurangan, selalu gunakan `->lockForUpdate()` untuk mencegah *race condition* ketika beberapa user melakukan transaksi bersamaan:
+     ```php
+     $stock = WarehouseStock::firstOrCreate(
+         ['warehouse_id' => $warehouseId, 'item_id' => $itemId],
+         ['current_stock' => 0, 'physical_stock' => 0]
+     );
+     $stock = WarehouseStock::where('id', $stock->id)->lockForUpdate()->first();
+     ```
+  3. **Try-Catch & Logging:** Bungkus transaksi pada Livewire action dengan blok `try-catch` agar error tersimpan di log server (`\Log::error(...)`) dan antarmuka menampilkan pesan yang ramah pengguna via `Flux::toast(..., variant: 'danger')`.
+- **Standar Alur Dua Tahap Pengiriman & Retur (*Two-Stage Tracking*):**
+  1. **Tahap 1 (Load-up / Muat Truk):** Saat muatan dinaikkan ke truk dan dikonfirmasi kirim, stok gudang dipotong **penuh** sesuai jumlah muatan fisik (`quantity`) dan dicatat mutasi `out` (`Pengiriman`).
+  2. **Tahap 2 (Retur Toko / Pasar):** Saat muatan kembali dan checker/admin menginput barang retur (pada hari H sore atau H+1/H+2), sistem **otomatis menambah kembali** stok gudang (`WarehouseStock`) dan mencatat mutasi `in` (`Retur`) pada tanggal barang kembali masuk.
+  3. **Koreksi Retur:** Jika ada kesalahan input retur yang kemudian diperkecil oleh admin, selisih pengurangannya otomatis memotong kembali stok gudang dengan mutasi penyeimbang (`out`, `Koreksi Retur`).
+  4. Aturan ini memastikan kartu stok gudang (*Stock Ledger*) dan laporan sirkulasi harian (*Stock Circulation*) selalu akurat sesuai kondisi fisik riil di lapangan.

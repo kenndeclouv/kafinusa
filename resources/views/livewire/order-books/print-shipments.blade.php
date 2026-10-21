@@ -1,9 +1,10 @@
 <div class="p-2 sm:p-4 print:p-0 max-w-[1400px] mx-auto">
     {{-- Print Action Bar (hidden on print) --}}
     <div
-        class="no-print flex flex-col lg:flex-row items-center justify-between gap-4 mb-6 p-4 bg-zinc-50 dark:bg-white/5 rounded-2xl border border-zinc-200 dark:border-white/10">
+        class="no-print flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 mb-6 p-4 bg-zinc-50 dark:bg-white/5 rounded-2xl border border-zinc-200 dark:border-white/10 shadow-xs">
 
-        <div class="flex flex-col lg:flex-row gap-2 w-full lg:w-auto" x-data="{
+        {{-- Left: Navigation & Printing Actions --}}
+        <div class="flex flex-wrap items-center gap-2" x-data="{
             isDownloading: false,
             downloadImage() {
                 this.isDownloading = true;
@@ -40,16 +41,16 @@
         }">
 
             <flux:button href="{{ route('order-books.shipments', $orderBook) }}" wire:navigate variant="outline"
-                icon="arrow-left" class="w-full lg:w-auto">
+                icon="arrow-left" class="w-full sm:w-auto">
                 Kembali & Edit
             </flux:button>
             <flux:button onclick="window.print()" variant="primary" icon="printer"
-                class="w-full lg:w-auto hidden lg:flex">
+                class="w-full sm:w-auto hidden sm:flex">
                 Cetak
             </flux:button>
 
             <flux:dropdown>
-                <flux:button variant="outline" icon="ellipsis-vertical" class="w-full lg:w-auto px-4" />
+                <flux:button variant="outline" icon="ellipsis-vertical" class="w-full sm:w-auto px-4" />
                 <flux:menu>
                     <flux:menu.item icon="photo" x-on:click="downloadImage()">
                         <span x-show="!isDownloading">Download Image (High-Res)</span>
@@ -60,9 +61,25 @@
             </flux:dropdown>
         </div>
 
-        <span class="text-sm text-center lg:text-right text-zinc-500 dark:text-zinc-400 w-full lg:w-auto">
-            Atau tekan <kbd class="bg-zinc-200 dark:bg-zinc-700 px-1.5 py-0.5 rounded text-xs">Ctrl+P</kbd> untuk cetak
-            / simpan PDF
+        {{-- Center: Retur Input & Stock Sync Controls --}}
+        <div class="flex flex-wrap items-center gap-3">
+            <div class="flex items-center gap-2 bg-white dark:bg-zinc-800/80 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-white/10 shadow-xs">
+                <span class="text-xs font-semibold text-zinc-600 dark:text-zinc-300 whitespace-nowrap">Tgl Retur Masuk:</span>
+                <input type="date" wire:model.live="returnDate" class="text-xs bg-transparent border-none p-0 focus:ring-0 text-zinc-800 dark:text-white font-medium cursor-pointer" />
+            </div>
+
+            <flux:button wire:click="saveAllReturns" variant="primary" icon="check" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 border-emerald-600 text-white">
+                Simpan Retur
+            </flux:button>
+
+            <div wire:loading wire:target="returns, saveAllReturns, returnDate" class="text-xs text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1.5">
+                <flux:icon.arrow-path class="w-3.5 h-3.5 animate-spin" />
+                <span>Menyimpan retur & stok...</span>
+            </div>
+        </div>
+
+        <span class="text-xs text-center xl:text-right text-zinc-500 dark:text-zinc-400 w-full xl:w-auto">
+            Input retur otomatis menambah stok gudang & mutasi masuk.
         </span>
     </div>
 
@@ -83,15 +100,28 @@
                             $batchTonase += ($planItem->quantity * ($planItem->orderItem->item->weight ?? 0));
                         }
                     }
+                    $batchRecord = $this->plan->batches->where('batch_number', $currentBatch)->first();
+                    $isBatchShipped = $batchRecord && $batchRecord->status === 'shipped';
                 @endphp
                 <div class="w-full pt-4 print:pt-0 text-black print-half-width @if ($currentBatch > 1) mt-8 print:mt-12 @endif"
                     style="page-break-inside: avoid; padding-right: 15px;">
                     {{-- Document Header --}}
                     <div class="mb-2 border-b-2 border-black pb-2 bg-white text-black print:mb-2 print:pb-1">
-                        <h1 class="text-base font-bold uppercase tracking-widest italic text-center mb-2">
-                            Daftar Pengambilan Barang Pasar
-                            {{ $this->totalBatches > 1 ? "(Muatan $currentBatch)" : '' }}
-                        </h1>
+                        <div class="text-center mb-2">
+                            <h1 class="text-base font-bold uppercase tracking-widest italic inline-block">
+                                Daftar Pengambilan Barang Pasar
+                                {{ $this->totalBatches > 1 ? "(Muatan $currentBatch)" : '' }}
+                            </h1>
+                            @if($isBatchShipped)
+                                <span class="no-print ml-2 inline-flex items-center gap-1 text-[10px] font-sans not-italic font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                    ✓ Terpotong Stok (Gudang: {{ $batchRecord->warehouse?->name ?? 'Pusat' }})
+                                </span>
+                            @else
+                                <span class="no-print ml-2 inline-flex items-center gap-1 text-[10px] font-sans not-italic font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                                    Belum Dikirim (Draft)
+                                </span>
+                            @endif
+                        </div>
                         <div class="flex items-start justify-between">
                             <div class="text-xs font-semibold tracking-widest uppercase">
                                 PASAR : {{ $orderBook->market->name }}

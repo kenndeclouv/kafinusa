@@ -313,7 +313,7 @@
     <flux:modal name="shipping-modal" class="md:w-96 !rounded-3xl" :closable="false" scroll="body">
         <form wire:submit="confirmShipping">
             <flux:heading size="lg">Konfirmasi Pengiriman</flux:heading>
-            <flux:subheading>Muatan {{ $selectedBatchForShipping }} akan dikirim dan stok otomatis dipotong berdasarkan GT (Muatan - Retur).</flux:subheading>
+            <flux:subheading>Muatan {{ $selectedBatchForShipping }} akan dinaikkan ke truk dan stok gudang dipotong penuh. Retur dapat diinput saat muatan kembali untuk mengembalikan sisa stok ke gudang.</flux:subheading>
 
             <!-- iOS Style Connected List -->
             <div class="mt-4 bg-white dark:bg-white/5 rounded-3xl border border-zinc-200 dark:border-white/10 shadow-xs flex flex-col relative overflow-hidden">

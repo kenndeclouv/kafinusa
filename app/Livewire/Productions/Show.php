@@ -191,9 +191,11 @@ class Show extends Component
 
     public function deleteProduction(Production $prod)
     {
-        $this->reverseMutations($prod);
-        $prod->results()->delete();
-        $prod->delete();
+        \Illuminate\Support\Facades\DB::transaction(function () use ($prod) {
+            $this->reverseMutations($prod);
+            $prod->results()->delete();
+            $prod->delete();
+        });
     }
 
     #[Computed]

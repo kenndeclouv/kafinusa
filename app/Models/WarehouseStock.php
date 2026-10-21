@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\BustsDashboardCache;
 
 class WarehouseStock extends Model
 {
-    use HasFactory;
+    use HasFactory, BustsDashboardCache;
 
     protected $fillable = [
         'warehouse_id',

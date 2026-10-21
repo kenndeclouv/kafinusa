@@ -413,17 +413,26 @@ class ManageShipments extends Component
         }
 
         // Lakukan pemotongan stok
-        DB::transaction(function () use ($plan, $batch, $warehouseId, $date) {
-            $this->processShipmentBatch($plan, $batch, $warehouseId, $date);
-        });
-        
-        Flux::modal('shipping-modal')->close();
+        try {
+            DB::transaction(function () use ($plan, $batch, $warehouseId, $date) {
+                $this->processShipmentBatch($plan, $batch, $warehouseId, $date);
+            });
+            
+            Flux::modal('shipping-modal')->close();
 
-        Flux::toast(
-            heading: 'Muatan Terkirim',
-            text: "Stok telah dipotong dari Gudang. Muatan {$batchNumber} terkunci.",
-            variant: 'success'
-        );
+            Flux::toast(
+                heading: 'Muatan Terkirim',
+                text: "Stok telah dipotong dari Gudang. Muatan {$batchNumber} terkunci.",
+                variant: 'success'
+            );
+        } catch (\Throwable $e) {
+            \Log::error("Gagal mengirim muatan {$batchNumber}: " . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            Flux::toast(
+                heading: 'Gagal Kirim Muatan',
+                text: 'Terjadi kesalahan sistem: ' . $e->getMessage(),
+                variant: 'danger'
+            );
+        }
     }
 
     protected function processShipmentBatch($plan, $batch, $warehouseId, $date)
@@ -438,6 +447,7 @@ class ManageShipments extends Component
 
         $itemsInBatch = $plan->items->where('batch_number', $batch->batch_number);
         $groupedItems = [];
+        $groupedReturns = [];
 
         $kalengMuatan = 0;
         $kalengRetur = 0;
@@ -449,8 +459,13 @@ class ManageShipments extends Component
             if ($orderItem) {
                 $itemId = $orderItem->item_id;
                 if (!isset($groupedItems[$itemId])) $groupedItems[$itemId] = 0;
-                $qty = max(0, $pi->quantity - $pi->return_quantity);
-                $groupedItems[$itemId] += $qty;
+                if (!isset($groupedReturns[$itemId])) $groupedReturns[$itemId] = 0;
+
+                // Muatan penuh yang dinaikkan ke truk saat load-up
+                $groupedItems[$itemId] += (int) $pi->quantity;
+
+                // Retur yang mungkin sudah terisi sebelumnya
+                $groupedReturns[$itemId] += (int) $pi->return_quantity;
 
                 // Hitung muatan dan retur untuk pencatatan PetisSale
                 if ($petisKalengItem && $itemId == $petisKalengItem->id) {
@@ -463,8 +478,8 @@ class ManageShipments extends Component
             }
         }
 
-        foreach ($groupedItems as $itemId => $qty) {
-            if ($qty <= 0) continue;
+        foreach ($groupedItems as $itemId => $fullQty) {
+            if ($fullQty <= 0) continue;
 
             $item = Item::with('category')->find($itemId);
             $isPetis = ($item && ($item->item_category_id == 5 || strtolower($item->category?->name ?? '') === 'petis'));
@@ -478,9 +493,10 @@ class ManageShipments extends Component
             );
             $stock = \App\Models\WarehouseStock::where('id', $stock->id)->lockForUpdate()->first();
             
+            // Catatan 1: Potong stok penuh saat muatan dinaikkan ke truk
             $stock->update([
-                'current_stock' => $stock->current_stock - $qty,
-                'physical_stock' => $stock->physical_stock - $qty,
+                'current_stock' => $stock->current_stock - $fullQty,
+                'physical_stock' => $stock->physical_stock - $fullQty,
             ]);
 
             // Create stock mutation OUT
@@ -489,14 +505,41 @@ class ManageShipments extends Component
                 'warehouse_id' => $effectiveWarehouseId,
                 'user_id' => auth()->id() ?? 1,
                 'type' => 'out',
-                'quantity' => $qty,
+                'quantity' => $fullQty,
                 'mutation_date' => $date,
+                'reference_type' => ShipmentBatch::class,
+                'reference_id' => $batch->id,
                 'sender_name' => $isPetis ? 'Gudang Petis' : null,
                 'transaction_category' => 'Pengiriman',
                 'notes' => "Pengiriman Muatan {$batch->batch_number} (Pasar {$this->orderBook->market->name})"
             ]);
             $mutation->created_at = $date . ' ' . now()->format('H:i:s');
             $mutation->save();
+
+            // Catatan 2: Jika sudah ada retur yang terinput sebelum kirim, langsung catat mutasi masuknya agar ada 2 catatan
+            $retQty = $groupedReturns[$itemId] ?? 0;
+            if ($retQty > 0) {
+                $stock->update([
+                    'current_stock' => $stock->current_stock + $retQty,
+                    'physical_stock' => $stock->physical_stock + $retQty,
+                ]);
+
+                $retMutation = new StockMutation([
+                    'item_id' => $itemId,
+                    'warehouse_id' => $effectiveWarehouseId,
+                    'user_id' => auth()->id() ?? 1,
+                    'type' => 'in',
+                    'quantity' => $retQty,
+                    'mutation_date' => $date,
+                    'reference_type' => ShipmentBatch::class,
+                    'reference_id' => $batch->id,
+                    'sender_name' => "Sales: " . ($this->orderBook->employee?->name ?? 'Sales'),
+                    'transaction_category' => 'Retur',
+                    'notes' => "Retur Pengiriman Muatan {$batch->batch_number} (Pasar {$this->orderBook->market->name})"
+                ]);
+                $retMutation->created_at = $date . ' ' . now()->format('H:i:s');
+                $retMutation->save();
+            }
         }
 
         // Catat penjualan petis harian per salesman jika ada petis di muatan ini
@@ -555,29 +598,38 @@ class ManageShipments extends Component
 
         $shippedCount = 0;
         
-        DB::transaction(function () use ($plan, $warehouseId, $date, &$shippedCount) {
-            foreach ($plan->batches as $batch) {
-                $batchDate = $batch->shipment_date ? $batch->shipment_date->format('Y-m-d') : $this->orderBook->book_date->format('Y-m-d');
-                if ($batch->status !== 'shipped' && $batchDate === $this->orderBook->book_date->format('Y-m-d')) {
-                    $this->processShipmentBatch($plan, $batch, $warehouseId, $date);
-                    $shippedCount++;
+        try {
+            DB::transaction(function () use ($plan, $warehouseId, $date, &$shippedCount) {
+                foreach ($plan->batches as $batch) {
+                    $batchDate = $batch->shipment_date ? $batch->shipment_date->format('Y-m-d') : $this->orderBook->book_date->format('Y-m-d');
+                    if ($batch->status !== 'shipped' && $batchDate === $this->orderBook->book_date->format('Y-m-d')) {
+                        $this->processShipmentBatch($plan, $batch, $warehouseId, $date);
+                        $shippedCount++;
+                    }
                 }
-            }
-        });
+            });
 
-        Flux::modal('bulk-shipping-modal')->close();
-        
-        if ($shippedCount > 0) {
+            Flux::modal('bulk-shipping-modal')->close();
+            
+            if ($shippedCount > 0) {
+                Flux::toast(
+                    heading: 'Kirim Selesai',
+                    text: "{$shippedCount} muatan telah terkirim dan stok dipotong.",
+                    variant: 'success'
+                );
+            } else {
+                Flux::toast(
+                    heading: 'Info',
+                    text: 'Tidak ada muatan hari ini yang siap dikirim.',
+                    variant: 'warning'
+                );
+            }
+        } catch (\Throwable $e) {
+            \Log::error("Gagal kirim semua muatan: " . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             Flux::toast(
-                heading: 'Kirim Selesai',
-                text: "{$shippedCount} muatan telah terkirim dan stok dipotong.",
-                variant: 'success'
-            );
-        } else {
-            Flux::toast(
-                heading: 'Info',
-                text: 'Tidak ada muatan hari ini yang siap dikirim.',
-                variant: 'warning'
+                heading: 'Gagal Kirim Semua',
+                text: 'Terjadi kesalahan sistem: ' . $e->getMessage(),
+                variant: 'danger'
             );
         }
     }

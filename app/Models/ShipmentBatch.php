@@ -22,4 +22,9 @@ class ShipmentBatch extends Model
     {
         return $this->belongsTo(ShipmentPlan::class);
     }
+
+    public function warehouse()
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
 }

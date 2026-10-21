@@ -5,8 +5,17 @@ namespace App\Livewire\OrderBooks;
 use App\Models\OrderBook;
 use App\Models\Order;
 use App\Models\ShipmentPlan;
+use App\Models\ShipmentPlanItem;
+use App\Models\ShipmentBatch;
+use App\Models\WarehouseStock;
+use App\Models\StockMutation;
+use App\Models\Warehouse;
+use App\Models\Item;
+use App\Models\PetisSale;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Flux;
 
 class PrintShipments extends Component
 {
@@ -16,6 +25,7 @@ class PrintShipments extends Component
     public array $returns = [];
     public array $checkG = [];
     public array $checkS = [];
+    public string $returnDate = '';
 
     public function mount(OrderBook $orderBook)
     {
@@ -25,9 +35,12 @@ class PrintShipments extends Component
         );
 
         $this->orderBook = $orderBook;
+        $this->returnDate = now()->format('Y-m-d');
+
         $this->plan = $orderBook->shipmentPlan()->with([
             'items.orderItem.item.category',
             'items.orderItem.order.customer',
+            'batches.warehouse',
         ])->first();
 
         if (!$this->plan) {
@@ -37,6 +50,7 @@ class PrintShipments extends Component
 
         // Initialize state
         foreach ($this->plan->items as $planItem) {
+            if (!$planItem->orderItem) continue;
             $itemId = $planItem->orderItem->item_id;
             $batch = $planItem->batch_number;
 
@@ -66,15 +80,17 @@ class PrintShipments extends Component
         $temp[$itemId][$batch] = !$currentValue;
         $this->$field = $temp;
 
-        // Update DB
-        $planItems = $this->plan->items()->whereHas('orderItem', function($q) use ($itemId) {
-            $q->where('item_id', $itemId);
-        })->where('batch_number', $batch)->get();
+        // Update DB in transaction
+        DB::transaction(function () use ($itemId, $batch, $type, $currentValue) {
+            $planItems = $this->plan->items()->whereHas('orderItem', function($q) use ($itemId) {
+                $q->where('item_id', $itemId);
+            })->where('batch_number', $batch)->get();
 
-        foreach ($planItems as $pi) {
-            if ($type === 'G') $pi->update(['is_checked_g' => !$currentValue]);
-            else $pi->update(['is_checked_s' => !$currentValue]);
-        }
+            foreach ($planItems as $pi) {
+                if ($type === 'G') $pi->update(['is_checked_g' => !$currentValue]);
+                else $pi->update(['is_checked_s' => !$currentValue]);
+            }
+        });
     }
 
     public function updatedReturns($value, $key)
@@ -85,22 +101,203 @@ class PrintShipments extends Component
             $batch = (int) $parts[1];
             $retValue = (int) ($value ?: 0);
 
-            // Need to distribute the return quantity across ShipmentPlanItems for this itemId and batch
-            $planItems = $this->plan->items()->whereHas('orderItem', function($q) use ($itemId) {
-                $q->where('item_id', $itemId);
-            })->where('batch_number', $batch)->get();
+            try {
+                $delta = $this->applyReturnChange($itemId, $batch, $retValue);
 
-            $remainingRetur = $retValue;
-            foreach ($planItems as $pi) {
-                if ($remainingRetur >= $pi->quantity) {
-                    $pi->update(['return_quantity' => $pi->quantity]);
-                    $remainingRetur -= $pi->quantity;
-                } else {
-                    $pi->update(['return_quantity' => $remainingRetur]);
-                    $remainingRetur = 0;
+                if ($delta !== 0) {
+                    $batchObj = $this->plan->batches->where('batch_number', $batch)->first();
+                    $isShipped = $batchObj && $batchObj->status === 'shipped';
+
+                    Flux::toast(
+                        heading: 'Retur Disimpan',
+                        text: $isShipped
+                            ? "Retur dicatat: stok gudang " . ($delta > 0 ? "+{$delta}" : "{$delta}") . "."
+                            : "Jumlah retur diperbarui.",
+                        variant: 'success'
+                    );
                 }
+            } catch (\Throwable $e) {
+                \Log::error('Gagal memperbarui retur: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+                Flux::toast(
+                    heading: 'Gagal Menyimpan Retur',
+                    text: 'Terjadi kesalahan: ' . $e->getMessage(),
+                    variant: 'danger'
+                );
             }
         }
+    }
+
+    public function saveAllReturns(): void
+    {
+        try {
+            $totalDeltas = DB::transaction(function () {
+                $deltas = 0;
+                foreach ($this->returns as $itemId => $batches) {
+                    foreach ($batches as $batchNumber => $val) {
+                        $retVal = (int) ($val ?: 0);
+                        $delta = $this->applyReturnChange((int)$itemId, (int)$batchNumber, $retVal);
+                        $deltas += abs($delta);
+                    }
+                }
+                return $deltas;
+            });
+
+            Flux::toast(
+                heading: 'Retur Berhasil Disimpan',
+                text: $totalDeltas > 0
+                    ? 'Stok gudang otomatis disesuaikan dan mutasi retur telah dicatat.'
+                    : 'Data retur telah tersimpan rapi.',
+                variant: 'success'
+            );
+        } catch (\Throwable $e) {
+            \Log::error('Gagal menyimpan retur: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            Flux::toast(
+                heading: 'Gagal Menyimpan Retur',
+                text: 'Terjadi kesalahan sistem: ' . $e->getMessage(),
+                variant: 'danger'
+            );
+        }
+    }
+
+    protected function applyReturnChange(int $itemId, int $batchNumber, int $newRetValue): int
+    {
+        return DB::transaction(function () use ($itemId, $batchNumber, $newRetValue) {
+            $planItems = $this->plan->items()->whereHas('orderItem', function($q) use ($itemId) {
+                $q->where('item_id', $itemId);
+            })->where('batch_number', $batchNumber)->get();
+
+            $maxMuatan = (int) $planItems->sum('quantity');
+            $newRetValue = min(max(0, $newRetValue), $maxMuatan);
+
+            $oldRetValue = (int) $planItems->sum('return_quantity');
+            $delta = $newRetValue - $oldRetValue;
+
+            if ($delta === 0) {
+                return 0;
+            }
+
+            // Distribute new return quantity across ShipmentPlanItems
+            $remaining = $newRetValue;
+            foreach ($planItems as $pi) {
+                if ($remaining >= $pi->quantity) {
+                    $pi->update(['return_quantity' => $pi->quantity]);
+                    $remaining -= $pi->quantity;
+                } else {
+                    $pi->update(['return_quantity' => $remaining]);
+                    $remaining = 0;
+                }
+            }
+
+            // Sync local returns property
+            $this->returns[$itemId][$batchNumber] = $newRetValue ?: '';
+
+            // If batch is already shipped, automatically adjust warehouse stock and record mutation
+            $batchObj = $this->plan->batches->where('batch_number', $batchNumber)->first();
+            if ($batchObj && $batchObj->status === 'shipped') {
+                $this->syncStockAndMutationForReturn($itemId, $batchObj, $delta);
+            }
+
+            return $delta;
+        });
+    }
+
+    protected function syncStockAndMutationForReturn(int $itemId, ShipmentBatch $batchObj, int $delta): void
+    {
+        if ($delta === 0) return;
+
+        $item = Item::with('category')->find($itemId);
+        if (!$item) return;
+
+        $isPetis = ($item->item_category_id == 5 || strtolower($item->category?->name ?? '') === 'petis');
+        $petisWarehouse = Warehouse::where('name', 'Gudang Petis')->first();
+        $petisWarehouseId = $petisWarehouse?->id;
+
+        $effectiveWarehouseId = ($isPetis && $petisWarehouseId)
+            ? $petisWarehouseId
+            : ($batchObj->warehouse_id ?? Warehouse::first()?->id);
+
+        if (!$effectiveWarehouseId) return;
+
+        $targetDate = $this->returnDate ?: now()->format('Y-m-d');
+        $batchDate = $batchObj->shipment_date ? $batchObj->shipment_date->format('Y-m-d') : $this->orderBook->book_date->format('Y-m-d');
+        $salesmanName = $this->orderBook->employee?->name ?? 'Sales';
+
+        DB::transaction(function () use ($itemId, $effectiveWarehouseId, $batchObj, $delta, $targetDate, $batchDate, $salesmanName, $isPetis, $petisWarehouseId) {
+            $stock = WarehouseStock::firstOrCreate(
+                ['warehouse_id' => $effectiveWarehouseId, 'item_id' => $itemId],
+                ['current_stock' => 0, 'physical_stock' => 0]
+            );
+            $stock = WarehouseStock::where('id', $stock->id)->lockForUpdate()->first();
+
+            if ($delta > 0) {
+                // Barang kembali ke gudang: Stok bertambah (+)
+                $stock->update([
+                    'current_stock' => $stock->current_stock + $delta,
+                    'physical_stock' => $stock->physical_stock + $delta,
+                ]);
+
+                $mutation = new StockMutation([
+                    'item_id' => $itemId,
+                    'warehouse_id' => $effectiveWarehouseId,
+                    'user_id' => auth()->id() ?? 1,
+                    'type' => 'in',
+                    'quantity' => $delta,
+                    'mutation_date' => $targetDate,
+                    'transaction_category' => 'Retur',
+                    'reference_type' => ShipmentBatch::class,
+                    'reference_id' => $batchObj->id,
+                    'sender_name' => "Sales: {$salesmanName}",
+                    'notes' => "Retur Pengiriman Muatan {$batchObj->batch_number} (Pasar {$this->orderBook->market->name})",
+                ]);
+                $mutation->created_at = $targetDate . ' ' . now()->format('H:i:s');
+                $mutation->save();
+            } else {
+                // Koreksi retur: stok gudang dikurangi kembali (-)
+                $absDelta = abs($delta);
+                $stock->update([
+                    'current_stock' => $stock->current_stock - $absDelta,
+                    'physical_stock' => $stock->physical_stock - $absDelta,
+                ]);
+
+                $mutation = new StockMutation([
+                    'item_id' => $itemId,
+                    'warehouse_id' => $effectiveWarehouseId,
+                    'user_id' => auth()->id() ?? 1,
+                    'type' => 'out',
+                    'quantity' => $absDelta,
+                    'mutation_date' => $targetDate,
+                    'transaction_category' => 'Koreksi Retur',
+                    'reference_type' => ShipmentBatch::class,
+                    'reference_id' => $batchObj->id,
+                    'sender_name' => "Sales: {$salesmanName}",
+                    'notes' => "Koreksi Pengurangan Retur Muatan {$batchObj->batch_number} (Pasar {$this->orderBook->market->name})",
+                ]);
+                $mutation->created_at = $targetDate . ' ' . now()->format('H:i:s');
+                $mutation->save();
+            }
+
+            // Sinkronkan PetisSale jika item adalah petis
+            if ($isPetis && $petisWarehouseId) {
+                $petisKalengItem = Item::where('item_category_id', 5)->where('name', 'KI')->first()
+                    ?? Item::where('code', 'like', '%032%')->first();
+                $petisRefillItem = Item::where('item_category_id', 5)->where('name', 'Rf')->first()
+                    ?? Item::where('code', 'like', '%033%')->first();
+
+                $petisSale = PetisSale::firstOrNew([
+                    'warehouse_id' => $petisWarehouseId,
+                    'date' => $batchDate,
+                    'salesman_name' => $salesmanName,
+                ]);
+
+                if ($petisKalengItem && $itemId == $petisKalengItem->id) {
+                    $petisSale->retur_kaleng = max(0, ($petisSale->retur_kaleng ?? 0) + $delta);
+                } elseif ($petisRefillItem && $itemId == $petisRefillItem->id) {
+                    $petisSale->retur_refill = max(0, ($petisSale->retur_refill ?? 0) + $delta);
+                }
+                $petisSale->user_id = auth()->id() ?? 1;
+                $petisSale->save();
+            }
+        });
     }
 
     #[Computed]
