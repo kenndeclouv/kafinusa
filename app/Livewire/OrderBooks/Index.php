@@ -35,6 +35,23 @@ class Index extends Component
     {
         abort_unless(auth()->user() && auth()->user()->hasAnyPermission(['order_books:read', 'order_books:read-self']), 403, 'Unauthorized.');
         $this->filterMonth = now()->format('Y-m');
+
+        // Pada tanggal 1 & 2, jika di bulan baru belum ada buku order,
+        // otomatis tampilkan buku order bulan lalu (jika belum ditutup) agar buku order tanggal 31 langsung terlihat
+        if (now()->day <= 2) {
+            $hasCurrentMonth = OrderBook::whereBetween('book_date', [
+                now()->startOfMonth()->toDateString(),
+                now()->endOfMonth()->toDateString(),
+            ])->exists();
+
+            if (!$hasCurrentMonth) {
+                $lastMonthKey = now()->subMonth()->format('Y-m');
+                $isLastMonthLocked = \App\Models\MonthlyBackup::isLocked(now()->subMonth()->startOfMonth());
+                if (!$isLastMonthLocked) {
+                    $this->filterMonth = $lastMonthKey;
+                }
+            }
+        }
     }
 
     public function updatedFilterMonth()
@@ -294,26 +311,23 @@ class Index extends Component
         if ($this->filterMonth && $this->filterMonth !== 'all') {
             $parts = explode('-', $this->filterMonth);
             if (count($parts) === 2) {
-                $query->whereYear('book_date', $parts[0])
-                      ->whereMonth('book_date', $parts[1]);
+                $startDate = "{$parts[0]}-{$parts[1]}-01";
+                $endDate = \Carbon\Carbon::parse($startDate)->endOfMonth()->toDateString();
+                $query->whereBetween('book_date', [$startDate, $endDate]);
             }
         }
 
-        // Always hide locked months from order books index
+        // Always hide locked months from order books index using indexed range queries (no lag)
         $lockedMonths = \Illuminate\Support\Facades\Cache::remember('all_locked_months', now()->addMinutes(10), function() {
             return \App\Models\MonthlyBackup::whereNotNull('locked_at')->pluck('month')->toArray();
         });
 
         if (!empty($lockedMonths)) {
-            $query->where(function($q) use ($lockedMonths) {
-                foreach ($lockedMonths as $lm) {
-                    $parts = explode('-', $lm);
-                    $q->whereNot(function($subQ) use ($parts) {
-                        $subQ->whereYear('book_date', $parts[0])
-                             ->whereMonth('book_date', $parts[1]);
-                    });
-                }
-            });
+            foreach ($lockedMonths as $lm) {
+                $lmStart = "{$lm}-01";
+                $lmEnd = \Carbon\Carbon::parse($lmStart)->endOfMonth()->toDateString();
+                $query->whereNotBetween('book_date', [$lmStart, $lmEnd]);
+            }
         }
 
         return $query->paginate(10);

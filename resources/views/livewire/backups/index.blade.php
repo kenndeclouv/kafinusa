@@ -82,7 +82,7 @@
         <form wire:submit="lockMonth">
             <flux:heading>Tutup Buku Manual</flux:heading>
             <flux:description>
-                Sistem mengunci secara otomatis pada awal bulan, namun Anda bisa mengunci bulan secara manual di sini.
+                Sistem mengunci bulan lalu secara otomatis pada tanggal 3 (setelah proses muat & retur tanggal 1-2 selesai), namun Anda bisa mengunci bulan secara manual di sini.
             </flux:description>
 
             <div class="mt-6 space-y-6">
