@@ -155,11 +155,19 @@
 
                 @can('system_monitor.view')
                     <a href="{{ route('system-monitor.index') }}" wire:navigate
-                        class="flex items-center px-5 py-3.5 active:bg-black/5 dark:active:bg-white/5 transition-colors border-b-[3px] border-black/10 dark:border-white/10">
+                        class="flex items-center px-5 py-3.5 active:bg-black/5 dark:active:bg-white/5 transition-colors border-b border-black/5 dark:border-white/5">
                         <flux:icon.cpu-chip class="w-5 h-5 text-zinc-700 dark:text-zinc-300 mr-4" />
                         <span class="text-[17px] font-normal text-zinc-900 dark:text-white flex-1">System Monitor</span>
                     </a>
                 @endcan
+
+                @if(auth()->user()?->hasRole('superadmin'))
+                    <a href="{{ route('app-reset.index') }}" wire:navigate
+                        class="flex items-center px-5 py-3.5 active:bg-black/5 dark:active:bg-white/5 transition-colors border-b-[3px] border-black/10 dark:border-white/10">
+                        <flux:icon.arrow-path-rounded-square class="w-5 h-5 text-red-600 dark:text-red-400 mr-4" />
+                        <span class="text-[17px] font-normal text-red-600 dark:text-red-400 flex-1">Reset Aplikasi</span>
+                    </a>
+                @endif
 
                 <!-- Profil & Logout -->
                 <a href="{{ route('profile.edit') }}" wire:navigate

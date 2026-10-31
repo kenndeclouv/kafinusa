@@ -150,6 +150,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::get('system-monitor', \App\Livewire\SystemMonitor\Index::class)->name('system-monitor.index');
+    Route::get('app-reset', \App\Livewire\System\AppReset::class)
+        ->middleware('role:superadmin')
+        ->name('app-reset.index');
 });
 
 require __DIR__.'/settings.php';

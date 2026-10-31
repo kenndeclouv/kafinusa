@@ -183,11 +183,25 @@ class CommandMenu extends Component
                 'permission' => 'system_monitor.view',
                 'group' => 'Sistem / Developer',
             ],
+            [
+                'label' => 'Reset Aplikasi',
+                'icon' => 'arrow-path-rounded-square',
+                'route' => 'app-reset.index',
+                'role' => 'superadmin',
+                'permission' => null,
+                'group' => 'Sistem / Developer',
+            ],
         ];
 
         $searchTerm = strtolower($this->search);
         
         return collect($items)->filter(function ($item) use ($user, $searchTerm) {
+            if (!empty($item['role'])) {
+                if (!$user->hasRole($item['role'])) {
+                    return false;
+                }
+            }
+
             if (!empty($item['permission'])) {
                 $permissions = is_array($item['permission']) ? $item['permission'] : [$item['permission']];
                 if (!$user->hasAnyPermission($permissions)) {

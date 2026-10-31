@@ -62,6 +62,7 @@ class PermissionSeeder extends Seeder
             'reports:stock-circulation',
             'reports:daily-production',
             'reports:petis-recap',
+            'app_reset:execute',
         ];
 
         foreach ($customPermissions as $permission) {

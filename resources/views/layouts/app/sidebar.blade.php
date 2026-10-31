@@ -197,9 +197,9 @@
                 </flux:sidebar.group>
             @endcanany
 
-            @canany(['logs.view', 'system_monitor.view', 'backups:read'])
+            @canany(['logs.view', 'system_monitor.view', 'backups:read', 'app_reset:execute'])
                 <flux:sidebar.group expandable
-                    :expanded="request()->routeIs('logs.*') || request()->routeIs('system-monitor.*') || request()->routeIs('backups.*')"
+                    :expanded="request()->routeIs('logs.*') || request()->routeIs('system-monitor.*') || request()->routeIs('backups.*') || request()->routeIs('app-reset.*')"
                     icon="cpu-chip" :heading="__('Sistem / Developer')">
                     @can('backups:read')
                         <flux:sidebar.item icon="archive-box" :href="route('backups.index')"
@@ -219,6 +219,12 @@
                             {{ __('System Monitor') }}
                         </flux:sidebar.item>
                     @endcan
+                    @if(auth()->user()?->hasRole('superadmin'))
+                        <flux:sidebar.item icon="arrow-path-rounded-square" :href="route('app-reset.index')"
+                            :current="request()->routeIs('app-reset.*')" wire:navigate.hover>
+                            {{ __('Reset Aplikasi') }}
+                        </flux:sidebar.item>
+                    @endif
                 </flux:sidebar.group>
             @endcanany
         </flux:sidebar.nav>
